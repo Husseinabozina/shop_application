@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/provider/products.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
@@ -13,8 +15,7 @@ class UserProductScreen extends StatelessWidget {
   static const routeName = '/userproducts';
   const UserProductScreen({super.key});
   Future<void> _refreshProducts(BuildContext context) async {
-    await Provider.of<Products>(context, listen: false)
-        .fetchProductsFromJson(true);
+    await Provider.of<ProductsProvider>(context, listen: false).fetchProducts();
   }
 
   @override
@@ -42,13 +43,13 @@ class UserProductScreen extends StatelessWidget {
                     onRefresh: () => _refreshProducts(context),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Consumer<Products>(
+                      child: Consumer<ProductsProvider>(
                         builder: (ctx, productdata, _) => ListView.builder(
-                            itemCount: productdata.items.length,
+                            itemCount: productdata.products.length,
                             itemBuilder: (_, i) => UserProductItem(
-                                  id: productdata.items[i].id,
-                                  imageurl: productdata.items[i].imageUrl,
-                                  title: productdata.items[i].title,
+                                  id: productdata.products[i].id,
+                                  imageurl: productdata.products[i].imageUrl,
+                                  title: productdata.products[i].title,
                                 )),
                       ),
                     ),

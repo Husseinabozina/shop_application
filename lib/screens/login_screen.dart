@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 
 import '../models/http_exception.dart';
 import '../provider/auth.dart';
@@ -72,10 +73,10 @@ class _LoginScreenState extends State<LoginScreen>
     });
     try {
       if (_authMode == AuthMode.Login) {
-        await Provider.of<Auth>(context, listen: false)
+        await Provider.of<AuthProvider>(context, listen: false)
             .login(_authData['email']!, _authData['password']!);
       } else {
-        await Provider.of<Auth>(context, listen: false)
+        await Provider.of<AuthProvider>(context, listen: false)
             .signup(_authData['email']!, _authData['password']!);
       }
     } on HttpException catch (error) {
@@ -295,8 +296,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 30.0, vertical: 8.0),
-                      textColor:
-                          Theme.of(context).primaryTextTheme.button!.color,
+                      textColor: Theme.of(context).primaryColor,
                     ),
                   ),
                 const SizedBox(

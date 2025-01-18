@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 
@@ -36,11 +38,12 @@ class UserProductItem extends StatelessWidget {
             ),
             IconButton(
                 onPressed: () async {
-                  Product prod = Provider.of<Products>(context, listen: false)
-                      .findById(id!);
+                  Product prod =
+                      Provider.of<ProductsProvider>(context, listen: false)
+                          .findById(id!);
                   try {
-                    await Provider.of<Products>(context, listen: false)
-                        .deleteProduct(prod);
+                    await Provider.of<ProductsProvider>(context, listen: false)
+                        .deleteProduct(prod.id!);
                   } catch (error) {
                     scaffoldMessenger.showSnackBar(SnackBar(
                         content: Text(
@@ -51,7 +54,7 @@ class UserProductItem extends StatelessWidget {
                 },
                 icon: Icon(
                   Icons.delete,
-                  color: Theme.of(context).errorColor,
+                  color: Theme.of(context).colorScheme.error,
                 )),
           ],
         ),

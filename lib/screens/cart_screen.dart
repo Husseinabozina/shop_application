@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/order_provider/order_provider.dart';
 import 'package:shop_application/provider/order.dart';
 import 'package:shop_application/widgets/cart_item.dart';
 
-import '../provider/cart.dart' show Cart;
+import '../controllers/cart_provider/cart_provider.dart' show CartProvider;
 import '../widgets/app_drawer.dart';
 
 class CartScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<Cart>(context);
+    final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
       drawer: AppDrawer(),
@@ -51,7 +52,7 @@ class CartScreen extends StatelessWidget {
                         productId: cart.Items.keys.toList()[i],
                         price: cart.Items.values.toList()[i].price,
                         title: cart.Items.values.toList()[i].title,
-                        quantity: cart.Items.values.toList()[i].quantitiy,
+                        quantity: cart.Items.values.toList()[i].quantity,
                       )))
         ],
       ),
@@ -65,7 +66,7 @@ class Orderbutton extends StatefulWidget {
     required this.cart,
   }) : super(key: key);
 
-  final Cart cart;
+  final CartProvider cart;
 
   @override
   State<Orderbutton> createState() => _OrderbuttonState();
@@ -82,9 +83,10 @@ class _OrderbuttonState extends State<Orderbutton> {
                 setState(() {
                   _isLoading = true;
                 });
-                await Provider.of<Orders>(context, listen: false)
-                    .addOrderToJson(widget.cart.Items.values.toList(),
-                        widget.cart.totalPrice);
+                await Provider.of<OrderProvider>(context, listen: false)
+                    .addOrder(
+                        products: widget.cart.Items.values.toList(),
+                        amount: widget.cart.totalPrice);
                 setState(() {
                   _isLoading = false;
                 });

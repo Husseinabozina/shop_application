@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/provider/cart.dart';
+import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/controllers/order_provider/order_provider.dart';
 import 'package:shop_application/provider/order.dart' show Orders;
 
 import '../widgets/app_drawer.dart';
@@ -19,7 +20,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> {
   Future? _orderFuture;
   Future _obtainedOrdersFuture() {
-    return Provider.of<Orders>(context, listen: false).fetchProductsFromjson();
+    return Provider.of<OrderProvider>(context, listen: false).fetchOrders();
   }
 
   bool isinit = false;

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/provider/products.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/widgets/badge.dart';
 
-import '../provider/cart.dart';
+import '../controllers/cart_provider/cart_provider.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/product_grid.dart';
 
@@ -39,7 +40,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         _isloading = true;
       });
 
-      Provider.of<Products>(context).fetchProductsFromJson().then((_) {
+      Provider.of<ProductsProvider>(context).fetchProducts().then((_) {
         setState(() {
           _isloading = false;
         });
@@ -76,7 +77,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                       child: Text('show All'),
                     ),
                   ]),
-          Consumer<Cart>(
+          Consumer<CartProvider>(
               builder: ((_, cart, ch) =>
                   BAdge(child: ch, value: cart.cartlengh.toString())),
               child: IconButton(
@@ -88,7 +89,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
       ),
       body: (_isloading)
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ProductsGrid(isfavourite!),
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/provider/product.dart';
 
 import '../provider/products.dart';
@@ -14,8 +16,8 @@ class ProductDetailedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String productId = ModalRoute.of(context)!.settings.arguments as String;
-    final loadedProduct = Provider.of<Products>(context, listen: false)
-        .items
+    final loadedProduct = Provider.of<ProductsProvider>(context, listen: false)
+        .products
         .firstWhere((product) => product.id == productId);
     return Scaffold(
       body: CustomScrollView(

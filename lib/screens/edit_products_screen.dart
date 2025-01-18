@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/provider/products.dart';
 
@@ -23,7 +24,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
       Product(price: 0, description: '', id: null, imageUrl: "", title: '');
   var _isloading = false;
   void initState() {
-    // TODO: implement initState
     _imageUrlFocusNode.addListener(_updateTextController);
   }
 
@@ -33,7 +33,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!isdid) {
       var productid = ModalRoute.of(context)!.settings.arguments;
       if (productid != null) {
-        _editedProduct = Provider.of<Products>(context, listen: false)
+        _editedProduct = Provider.of<ProductsProvider>(context, listen: false)
             .findById(productid as String);
         _imageUrlController.text = _editedProduct.imageUrl!;
       }
@@ -74,16 +74,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _form.currentState!.save();
     setState(() {
       _isloading = true;
-      print(" isloading = $_isloading ");
     });
 
     if (_editedProduct.id != null) {
-      await Provider.of<Products>(context, listen: false)
-          .updateproduct(_editedProduct.id!, _editedProduct);
+      await Provider.of<ProductsProvider>(context, listen: false)
+          .updateProduct(_editedProduct);
     } else {
       try {
-        await Provider.of<Products>(context, listen: false)
-            .addProductToJson(_editedProduct);
+        await Provider.of<ProductsProvider>(context, listen: false)
+            .addProduct(_editedProduct);
       } catch (error) {
         await showDialog<Null>(
             context: context,
@@ -207,9 +206,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         if (value!.isEmpty) {
                           return "please provide a value!";
                         }
-                        if (value!.length < 10) {
-                          return "should be at least 10 charachter least";
-                        }
+
+                        return "should be at least 10 charachter least";
                       },
                     ),
                     Row(
@@ -218,12 +216,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         Container(
                           width: 100,
                           height: 100,
-                          margin: EdgeInsets.only(top: 8, right: 10),
+                          margin: const EdgeInsets.only(top: 8, right: 10),
                           decoration: BoxDecoration(
                             border: Border.all(width: 1, color: Colors.grey),
                           ),
                           child: _imageUrlController.text.isEmpty
-                              ? Text('Enter a UrL')
+                              ? const Text('Enter a UrL')
                               : FittedBox(
                                   child: Image.network(
                                     _imageUrlController.text,
@@ -233,7 +231,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         ),
                         Expanded(
                             child: TextFormField(
-                          decoration: InputDecoration(labelText: 'Image URL'),
+                          decoration:
+                              const InputDecoration(labelText: 'Image URL'),
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.done,
                           controller: _imageUrlController,

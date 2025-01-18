@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
 import '../provider/auth.dart';
-import '../provider/cart.dart';
+import '../controllers/cart_provider/cart_provider.dart';
 
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<Cart>(context, listen: false);
+    final cart = Provider.of<CartProvider>(context, listen: false);
     final product = Provider.of<Product>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
@@ -28,15 +30,17 @@ class ProductItem extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             leading: Consumer<Product>(
-              builder: (ctx, product, _) => IconButton(
+              builder: (ctx, productProvider, _) => IconButton(
                 onPressed: (() {
-                  product.toggleFavoriteStatus(
-                      Provider.of<Auth>(context, listen: false).token!,
-                      Provider.of<Auth>(context, listen: false).userId!);
+                  productProvider.toggleFavoriteStatus(
+                    product.id!,
+                    Provider.of<AuthProvider>(context, listen: false).token!,
+                    Provider.of<AuthProvider>(context, listen: false).userId!,
+                  );
                 }),
                 icon: Icon(
                   product.isFavorite! ? Icons.favorite : Icons.favorite_border,
-                  color: Theme.of(context).errorColor,
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
             ),

@@ -1,13 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
 import 'package:shop_application/provider/order.dart' as ord;
 
 class OrderItem extends StatefulWidget {
-  final ord.OrderItem? order;
+  final ord.Order? order;
   const OrderItem({this.order});
 
   @override
@@ -46,10 +44,10 @@ class _OrderItemState extends State<OrderItem> {
                   children: widget.order!.products!
                       .map((prod) => Row(
                             children: [
-                              Text("${prod.title}"),
-                              Spacer(),
-                              Text("${prod.quantitiy}"),
-                              Text("\$${prod.price}"),
+                              Text("${prod!.title!}"),
+                              const Spacer(),
+                              Text("${prod!.quantity!}"),
+                              Text("\$${prod!.price}"),
                             ],
                           ))
                       .toList(),

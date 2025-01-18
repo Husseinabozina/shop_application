@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/helpers/custom_route.dart';
 import 'package:shop_application/provider/auth.dart';
-import 'package:shop_application/provider/cart.dart';
+import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/provider/order.dart';
 import 'package:shop_application/provider/products.dart';
 import 'package:shop_application/screens/cart_screen.dart';
@@ -23,24 +27,21 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: Auth(),
+          value: getIt<AuthProvider>(),
         ),
-        ChangeNotifierProxyProvider<Auth, Products>(
-          create: (context) => Products('', [], ''),
-          update: (ctx, auth, previousproducts) => Products(
-              auth.token,
-              previousproducts == null ? [] : previousproducts.items,
-              auth.userId),
+        ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
+          create: (context) => getIt<ProductsProvider>(),
+          update: (ctx, auth, previousproducts) => getIt<ProductsProvider>(),
         ),
-        ChangeNotifierProvider.value(value: Cart()),
-        ChangeNotifierProxyProvider<Auth, Orders>(
+        ChangeNotifierProvider.value(value: CartProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, Orders>(
             create: (context) => Orders("", "", []),
             update: (ctx, auth, previousorders) => Orders(
                 auth.token,
                 auth.userId,
                 previousorders == null ? [] : previousorders.orders))
       ],
-      child: Consumer<Auth>(
+      child: Consumer<AuthProvider>(
         builder: ((context, auth, _) => MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'MyShop',
