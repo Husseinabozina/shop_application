@@ -17,6 +17,8 @@ import 'package:shop_application/features/checkout/presentation/controllers/chec
 import 'package:shop_application/features/orders/data/datasources/order_remote_data_source.dart';
 import 'package:shop_application/features/orders/data/repositories/order_repository_impl.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
+import 'package:shop_application/features/payments/data/gateways/unconfigured_payment_gateway.dart';
+import 'package:shop_application/features/payments/domain/gateways/payment_gateway.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -74,6 +76,10 @@ void setup() {
     ),
   );
 
+  getIt.registerLazySingleton<PaymentGateway>(
+    () => const UnconfiguredPaymentGateway(),
+  );
+
   getIt.registerLazySingleton<CheckoutRemoteDataSource>(
     () => FirebaseCheckoutRemoteDataSource(
       database: getIt<FirebaseRestClient>(),
@@ -82,6 +88,7 @@ void setup() {
   getIt.registerLazySingleton<CheckoutRepository>(
     () => CheckoutRepositoryImpl(
       remoteDataSource: getIt<CheckoutRemoteDataSource>(),
+      paymentGateway: getIt<PaymentGateway>(),
     ),
   );
   getIt.registerFactory<CheckoutController>(
