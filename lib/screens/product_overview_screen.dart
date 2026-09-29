@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/widgets/app_drawer.dart';
 import 'package:shop_application/widgets/product_grid.dart';
@@ -18,6 +19,8 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   bool _didLoad = false;
   bool _favoritesOnly = false;
   String _query = '';
+  String? _category;
+  ProductSortOption _sort = ProductSortOption.featured;
 
   @override
   void didChangeDependencies() {
@@ -102,7 +105,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Browse the collection, save favorites, and build your cart.',
+                  'Browse by category, sort the collection, save favorites, and build your cart.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.35,
@@ -115,31 +118,67 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                   },
                   textInputAction: TextInputAction.search,
                   decoration: const InputDecoration(
-                    hintText: 'Search products',
+                    hintText: 'Search products or categories',
                     prefixIcon: Icon(Icons.search_rounded),
                   ),
                 ),
                 const SizedBox(height: 16),
+                _CategoryRail(
+                  categories: productsProvider.categories,
+                  selectedCategory: _category,
+                  onSelected: (category) {
+                    setState(() {
+                      _category = category;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    ChoiceChip(
-                      label: const Text('All'),
-                      selected: !_favoritesOnly,
-                      onSelected: (_) {
-                        setState(() => _favoritesOnly = false);
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    ChoiceChip(
+                    FilterChip(
                       avatar: const Icon(
                         Icons.favorite_border_rounded,
                         size: 18,
                       ),
                       label: const Text('Saved'),
                       selected: _favoritesOnly,
-                      onSelected: (_) {
-                        setState(() => _favoritesOnly = true);
+                      onSelected: (selected) {
+                        setState(() => _favoritesOnly = selected);
                       },
+                    ),
+                    const SizedBox(width: 10),
+                    PopupMenuButton<ProductSortOption>(
+                      initialValue: _sort,
+                      onSelected: (value) {
+                        setState(() => _sort = value);
+                      },
+                      itemBuilder: (_) {
+                        return ProductSortOption.values.map((option) {
+                          return PopupMenuItem<ProductSortOption>(
+                            value: option,
+                            child: Row(
+                              children: [
+                                if (_sort == option)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8),
+                                    child: Icon(
+                                      Icons.check_rounded,
+                                      size: 18,
+                                    ),
+                                  ),
+                                Text(option.label),
+                              ],
+                            ),
+                          );
+                        }).toList();
+                      },
+                      child: Chip(
+                        avatar: const Icon(
+                          Icons.swap_vert_rounded,
+                          size: 18,
+                        ),
+                        label: Text(_sort.label),
+                      ),
                     ),
                     const Spacer(),
                     Text(
@@ -154,6 +193,8 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                 ProductsGrid(
                   favoritesOnly: _favoritesOnly,
                   query: _query,
+                  category: _category,
+                  sort: _sort,
                 ),
               ],
             ),
@@ -165,17 +206,70 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
   int _visibleCount(ProductsProvider provider) {
     final source = _favoritesOnly ? provider.favitem : provider.products;
-    final normalized = _query.trim().toLowerCase();
-
-    if (normalized.isEmpty) {
-      return source.length;
-    }
+    final normalizedQuery = _query.trim().toLowerCase();
+    final selectedCategory = _category?.trim().toLowerCase();
 
     return source.where((product) {
+      if (selectedCategory != null &&
+          selectedCategory.isNotEmpty &&
+          product.category.trim().toLowerCase() != selectedCategory) {
+        return false;
+      }
+
+      if (normalizedQuery.isEmpty) {
+        return true;
+      }
+
       final title = product.title?.toLowerCase() ?? '';
       final description = product.description?.toLowerCase() ?? '';
-      return title.contains(normalized) || description.contains(normalized);
+      final category = product.category.toLowerCase();
+
+      return title.contains(normalizedQuery) ||
+          description.contains(normalizedQuery) ||
+          category.contains(normalizedQuery);
     }).length;
+  }
+}
+
+class _CategoryRail extends StatelessWidget {
+  final List<String> categories;
+  final String? selectedCategory;
+  final ValueChanged<String?> onSelected;
+
+  const _CategoryRail({
+    required this.categories,
+    required this.selectedCategory,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 42,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: const Text('All'),
+              selected: selectedCategory == null,
+              onSelected: (_) => onSelected(null),
+            ),
+          ),
+          ...categories.map(
+            (category) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(category),
+                selected: selectedCategory == category,
+                onSelected: (_) => onSelected(category),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -220,7 +314,9 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             FilledButton.icon(
-              onPressed: onRetry,
+              onPressed: () async {
+                await onRetry();
+              },
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Try again'),
             ),
