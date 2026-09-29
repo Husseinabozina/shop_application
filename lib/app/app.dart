@@ -13,7 +13,9 @@ import 'package:shop_application/features/checkout/presentation/controllers/chec
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
 import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
+import 'package:shop_application/screens/account_screen.dart';
 import 'package:shop_application/screens/cart_screen.dart';
+import 'package:shop_application/screens/categories_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/screens/login_screen.dart';
 import 'package:shop_application/screens/orders_screen.dart';
@@ -93,6 +95,8 @@ class MyShopApp extends StatelessWidget {
       ProductDetailedScreen.routename: (_) =>
           const ProductDetailedScreen(),
       CartScreen.routName: (_) => const CartScreen(),
+      CategoriesScreen.routeName: (_) => const CategoriesScreen(),
+      AccountScreen.routeName: (_) => const AccountScreen(),
       OrdersScreen.routeName: (_) => const OrdersScreen(),
       UserProductScreen.routeName: (_) =>
           const UserProductScreen(),
