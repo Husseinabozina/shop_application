@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:shop_application/core/constant.dart';
+import 'package:shop_application/core/config/app_environment.dart';
 import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/core/network/error_handler.dart';
@@ -30,7 +30,10 @@ class AuthServiceImpl implements AuthService {
     try {
       final response = await api.post(
         url:
-            'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment?key=$apiKey',
+            'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment',
+        query: {
+          'key': AppEnvironment.firebaseWebApiKey,
+        },
         data: {
           'email': email,
           'password': password,
