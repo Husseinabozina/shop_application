@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/controllers/order_provider/order_provider.dart';
-import 'package:shop_application/provider/order.dart' show Orders;
+import 'package:shop_application/widgets/orderItem.dart';
 
 import '../widgets/app_drawer.dart';
-import '../widgets/orderItem.dart';
 
 class OrdersScreen extends StatefulWidget {
   static const routeName = '/order';
+
   const OrdersScreen({super.key});
 
   @override
@@ -18,47 +15,70 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  Future? _orderFuture;
-  Future _obtainedOrdersFuture() {
-    return Provider.of<OrderProvider>(context, listen: false).fetchOrders();
-  }
+  late final Future<void> _ordersFuture;
 
-  bool isinit = false;
   @override
   void initState() {
-    _orderFuture = _obtainedOrdersFuture();
     super.initState();
+    _ordersFuture = Provider.of<OrderProvider>(
+      context,
+      listen: false,
+    ).fetchOrders();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
-      appBar: AppBar(title: Text("your orders")),
-      body: FutureBuilder(
-          future: _orderFuture,
-          builder: (context, snapshotdata) {
-            if (snapshotdata.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshotdata.error != null) {
-              return Center(
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        title: const Text('Your orders'),
+      ),
+      body: FutureBuilder<void>(
+        future: _ordersFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return Consumer<OrderProvider>(
+            builder: (context, orderProvider, _) {
+              if (orderProvider.fetchOrdersErrorMessage != null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      orderProvider.fetchOrdersErrorMessage!,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              if (orderProvider.orders.isEmpty) {
+                return const Center(
                   child: Text(
-                'there is an error',
-                style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold),
-              ));
-            } else {
-              return Consumer<Orders>(
-                builder: (context, orderpro, child) => ListView.builder(
-                    itemCount: orderpro.orders!.length,
-                    itemBuilder: ((context, index) => OrderItem(
-                          order: orderpro.orders![index],
-                        ))),
+                    'No orders yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: orderProvider.orders.length,
+                itemBuilder: (context, index) => OrderItem(
+                  order: orderProvider.orders[index],
+                ),
               );
-            }
-          }),
+            },
+          );
+        },
+      ),
     );
   }
 }
