@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_application/data/models/cart/cart_model.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
-import 'package:shop_application/provider/order.dart';
+import 'package:shop_application/features/orders/domain/entities/order.dart';
 
 class OrderProvider with ChangeNotifier {
   final OrderRepo orderRepo;
@@ -22,13 +22,20 @@ class OrderProvider with ChangeNotifier {
   String? addOrderErrorMessage;
 
   Future<void> fetchOrders() async {
-    if (token == null || userId == null) {
+    final accessToken = token;
+    final activeUserId = userId;
+
+    if (accessToken == null || activeUserId == null) {
       fetchOrdersErrorMessage = 'Please sign in again.';
       notifyListeners();
       return;
     }
 
-    final result = await orderRepo.fetchOrders(userId!, token!);
+    final result = await orderRepo.fetchOrders(
+      activeUserId,
+      accessToken,
+    );
+
     result.when(
       success: (orders) {
         _orders = orders;
@@ -45,12 +52,34 @@ class OrderProvider with ChangeNotifier {
   Order? _order;
   Order? get order => _order;
 
-  Future<void> fetchOrder(String orderId) async {
-    final result = await orderRepo.fetchOrder(orderId, token);
+  Future<Order?> fetchOrder(String orderId) async {
+    final accessToken = token;
+    final activeUserId = userId;
+
+    if (accessToken == null || activeUserId == null) {
+      fetchOrderErrorMessage = 'Please sign in again.';
+      notifyListeners();
+      return null;
+    }
+
+    final result = await orderRepo.fetchOrder(
+      userId: activeUserId,
+      orderId: orderId,
+      token: accessToken,
+    );
+
+    Order? loadedOrder;
     result.when(
       success: (order) {
         _order = order;
+        loadedOrder = order;
         fetchOrderErrorMessage = null;
+
+        final index = _orders.indexWhere((item) => item.id == order.id);
+        if (index >= 0) {
+          _orders[index] = order;
+        }
+
         notifyListeners();
       },
       failure: (error) {
@@ -58,13 +87,18 @@ class OrderProvider with ChangeNotifier {
         notifyListeners();
       },
     );
+
+    return loadedOrder;
   }
 
   Future<bool> addOrder({
     required double amount,
     required List<CartModel> products,
   }) async {
-    if (token == null || userId == null) {
+    final accessToken = token;
+    final activeUserId = userId;
+
+    if (accessToken == null || activeUserId == null) {
       addOrderErrorMessage = 'Please sign in again.';
       notifyListeners();
       return false;
@@ -79,14 +113,22 @@ class OrderProvider with ChangeNotifier {
 
     final result = await orderRepo.addOrder(
       order: order,
-      userId: userId,
-      token: token,
+      userId: activeUserId,
+      token: accessToken,
     );
 
     var wasSuccessful = false;
     result.when(
-      success: (_) {
-        _orders.insert(0, order);
+      success: (response) {
+        _orders.insert(
+          0,
+          Order(
+            id: response.name,
+            datetime: order.datetime,
+            amount: order.amount,
+            products: order.products,
+          ),
+        );
         addOrderErrorMessage = null;
         wasSuccessful = true;
         notifyListeners();
