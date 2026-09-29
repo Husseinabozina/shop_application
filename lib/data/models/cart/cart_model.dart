@@ -26,7 +26,7 @@ class CartModel {
     return CartModel(
       id: json['id'] as String?,
       title: json['title'] as String?,
-      quantity: (json['quantity'] as num?)?.toDouble(),
+      quantity: ((json['quantity'] ?? json['quantitiy']) as num?)?.toDouble(),
       price: json['price'] as num?,
     );
   }
