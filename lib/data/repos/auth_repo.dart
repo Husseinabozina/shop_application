@@ -1,4 +1,3 @@
-import 'package:http/http.dart';
 import 'package:shop_application/core/network/api_result.dart';
 import 'package:shop_application/core/network/error_handler.dart';
 import 'package:shop_application/data/models/auth/login_response.dart';
