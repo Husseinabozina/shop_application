@@ -138,15 +138,6 @@ class AccountScreen extends StatelessWidget {
 
   Future<void> _signOut(BuildContext context) async {
     await context.read<AuthProvider>().logOut();
-
-    if (!context.mounted) {
-      return;
-    }
-
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/',
-      (route) => false,
-    );
   }
 }
 
