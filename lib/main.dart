@@ -1,91 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
-import 'package:shop_application/core/injection.dart';
-import 'package:shop_application/helpers/custom_route.dart';
-import 'package:shop_application/provider/auth.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/provider/order.dart';
-import 'package:shop_application/provider/products.dart';
+import 'package:shop_application/controllers/order_provider/order_provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/core/helpers/cache_helpers.dart';
+import 'package:shop_application/core/injection.dart';
+import 'package:shop_application/data/repos/order_repo.dart';
+import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/helpers/custom_route.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/screens/login_screen.dart';
 import 'package:shop_application/screens/orders_screen.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
+import 'package:shop_application/screens/product_overview_screen.dart';
 import 'package:shop_application/screens/splashScreen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
 
-import 'screens/product_overview_screen.dart';
-import 'package:provider/provider.dart';
-
-void main() => runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await CacheHelper.init();
+  setup();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(
+        ChangeNotifierProvider<AuthProvider>.value(
           value: getIt<AuthProvider>(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
-          create: (context) => getIt<ProductsProvider>(),
-          update: (ctx, auth, previousproducts) => getIt<ProductsProvider>(),
+          create: (_) => ProductsProvider(
+            productsRepo: getIt<ProductsRepo>(),
+          ),
+          update: (_, auth, __) => ProductsProvider(
+            productsRepo: getIt<ProductsRepo>(),
+            token: auth.token,
+            userId: auth.userId,
+          ),
         ),
-        ChangeNotifierProvider.value(value: CartProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, Orders>(
-            create: (context) => Orders("", "", []),
-            update: (ctx, auth, previousorders) => Orders(
-                auth.token,
-                auth.userId,
-                previousorders == null ? [] : previousorders.orders))
+        ChangeNotifierProvider<CartProvider>(
+          create: (_) => CartProvider(),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
+          create: (_) => OrderProvider(
+            orderRepo: getIt<OrderRepo>(),
+          ),
+          update: (_, auth, __) => OrderProvider(
+            orderRepo: getIt<OrderRepo>(),
+            token: auth.token,
+            userId: auth.userId,
+          ),
+        ),
       ],
       child: Consumer<AuthProvider>(
-        builder: ((context, auth, _) => MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'MyShop',
-              theme: ThemeData(
-                  primarySwatch: Colors.cyan,
-                  fontFamily: 'Lato',
-                  pageTransitionsTheme: PageTransitionsTheme(builders: {
-                    TargetPlatform.android: CustomPageTransitionBuilder(),
-                    TargetPlatform.iOS: CustomPageTransitionBuilder(),
-                  })),
-              home: auth.isAuth
-                  ? ProductOverviewScreen()
-                  : FutureBuilder(
-                      future: auth.tryAutoLogin(),
-                      builder: (ctx, authsnapshot) =>
-                          authsnapshot.connectionState ==
-                                  ConnectionState.waiting
-                              ? const SplashScreen()
-                              : LoginScreen()),
-              routes: {
-                ProductDetailedScreen.routename: (context) =>
-                    const ProductDetailedScreen(),
-                CartScreen.routName: (context) => const CartScreen(),
-                OrdersScreen.routeName: (context) => const OrdersScreen(),
-                UserProductScreen.routeName: (context) =>
-                    const UserProductScreen(),
-                EditProductScreen.routeName: (context) =>
-                    const EditProductScreen()
+        builder: (context, auth, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'MyShop',
+          theme: ThemeData(
+            primarySwatch: Colors.cyan,
+            fontFamily: 'Lato',
+            pageTransitionsTheme: PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CustomPageTransitionBuilder(),
+                TargetPlatform.iOS: CustomPageTransitionBuilder(),
               },
-            )),
-      ),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('MyShop'),
-      ),
-      body: const Center(
-        child: Text('Let\'s build a shop!'),
+            ),
+          ),
+          home: auth.isAuth
+              ? const ProductOverviewScreen()
+              : FutureBuilder<bool>(
+                  future: auth.tryAutoLogin(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SplashScreen();
+                    }
+                    return LoginScreen();
+                  },
+                ),
+          routes: {
+            ProductDetailedScreen.routename: (_) =>
+                const ProductDetailedScreen(),
+            CartScreen.routName: (_) => const CartScreen(),
+            OrdersScreen.routeName: (_) => const OrdersScreen(),
+            UserProductScreen.routeName: (_) => const UserProductScreen(),
+            EditProductScreen.routeName: (_) => const EditProductScreen(),
+          },
+        ),
       ),
     );
   }
