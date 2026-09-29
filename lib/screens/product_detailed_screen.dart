@@ -88,6 +88,24 @@ class _ProductDetailsView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text(
+                      product.category,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     product.title ?? 'Untitled product',
                     style: theme.textTheme.headlineSmall?.copyWith(
@@ -121,30 +139,18 @@ class _ProductDetailsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.verified_user_outlined,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Secure account-based shopping with your cart and order history kept together.',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  _InfoCard(
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Delivery options',
+                    description:
+                        'Standard delivery in 3–5 business days, or Express in 1–2 days at checkout.',
+                  ),
+                  const SizedBox(height: 12),
+                  _InfoCard(
+                    icon: Icons.verified_user_outlined,
+                    title: 'Secure shopping',
+                    description:
+                        'Your saved items, cart, delivery details, and order history stay tied to your account.',
                   ),
                 ],
               ),
@@ -206,6 +212,63 @@ class _ProductDetailsView extends StatelessWidget {
         : value.toStringAsFixed(2);
   }
 }
+
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _ImageFallback extends StatelessWidget {
   final Color color;
