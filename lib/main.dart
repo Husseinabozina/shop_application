@@ -6,9 +6,9 @@ import 'package:shop_application/controllers/order_provider/order_provider.dart'
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/injection.dart';
+import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
-import 'package:shop_application/helpers/custom_route.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/screens/login_screen.dart';
@@ -63,16 +63,9 @@ class MyApp extends StatelessWidget {
         builder: (context, auth, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'MyShop',
-          theme: ThemeData(
-            primarySwatch: Colors.cyan,
-            fontFamily: 'Lato',
-            pageTransitionsTheme: PageTransitionsTheme(
-              builders: {
-                TargetPlatform.android: CustomPageTransitionBuilder(),
-                TargetPlatform.iOS: CustomPageTransitionBuilder(),
-              },
-            ),
-          ),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: ThemeMode.system,
           home: auth.isAuth
               ? const ProductOverviewScreen()
               : FutureBuilder<bool>(
