@@ -1,58 +1,124 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shop_application/provider/order.dart' as ord;
 
-class OrderItem extends StatefulWidget {
+class OrderItem extends StatelessWidget {
   final ord.Order? order;
-  const OrderItem({this.order});
 
-  @override
-  State<OrderItem> createState() => _OrderItemState();
-}
+  const OrderItem({
+    super.key,
+    this.order,
+  });
 
-class _OrderItemState extends State<OrderItem> {
-  bool _isExpaneded = false;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        margin: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            ListTile(
-              title: Text('\$${widget.order!.amount}'),
-              subtitle: Text(
-                DateFormat('dd MM yyyy hh:mm').format(widget.order!.datetime!),
-              ),
-              trailing: IconButton(
-                icon:
-                    Icon(_isExpaneded ? Icons.expand_less : Icons.expand_more),
-                onPressed: () {
-                  setState(() {
-                    _isExpaneded = !_isExpaneded;
-                  });
-                },
+    final theme = Theme.of(context);
+    final currentOrder = order;
+    if (currentOrder == null) {
+      return const SizedBox.shrink();
+    }
+
+    final products = currentOrder.products ?? const [];
+    final date = currentOrder.datetime;
+    final formattedDate = date == null
+        ? 'Unknown date'
+        : DateFormat('MMM d, yyyy • h:mm a').format(date);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      child: Card(
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 8,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          leading: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+          title: Text(
+            '\$' + _formatPrice(currentOrder.amount ?? 0),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              formattedDate,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                height: _isExpaneded
-                    ? min(widget.order!.products!.length * 20.0 + 50, 100)
-                    : 0,
-                child: ListView(
-                  children: widget.order!.products!
-                      .map((prod) => Row(
-                            children: [
-                              Text("${prod!.title!}"),
-                              const Spacer(),
-                              Text("${prod!.quantity!}"),
-                              Text("\$${prod!.price}"),
-                            ],
-                          ))
-                      .toList(),
-                ))
+          ),
+          children: [
+            const Divider(),
+            const SizedBox(height: 6),
+            if (products.isEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'No item details available.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              )
+            else
+              ...products.map(
+                (product) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.title ?? 'Product',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        _formatQuantity(product.quantity ?? 0) + ' × ',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        '\$' + _formatPrice(product.price ?? 0),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
-        ));
+        ),
+      ),
+    );
+  }
+
+  String _formatPrice(num value) {
+    final number = value.toDouble();
+    return number == number.roundToDouble()
+        ? number.toStringAsFixed(0)
+        : number.toStringAsFixed(2);
+  }
+
+  String _formatQuantity(double value) {
+    return value == value.roundToDouble()
+        ? value.toInt().toString()
+        : value.toStringAsFixed(1);
   }
 }
