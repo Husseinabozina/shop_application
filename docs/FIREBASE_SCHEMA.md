@@ -13,6 +13,35 @@ order/{userId}/{orderId}/
 addresses/{userId}/{addressId}/
 ```
 
+## Product record
+
+New and updated products keep catalog and ownership metadata:
+
+```json
+{
+  "title": "Wireless Headphones",
+  "description": "Product description",
+  "imageUrl": "https://example.com/product.jpg",
+  "price": 59.99,
+  "category": "Electronics",
+  "creatorId": "firebase-auth-user-id"
+}
+```
+
+Legacy products without a category are displayed as `General`.
+
+User-scoped product management queries by `creatorId`. If Firebase rules are versioned later, the products collection should include an index for this field:
+
+```json
+{
+  "products": {
+    ".indexOn": ["creatorId"]
+  }
+}
+```
+
+Product write permissions still need a real seller/admin authorization policy before this is considered production-ready.
+
 ## Saved address record
 
 ```json
