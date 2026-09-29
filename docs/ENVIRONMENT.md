@@ -22,14 +22,12 @@ Actual secrets such as payment-gateway secret keys must never be bundled in the 
 
 ## HTTP logging
 
-Debug networking logs redact sensitive values including:
+Debug networking logs intentionally include only:
 
-- Firebase `auth` query tokens
-- API `key` query values
-- passwords
-- ID tokens
-- refresh tokens
-- access tokens
-- authorization values
+- HTTP method
+- request URL with sensitive query values redacted
+- response status code
+
+Request bodies and response bodies are not logged, which avoids exposing customer addresses, phone numbers, passwords, tokens, order payloads, or payment-related data.
 
 Networking logs are disabled in release mode.
