@@ -155,18 +155,7 @@ class ApiImpl extends Api {
       return;
     }
 
-    debugPrint('Request Method: $method');
-    debugPrint('Request URL: ${_redactUri(uri)}');
-
-    if (data != null) {
-      debugPrint('Request Body: ${_redactValue(data)}');
-    }
-
-    debugPrint('Response Status: ${response.statusCode}');
-
-    if (response.body.isNotEmpty) {
-      debugPrint('Response Body: ${_redactResponseBody(response.body)}');
-    }
+    debugPrint('HTTP $method ${_redactUri(uri)} → ${response.statusCode}');
   }
 
   Uri _redactUri(Uri uri) {
@@ -184,45 +173,10 @@ class ApiImpl extends Api {
     return uri.replace(queryParameters: query);
   }
 
-  Object? _redactValue(Object? value) {
-    if (value is Map) {
-      return value.map(
-        (key, item) => MapEntry(
-          key,
-          _isSensitiveKey(key.toString())
-              ? '[REDACTED]'
-              : _redactValue(item),
-        ),
-      );
-    }
-
-    if (value is List) {
-      return value.map(_redactValue).toList();
-    }
-
-    return value;
-  }
-
-  String _redactResponseBody(String body) {
-    try {
-      final decoded = jsonDecode(body);
-      return jsonEncode(_redactValue(decoded));
-    } catch (_) {
-      const maxLength = 1000;
-      return body.length <= maxLength
-          ? body
-          : body.substring(0, maxLength) + '…';
-    }
-  }
-
   bool _isSensitiveKey(String key) {
     switch (key.toLowerCase()) {
       case 'auth':
       case 'key':
-      case 'password':
-      case 'idtoken':
-      case 'refreshtoken':
-      case 'accesstoken':
       case 'token':
       case 'authorization':
         return true;
@@ -230,4 +184,5 @@ class ApiImpl extends Api {
         return false;
     }
   }
+
 }
