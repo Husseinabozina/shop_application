@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 abstract class Api {
@@ -6,14 +8,14 @@ abstract class Api {
     required String url,
     Map<String, dynamic>? query,
     Map<String, dynamic>? data,
-    String? token, // Add token parameter
+    String? token,
   });
 
   Future<http.Response> post({
     required String url,
     Map<String, dynamic>? query,
     Map<String, dynamic>? data,
-    String? token, // Add token parameter
+    String? token,
   });
 
   Future<http.Response> put({
@@ -21,20 +23,21 @@ abstract class Api {
     Map<String, dynamic>? query,
     required Object data,
     String lang = 'ar',
-    String? token, // Add token parameter
+    String? token,
   });
 
   Future<http.Response> delete({
     required String url,
+    Map<String, dynamic>? query,
     Map<String, dynamic>? data,
-    String? token, // Add token parameter
+    String? token,
   });
 
   Future<http.Response> patch({
     required String url,
     Map<String, dynamic>? query,
     required Map<String, dynamic> data,
-    String? token, // Add token parameter
+    String? token,
   });
 }
 
@@ -105,10 +108,11 @@ class ApiImpl extends Api {
   @override
   Future<http.Response> delete({
     required String url,
+    Map<String, dynamic>? query,
     Map<String, dynamic>? data,
     String? token,
   }) async {
-    final uri = Uri.parse(url);
+    final uri = Uri.parse(url).replace(queryParameters: query);
     final response = await client.delete(
       uri,
       headers: {
@@ -141,13 +145,89 @@ class ApiImpl extends Api {
     return response;
   }
 
-  // Logs the HTTP requests for debugging purposes.
   void _logRequest(
-      String method, Uri uri, Object? data, http.Response response) {
-    print('Request Method: $method');
-    print('Request URL: $uri');
-    print('Request Body: $data');
-    print('Response Status: ${response.statusCode}');
-    print('Response Body: ${response.body}');
+    String method,
+    Uri uri,
+    Object? data,
+    http.Response response,
+  ) {
+    if (!kDebugMode) {
+      return;
+    }
+
+    debugPrint('Request Method: $method');
+    debugPrint('Request URL: ${_redactUri(uri)}');
+
+    if (data != null) {
+      debugPrint('Request Body: ${_redactValue(data)}');
+    }
+
+    debugPrint('Response Status: ${response.statusCode}');
+
+    if (response.body.isNotEmpty) {
+      debugPrint('Response Body: ${_redactResponseBody(response.body)}');
+    }
+  }
+
+  Uri _redactUri(Uri uri) {
+    if (uri.queryParameters.isEmpty) {
+      return uri;
+    }
+
+    final query = <String, String>{};
+    for (final entry in uri.queryParameters.entries) {
+      query[entry.key] = _isSensitiveKey(entry.key)
+          ? '[REDACTED]'
+          : entry.value;
+    }
+
+    return uri.replace(queryParameters: query);
+  }
+
+  Object? _redactValue(Object? value) {
+    if (value is Map) {
+      return value.map(
+        (key, item) => MapEntry(
+          key,
+          _isSensitiveKey(key.toString())
+              ? '[REDACTED]'
+              : _redactValue(item),
+        ),
+      );
+    }
+
+    if (value is List) {
+      return value.map(_redactValue).toList();
+    }
+
+    return value;
+  }
+
+  String _redactResponseBody(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return jsonEncode(_redactValue(decoded));
+    } catch (_) {
+      const maxLength = 1000;
+      return body.length <= maxLength
+          ? body
+          : body.substring(0, maxLength) + '…';
+    }
+  }
+
+  bool _isSensitiveKey(String key) {
+    switch (key.toLowerCase()) {
+      case 'auth':
+      case 'key':
+      case 'password':
+      case 'idtoken':
+      case 'refreshtoken':
+      case 'accesstoken':
+      case 'token':
+      case 'authorization':
+        return true;
+      default:
+        return false;
+    }
   }
 }
