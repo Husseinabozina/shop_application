@@ -20,6 +20,17 @@ class ProductsProvider with ChangeNotifier {
   List<Product> get products => _products;
   Product? get updatedProduct => _updatedProduct;
 
+  List<String> get categories {
+    final values = _products
+        .map((product) => product.category.trim())
+        .where((category) => category.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return values;
+  }
+
   String? fetchProductsErrorMessage;
   String? deleteProductSuccessMessage;
   String? deleteProductErrorMessage;
@@ -103,9 +114,35 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    final result = await productsRepo.addProduct(product, token);
+    final accessToken = token;
+    final activeUserId = userId;
+
+    if (accessToken == null || activeUserId == null) {
+      updateProductErrorMessage = 'Please sign in again.';
+      notifyListeners();
+      return;
+    }
+
+    final productToCreate = product.copyWith(
+      creatorId: activeUserId,
+    );
+
+    final result = await productsRepo.addProduct(
+      productToCreate,
+      accessToken,
+    );
+
     result.when(
-      success: (_) {
+      success: (response) {
+        final newId = response.name;
+        final created = productToCreate.copyWith(
+          id: newId,
+          productId: newId,
+        );
+        created.productsRepo = productsRepo;
+
+        _products.insert(0, created);
+        updateProductErrorMessage = null;
         notifyListeners();
       },
       failure: (exception) {
@@ -114,4 +151,6 @@ class ProductsProvider with ChangeNotifier {
       },
     );
   }
+}
+
 }
