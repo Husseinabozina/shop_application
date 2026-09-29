@@ -21,6 +21,8 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Firebase Realtime Database
 - Feature-first checkout architecture
 - Repository and data-source boundaries
+- Centralized backend environment configuration
+- Redacted debug networking logs
 - Focused checkout, address, and order-domain tests
 
 ## Architecture
@@ -51,6 +53,7 @@ Read the full architecture notes in:
 - `docs/ARCHITECTURE.md`
 - `docs/COMMERCE_ROADMAP.md`
 - `docs/FIREBASE_SCHEMA.md`
+- `docs/ENVIRONMENT.md`
 
 ## Checkout flow
 
@@ -86,11 +89,12 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - order history
 - order status filters
 - order details + tracking timeline
+- user-scoped live order refresh
 
 ### Planned next
 - real card payment gateway
 - backend/admin-driven order status updates
-- Firebase security-rule verification
+- Firebase security-rule verification and deployment
 - categories / filters / sorting
 - product variants
 - ratings and reviews
