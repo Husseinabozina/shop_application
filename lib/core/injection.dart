@@ -7,6 +7,10 @@ import 'package:shop_application/data/repos/products_repo.dart';
 import 'package:shop_application/data/services/auth_services.dart';
 import 'package:shop_application/data/services/order_services.dart';
 import 'package:shop_application/data/services/product_service.dart';
+import 'package:shop_application/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:shop_application/features/checkout/data/repositories/checkout_repository_impl.dart';
+import 'package:shop_application/features/checkout/domain/repositories/checkout_repository.dart';
+import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -39,5 +43,21 @@ void setup() {
   );
   getIt.registerLazySingleton<OrderRepo>(
     () => OrderRepoImpl(orderServices: getIt<OrderServices>()),
+  );
+
+  getIt.registerLazySingleton<CheckoutRemoteDataSource>(
+    () => FirebaseCheckoutRemoteDataSource(
+      api: getIt<Api>(),
+    ),
+  );
+  getIt.registerLazySingleton<CheckoutRepository>(
+    () => CheckoutRepositoryImpl(
+      remoteDataSource: getIt<CheckoutRemoteDataSource>(),
+    ),
+  );
+  getIt.registerFactory<CheckoutController>(
+    () => CheckoutController(
+      repository: getIt<CheckoutRepository>(),
+    ),
   );
 }
