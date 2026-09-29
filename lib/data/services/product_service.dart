@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:shop_application/core/network/api.dart';
+import 'package:shop_application/core/firebase/firebase_rest_client.dart';
+import 'package:shop_application/core/network/error_handler.dart';
 import 'package:shop_application/provider/product.dart';
-
-import '../../core/network/error_handler.dart';
 
 abstract class ProductService {
   Future<Map<String, dynamic>> fetchProducts({
@@ -30,10 +29,10 @@ abstract class ProductService {
 }
 
 class ProductServiceImpl extends ProductService {
-  final Api api;
+  final FirebaseRestClient database;
 
   ProductServiceImpl({
-    required this.api,
+    required this.database,
   });
 
   @override
@@ -41,14 +40,13 @@ class ProductServiceImpl extends ProductService {
     Product product,
     String? token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/products.json?auth=$token';
-
     try {
-      final response = await api.post(
-        url: url,
+      final response = await database.post(
+        path: 'products',
+        authToken: token,
         data: product.toJson(),
       );
+      _ensureSuccess(response.statusCode, 'Could not add product.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -60,11 +58,12 @@ class ProductServiceImpl extends ProductService {
     String productId,
     String? token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/products/$productId.json?auth=$token';
-
     try {
-      await api.delete(url: url);
+      final response = await database.delete(
+        path: 'products/$productId',
+        authToken: token,
+      );
+      _ensureSuccess(response.statusCode, 'Could not delete product.');
     } catch (e) {
       throw ExceptionHandler.handle(e);
     }
@@ -76,23 +75,34 @@ class ProductServiceImpl extends ProductService {
     String? userId,
     String? token,
   }) async {
-    final filterString = filterByUser == true
-        ? '&orderBy="creatorId"&equalTo="$userId"'
-        : '';
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/products.json?auth=$token$filterString';
+    final query = filterByUser == true
+        ? <String, dynamic>{
+            'orderBy': '"creatorId"',
+            'equalTo': '"$userId"',
+          }
+        : null;
 
     try {
-      final response = await api.get(url: url);
+      final response = await database.get(
+        path: 'products',
+        authToken: token,
+        query: query,
+      );
+      _ensureSuccess(response.statusCode, 'Could not load products.');
+
       final products = _decodeMap(response.body);
 
       if (products.isEmpty || userId == null || token == null) {
         return products;
       }
 
-      final favoriteResponse = await api.get(
-        url:
-            'https://shopapp-29118-default-rtdb.firebaseio.com/userfavorite/$userId.json?auth=$token',
+      final favoriteResponse = await database.get(
+        path: 'userfavorite/$userId',
+        authToken: token,
+      );
+      _ensureSuccess(
+        favoriteResponse.statusCode,
+        'Could not load favorites.',
       );
       final favorites = _decodeMap(favoriteResponse.body);
 
@@ -114,16 +124,18 @@ class ProductServiceImpl extends ProductService {
     Product product,
     String? token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/products/' +
-            (product.productId ?? product.id ?? '') +
-            '.json?auth=$token';
+    final productId = product.productId ?? product.id ?? '';
+    if (productId.isEmpty) {
+      throw ExceptionHandler.handle('Product id is missing.');
+    }
 
     try {
-      final response = await api.patch(
-        url: url,
+      final response = await database.patch(
+        path: 'products/$productId',
+        authToken: token,
         data: product.toJson(),
       );
+      _ensureSuccess(response.statusCode, 'Could not update product.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -135,11 +147,12 @@ class ProductServiceImpl extends ProductService {
     String productId,
     String? token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/products/$productId.json?auth=$token';
-
     try {
-      final response = await api.get(url: url);
+      final response = await database.get(
+        path: 'products/$productId',
+        authToken: token,
+      );
+      _ensureSuccess(response.statusCode, 'Could not load product.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -153,13 +166,15 @@ class ProductServiceImpl extends ProductService {
     required String userId,
     required bool? isFavorite,
   }) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/userfavorite/$userId/$productId.json?auth=$token';
-
     try {
-      await api.put(
-        url: url,
+      final response = await database.put(
+        path: 'userfavorite/$userId/$productId',
+        authToken: token,
         data: isFavorite ?? false,
+      );
+      _ensureSuccess(
+        response.statusCode,
+        'Could not update favorite status.',
       );
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -172,5 +187,11 @@ class ProductServiceImpl extends ProductService {
       return <String, dynamic>{};
     }
     return decoded as Map<String, dynamic>;
+  }
+
+  void _ensureSuccess(int statusCode, String message) {
+    if (statusCode < 200 || statusCode >= 300) {
+      throw Exception('$message Status $statusCode.');
+    }
   }
 }
