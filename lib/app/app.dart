@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/order_provider/order_provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
-import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
+import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
+import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/screens/login_screen.dart';
@@ -45,10 +45,16 @@ class MyShopApp extends StatelessWidget {
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
-          create: (_) => OrderProvider(
-            orderRepo: getIt<OrderRepo>(),
+        ChangeNotifierProxyProvider<AuthProvider, OrderController>(
+          create: (_) => OrderController(
+            repository: getIt<OrderRepository>(),
           ),
+          update: (_, auth, __) => OrderController(
+            repository: getIt<OrderRepository>(),
+            token: auth.token,
+            userId: auth.userId,
+          ),
+        ),
           update: (_, auth, __) => OrderProvider(
             orderRepo: getIt<OrderRepo>(),
             token: auth.token,
