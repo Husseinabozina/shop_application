@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
-import 'package:shop_application/widgets/app_drawer.dart';
 import 'package:shop_application/widgets/orderItem.dart';
+import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
 enum _OrderFilter {
   all,
@@ -34,9 +34,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Your orders'),
+      ),
+      bottomNavigationBar: const StoreBottomNavigation(
+        selectedIndex: 3,
       ),
       body: FutureBuilder<void>(
         future: _ordersFuture,
