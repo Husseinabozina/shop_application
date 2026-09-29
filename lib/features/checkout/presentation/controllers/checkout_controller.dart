@@ -72,10 +72,13 @@ class CheckoutController with ChangeNotifier {
 
     try {
       _paymentMethods = await repository.getPaymentMethods();
-      _selectedPaymentMethod = _paymentMethods.cast<PaymentMethodOption?>().firstWhere(
-            (method) => method?.isEnabled == true,
-            orElse: () => null,
-          );
+      _selectedPaymentMethod = null;
+      for (final method in _paymentMethods) {
+        if (method.isEnabled) {
+          _selectedPaymentMethod = method;
+          break;
+        }
+      }
     } catch (error) {
       _errorMessage = _cleanError(error);
     }
