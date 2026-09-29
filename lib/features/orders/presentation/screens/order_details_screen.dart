@@ -228,7 +228,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       }
     }
 
-    final focusedOrder = provider.order;
+    final focusedOrder = provider.focusedOrder;
     if (focusedOrder?.id != null && focusedOrder?.id == widget.order.id) {
       return focusedOrder!;
     }
