@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
-
-import '../provider/product.dart';
-import 'product_item.dart';
+import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
+import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/widgets/product_item.dart';
 
 class ProductsGrid extends StatelessWidget {
   final bool favoritesOnly;
   final String query;
+  final String? category;
+  final ProductSortOption sort;
 
   const ProductsGrid({
     super.key,
     this.favoritesOnly = false,
     this.query = '',
+    this.category,
+    this.sort = ProductSortOption.featured,
   });
 
   @override
@@ -23,16 +27,29 @@ class ProductsGrid extends StatelessWidget {
         : productsProvider.products;
 
     final normalizedQuery = query.trim().toLowerCase();
+    final selectedCategory = category?.trim().toLowerCase();
+
     final products = source.where((product) {
+      if (selectedCategory != null &&
+          selectedCategory.isNotEmpty &&
+          product.category.trim().toLowerCase() != selectedCategory) {
+        return false;
+      }
+
       if (normalizedQuery.isEmpty) {
         return true;
       }
 
       final title = product.title?.toLowerCase() ?? '';
       final description = product.description?.toLowerCase() ?? '';
+      final productCategory = product.category.toLowerCase();
+
       return title.contains(normalizedQuery) ||
-          description.contains(normalizedQuery);
+          description.contains(normalizedQuery) ||
+          productCategory.contains(normalizedQuery);
     }).toList();
+
+    _sortProducts(products);
 
     if (products.isEmpty) {
       return Padding(
@@ -49,8 +66,8 @@ class ProductsGrid extends StatelessWidget {
             const SizedBox(height: 14),
             Text(
               favoritesOnly && normalizedQuery.isEmpty
-                  ? 'No saved products yet'
-                  : 'No products match your search',
+                  ? 'No saved products here'
+                  : 'No products found',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -58,8 +75,8 @@ class ProductsGrid extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               favoritesOnly && normalizedQuery.isEmpty
-                  ? 'Tap the heart on a product to keep it here.'
-                  : 'Try a different product name or keyword.',
+                  ? 'Save products or try another category.'
+                  : 'Try another search, category, or sort option.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -85,7 +102,7 @@ class ProductsGrid extends StatelessWidget {
           padding: EdgeInsets.zero,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: 0.66,
+            childAspectRatio: 0.64,
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
           ),
@@ -99,5 +116,29 @@ class ProductsGrid extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _sortProducts(List<Product> products) {
+    switch (sort) {
+      case ProductSortOption.featured:
+        return;
+      case ProductSortOption.priceLowToHigh:
+        products.sort(
+          (a, b) => (a.price ?? 0).compareTo(b.price ?? 0),
+        );
+        return;
+      case ProductSortOption.priceHighToLow:
+        products.sort(
+          (a, b) => (b.price ?? 0).compareTo(a.price ?? 0),
+        );
+        return;
+      case ProductSortOption.nameAZ:
+        products.sort(
+          (a, b) => (a.title ?? '')
+              .toLowerCase()
+              .compareTo((b.title ?? '').toLowerCase()),
+        );
+        return;
+    }
   }
 }
