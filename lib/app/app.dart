@@ -55,12 +55,6 @@ class MyShopApp extends StatelessWidget {
             userId: auth.userId,
           ),
         ),
-          update: (_, auth, __) => OrderProvider(
-            orderRepo: getIt<OrderRepo>(),
-            token: auth.token,
-            userId: auth.userId,
-          ),
-        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
