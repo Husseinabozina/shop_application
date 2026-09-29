@@ -10,18 +10,18 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Search and per-user favorites
 - Cart with quantity controls
 - Full checkout flow
-- Delivery address collection
+- Saved delivery address book with default address
 - Standard / Express shipping with delivery estimates
 - Free-shipping threshold
 - Promo codes
 - Payment-method architecture
 - Cash on Delivery
 - Gateway-ready card and wallet options
-- Per-user order history
+- Per-user order history and visual delivery tracking
 - Firebase Realtime Database
 - Feature-first checkout architecture
 - Repository and data-source boundaries
-- Focused checkout unit tests
+- Focused checkout, address, and order-domain tests
 
 ## Architecture
 
@@ -50,6 +50,7 @@ Read the full architecture notes in:
 
 - `docs/ARCHITECTURE.md`
 - `docs/COMMERCE_ROADMAP.md`
+- `docs/FIREBASE_SCHEMA.md`
 
 ## Checkout flow
 
@@ -76,17 +77,20 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - product details
 - cart
 - checkout
+- saved addresses + default address
 - shipping selection
 - delivery estimates
 - discounts / promo code flow
 - Cash on Delivery
 - order creation
 - order history
+- order status filters
+- order details + tracking timeline
 
 ### Planned next
 - real card payment gateway
-- saved address book
-- order status tracking timeline
+- backend/admin-driven order status updates
+- Firebase security-rule verification
 - categories / filters / sorting
 - product variants
 - ratings and reviews
