@@ -8,6 +8,8 @@ import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
+import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
@@ -96,12 +98,33 @@ class MyShopApp extends StatelessWidget {
           const UserProductScreen(),
       EditProductScreen.routeName: (_) =>
           const EditProductScreen(),
+      AddressBookScreen.routeName: _buildAddressBookRoute,
       CheckoutScreen.routeName: _buildCheckoutRoute,
     };
   }
 
+  Widget _buildAddressBookRoute(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    final controller = getIt<AddressBookController>();
+    final token = auth.token;
+    final userId = auth.userId;
+
+    if (token != null && userId != null) {
+      controller.load(
+        userId: userId,
+        accessToken: token,
+      );
+    }
+
+    return ChangeNotifierProvider<AddressBookController>.value(
+      value: controller,
+      child: const AddressBookScreen(),
+    );
+  }
+
   Widget _buildCheckoutRoute(BuildContext context) {
     final cart = context.read<CartProvider>();
+    final auth = context.read<AuthProvider>();
 
     final items = cart.Items.entries.map((entry) {
       final item = entry.value;
@@ -113,9 +136,27 @@ class MyShopApp extends StatelessWidget {
       );
     }).toList();
 
-    return ChangeNotifierProvider<CheckoutController>(
-      create: (_) => getIt<CheckoutController>()
-        ..initialize(items: items),
+    final addressController = getIt<AddressBookController>();
+    final token = auth.token;
+    final userId = auth.userId;
+
+    if (token != null && userId != null) {
+      addressController.load(
+        userId: userId,
+        accessToken: token,
+      );
+    }
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CheckoutController>(
+          create: (_) => getIt<CheckoutController>()
+            ..initialize(items: items),
+        ),
+        ChangeNotifierProvider<AddressBookController>.value(
+          value: addressController,
+        ),
+      ],
       child: const CheckoutScreen(),
     );
   }
