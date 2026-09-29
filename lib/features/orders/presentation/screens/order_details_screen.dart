@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/order_provider/order_provider.dart';
+import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/features/orders/domain/entities/order.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
 
@@ -22,7 +22,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<OrderProvider>();
+    final provider = context.watch<OrderController>();
     final order = _currentOrder(provider);
     final theme = Theme.of(context);
 
@@ -221,7 +221,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Order _currentOrder(OrderProvider provider) {
+  Order _currentOrder(OrderController provider) {
     for (final item in provider.orders) {
       if (item.id != null && item.id == widget.order.id) {
         return item;
@@ -249,7 +249,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       _isRefreshing = true;
     });
 
-    final provider = context.read<OrderProvider>();
+    final provider = context.read<OrderController>();
     final updated = await provider.fetchOrder(orderId);
 
     if (!mounted) {
