@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/order_provider/order_provider.dart';
+import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
 import 'package:shop_application/widgets/app_drawer.dart';
 import 'package:shop_application/widgets/orderItem.dart';
@@ -28,7 +28,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
-    _ordersFuture = context.read<OrderProvider>().fetchOrders();
+    _ordersFuture = context.read<OrderController>().fetchOrders();
   }
 
   @override
@@ -47,7 +47,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             );
           }
 
-          return Consumer<OrderProvider>(
+          return Consumer<OrderController>(
             builder: (context, orderProvider, _) {
               if (orderProvider.fetchOrdersErrorMessage != null) {
                 return _OrdersErrorState(
