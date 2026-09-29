@@ -5,7 +5,7 @@ import 'package:shop_application/provider/products.dart';
 import 'package:shop_application/presentation/screens/cart_screen.dart';
 import 'package:shop_application/presentation/widgets/badge.dart';
 
-import '../controllers/cart_provider/cart_provider.dart';
+import '../providers/cart_provider.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/product_grid.dart';
 

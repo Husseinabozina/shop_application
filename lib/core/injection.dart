@@ -1,72 +1,57 @@
 import 'package:get_it/get_it.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/order_provider/order_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/core/network/api.dart';
+import 'package:shop_application/data/repos/auth_repo.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/data/services/auth_services.dart';
 import 'package:shop_application/data/services/order_services.dart';
 import 'package:shop_application/data/services/product_service.dart';
+import 'package:shop_application/presentation/providers/auth_provider.dart';
+import 'package:shop_application/presentation/providers/cart_provider.dart';
+import 'package:shop_application/presentation/providers/order_provider.dart';
+import 'package:shop_application/presentation/providers/products_provider.dart';
 import 'package:shop_application/provider/product.dart';
 
 GetIt getIt = GetIt.instance;
 
 void setup() {
+  if (getIt.isRegistered<Api>()) return;
+
   getIt.registerLazySingleton<Api>(() => ApiImpl());
 
-  getIt.registerLazySingleton<ProductService>(
-    () => ProductServiceImpl(
-      api: getIt<Api>(),
-    ),
+  getIt.registerLazySingleton<AuthService>(
+    () => AuthServiceImpl(getIt<Api>()),
   );
-  getIt.registerLazySingleton<ProductsRepo>(
-    () => ProductsRepoImpl(
-      getIt.get<ProductService>(),
-    ),
+  getIt.registerLazySingleton<AuthRepo>(
+    () => AuthRepoImpl(authService: getIt<AuthService>()),
   );
-  getIt.registerLazySingleton<ProductsProvider>(
-    () => ProductsProvider(
-      productsRepo: getIt.get<ProductsRepo>(),
-    ),
+  getIt.registerLazySingleton<AuthProvider>(
+    () => AuthProvider(authRepo: getIt<AuthRepo>()),
   );
 
   getIt.registerLazySingleton<ProductService>(
-    () => ProductServiceImpl(
-      api: getIt.get<Api>(),
-    ),
+    () => ProductServiceImpl(api: getIt<Api>()),
   );
-
   getIt.registerLazySingleton<ProductsRepo>(
-    () => ProductsRepoImpl(
-      getIt.get<ProductService>(),
-    ),
+    () => ProductsRepoImpl(getIt<ProductService>()),
   );
-
   getIt.registerLazySingleton<ProductsProvider>(
-    () => ProductsProvider(
-      productsRepo: getIt.get<ProductsRepo>(),
-    ),
+    () => ProductsProvider(productsRepo: getIt<ProductsRepo>()),
   );
 
   getIt.registerLazySingleton<OrderServices>(
-    () => OrderServicesImpl(
-      getIt.get<Api>(),
-    ),
+    () => OrderServicesImpl(getIt<Api>()),
   );
-  getIt.registerLazySingleton<OrderRepo>(() => OrderRepoImpl(
-        orderServices: getIt.get<OrderServices>(),
-      ));
-  getIt.registerLazySingleton<OrderProvider>(() => OrderProvider(
-        orderRepo: getIt.get<OrderRepo>(),
-      ));
+  getIt.registerLazySingleton<OrderRepo>(
+    () => OrderRepoImpl(orderServices: getIt<OrderServices>()),
+  );
+  getIt.registerLazySingleton<OrderProvider>(
+    () => OrderProvider(orderRepo: getIt<OrderRepo>()),
+  );
 
-  getIt.registerLazySingleton<CartProvider>(
-    () => CartProvider(),
-  );
+  getIt.registerLazySingleton<CartProvider>(() => CartProvider());
 
   getIt.registerFactory<Product>(
-    () => Product(
-      productsRepo: getIt<ProductsRepo>(),
-    ),
+    () => Product(productsRepo: getIt<ProductsRepo>()),
   );
 }

@@ -4,7 +4,7 @@ import 'package:shop_application/presentation/providers/order_provider.dart';
 import 'package:shop_application/provider/order.dart';
 import 'package:shop_application/presentation/widgets/cart_item.dart';
 
-import '../controllers/cart_provider/cart_provider.dart' show CartProvider;
+import '../providers/cart_provider.dart' show CartProvider;
 import '../widgets/app_drawer.dart';
 
 class CartScreen extends StatelessWidget {

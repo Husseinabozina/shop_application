@@ -5,8 +5,8 @@ import 'package:shop_application/presentation/providers/products_provider.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/presentation/screens/product_detailed_screen.dart';
 
-import '../provider/auth.dart';
-import '../controllers/cart_provider/cart_provider.dart';
+import '../../provider/auth.dart';
+import '../providers/cart_provider.dart';
 
 class ProductItem extends StatelessWidget {
   @override

@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/presentation/providers/auth_provider.dart';
+import 'package:shop_application/presentation/providers/products_provider.dart';
+import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/helpers/custom_route.dart';
-import 'package:shop_application/provider/auth.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/provider/order.dart';
-import 'package:shop_application/provider/products.dart';
-import 'package:shop_application/screens/cart_screen.dart';
-import 'package:shop_application/screens/edit_products_screen.dart';
-import 'package:shop_application/screens/login_screen.dart';
-import 'package:shop_application/screens/orders_screen.dart';
-import 'package:shop_application/screens/product_detailed_screen.dart';
-import 'package:shop_application/screens/splashScreen.dart';
-import 'package:shop_application/screens/user_product_screen.dart';
+import 'package:shop_application/presentation/providers/cart_provider.dart';
+import 'package:shop_application/presentation/providers/order_provider.dart';
+import 'package:shop_application/presentation/screens/cart_screen.dart';
+import 'package:shop_application/presentation/screens/edit_products_screen.dart';
+import 'package:shop_application/presentation/screens/login_screen.dart';
+import 'package:shop_application/presentation/screens/orders_screen.dart';
+import 'package:shop_application/presentation/screens/product_detailed_screen.dart';
+import 'package:shop_application/presentation/screens/splashScreen.dart';
+import 'package:shop_application/presentation/screens/user_product_screen.dart';
 
-import 'screens/product_overview_screen.dart';
+import 'presentation/screens/product_overview_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await CacheHelper.init();
+  setup();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -31,15 +35,19 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
           create: (context) => getIt<ProductsProvider>(),
-          update: (ctx, auth, previousproducts) => getIt<ProductsProvider>(),
+          update: (ctx, auth, previousproducts) {
+            previousproducts?.update(auth.token, auth.userId);
+            return previousproducts!;
+          },
         ),
-        ChangeNotifierProvider.value(value: CartProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, Orders>(
-            create: (context) => Orders("", "", []),
-            update: (ctx, auth, previousorders) => Orders(
-                auth.token,
-                auth.userId,
-                previousorders == null ? [] : previousorders.orders))
+        ChangeNotifierProvider.value(value: getIt<CartProvider>()),
+        ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
+          create: (context) => getIt<OrderProvider>(),
+          update: (ctx, auth, previousorders) {
+            previousorders?.update(auth.token, auth.userId);
+            return previousorders!;
+          },
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: ((context, auth, _) => MaterialApp(

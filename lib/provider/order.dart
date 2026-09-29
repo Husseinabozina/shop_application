@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:shop_application/data/models/cart/cart_model.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/presentation/providers/cart_provider.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/foundation.dart';

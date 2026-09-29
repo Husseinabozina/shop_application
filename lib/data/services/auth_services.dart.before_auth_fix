@@ -30,18 +30,9 @@ class AuthServiceImpl implements AuthService {
         throw ExceptionHandler.handle(responseData['error']);
       }
 
-      final expiresInSeconds =
-          int.tryParse(responseData['expiresIn']?.toString() ?? '') ?? 3600;
-      final expiryDate =
-          DateTime.now().add(Duration(seconds: expiresInSeconds));
-
-      await CacheHelper.saveUserData(
-        responseData['idToken'],
-        responseData['localId'],
-        expiryDate,
-      );
-
-      return responseData;
+      // On successful authentication, save user data using CacheHelper
+      await CacheHelper.saveUserData(responseData['idToken'],
+          responseData['localId'], DateTime.parse(responseData['expiresIn']));
     } catch (e) {
       throw ExceptionHandler.handle(e);
     }

@@ -7,7 +7,7 @@ import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/presentation/screens/edit_products_screen.dart';
 
-import '../provider/products.dart';
+import '../../provider/products.dart';
 
 class UserProductItem extends StatelessWidget {
   final String? imageurl;
