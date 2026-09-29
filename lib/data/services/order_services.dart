@@ -1,13 +1,14 @@
 import 'dart:convert';
 
-import 'package:shop_application/core/network/api.dart';
+import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/error_handler.dart';
-import 'package:shop_application/provider/order.dart';
+import 'package:shop_application/features/orders/domain/entities/order.dart';
 
 abstract class OrderServices {
   Future<Map<String, dynamic>> fetchSingleOrder(
+    String userId,
     String orderId,
-    String? token,
+    String token,
   );
 
   Future<Map<String, dynamic>> fetchOrders(
@@ -17,26 +18,28 @@ abstract class OrderServices {
 
   Future<Map<String, dynamic>> addOrder({
     required Order order,
-    String? userId,
-    String? token,
+    required String userId,
+    required String token,
   });
 }
 
 class OrderServicesImpl extends OrderServices {
-  final Api api;
+  final FirebaseRestClient database;
 
-  OrderServicesImpl(this.api);
+  OrderServicesImpl(this.database);
 
   @override
   Future<Map<String, dynamic>> fetchSingleOrder(
+    String userId,
     String orderId,
-    String? token,
+    String token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/order/$orderId.json?auth=$token';
-
     try {
-      final response = await api.get(url: url);
+      final response = await database.get(
+        path: 'order/$userId/$orderId',
+        authToken: token,
+      );
+      _ensureSuccess(response.statusCode, 'Could not load order.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -46,14 +49,16 @@ class OrderServicesImpl extends OrderServices {
   @override
   Future<Map<String, dynamic>> addOrder({
     required Order order,
-    String? userId,
-    String? token,
+    required String userId,
+    required String token,
   }) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/order/$userId.json?auth=$token';
-
     try {
-      final response = await api.post(url: url, data: order.toJson());
+      final response = await database.post(
+        path: 'order/$userId',
+        authToken: token,
+        data: order.toJson(),
+      );
+      _ensureSuccess(response.statusCode, 'Could not create order.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -65,11 +70,12 @@ class OrderServicesImpl extends OrderServices {
     String userId,
     String token,
   ) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/order/$userId.json?auth=$token';
-
     try {
-      final response = await api.get(url: url);
+      final response = await database.get(
+        path: 'order/$userId',
+        authToken: token,
+      );
+      _ensureSuccess(response.statusCode, 'Could not load orders.');
       return _decodeMap(response.body);
     } catch (e) {
       throw ExceptionHandler.handle(e);
@@ -82,5 +88,11 @@ class OrderServicesImpl extends OrderServices {
       return <String, dynamic>{};
     }
     return decoded as Map<String, dynamic>;
+  }
+
+  void _ensureSuccess(int statusCode, String message) {
+    if (statusCode < 200 || statusCode >= 300) {
+      throw Exception('$message Status $statusCode.');
+    }
   }
 }
