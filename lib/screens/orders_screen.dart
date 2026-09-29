@@ -241,7 +241,9 @@ class _OrdersErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton.tonal(
-              onPressed: onRetry,
+              onPressed: () async {
+                await onRetry();
+              },
               child: const Text('Try again'),
             ),
           ],
