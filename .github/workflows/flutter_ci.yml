@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Validate Firebase configuration JSON
+        run: |
+          python -m json.tool firebase.json > /dev/null
+          python -m json.tool database.rules.json > /dev/null
+
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
