@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:shop_application/core/network/api.dart';
+import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 
 abstract class CheckoutRemoteDataSource {
@@ -12,10 +12,10 @@ abstract class CheckoutRemoteDataSource {
 }
 
 class FirebaseCheckoutRemoteDataSource implements CheckoutRemoteDataSource {
-  final Api api;
+  final FirebaseRestClient database;
 
   FirebaseCheckoutRemoteDataSource({
-    required this.api,
+    required this.database,
   });
 
   @override
@@ -24,20 +24,15 @@ class FirebaseCheckoutRemoteDataSource implements CheckoutRemoteDataSource {
     required String userId,
     required String accessToken,
   }) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/order/' +
-            userId +
-            '.json?auth=' +
-            accessToken;
-
-    final response = await api.post(
-      url: url,
+    final response = await database.post(
+      path: 'order/$userId',
+      authToken: accessToken,
       data: order.toJson(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(
-        'Checkout failed with status ' + response.statusCode.toString(),
+        'Checkout failed with status ${response.statusCode}.',
       );
     }
 
