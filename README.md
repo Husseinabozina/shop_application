@@ -1,22 +1,97 @@
 # MyShop
 
-A compact Flutter e-commerce portfolio app modernized from an older shop project into a cleaner, app-like storefront without adding a custom backend.
+A compact Flutter e-commerce portfolio application built to look and behave like a small real storefront while keeping the codebase practical and reviewable.
 
-## What the app includes
+## Highlights
 
-- Email sign in and account creation with Firebase Authentication
-- Persistent authenticated sessions
-- Product catalog backed by Firebase Realtime Database
-- Responsive product grid
-- Product search
-- Per-user saved/favorite products
-- Product details
-- Shopping cart with quantity controls
-- Order placement and per-user order history
-- Product management screens from the original project
-- Material 3 design
-- System light/dark theme support
-- Pull-to-refresh and useful empty/error states
+- Material 3 storefront with system light/dark mode
+- Firebase Authentication with persistent sessions
+- Product catalog and product details
+- Search and per-user favorites
+- Cart with quantity controls
+- Full checkout flow
+- Delivery address collection
+- Standard / Express shipping with delivery estimates
+- Free-shipping threshold
+- Promo codes
+- Payment-method architecture
+- Cash on Delivery
+- Gateway-ready card and wallet options
+- Per-user order history
+- Firebase Realtime Database
+- Feature-first checkout architecture
+- Repository and data-source boundaries
+- Focused checkout unit tests
+
+## Architecture
+
+The app is being migrated incrementally from its original learning-project structure into a feature-first layered architecture.
+
+New commerce flows follow this direction:
+
+```text
+Presentation
+    |
+    v
+Domain entities + repository contracts
+    ^
+    |
+Data implementations
+    |
+    +--> Firebase today
+    +--> REST / custom backend tomorrow
+    +--> payment gateway adapter
+    +--> shipping provider adapter
+```
+
+Firebase is an implementation detail, not the UI architecture.
+
+Read the full architecture notes in:
+
+- `docs/ARCHITECTURE.md`
+- `docs/COMMERCE_ROADMAP.md`
+
+## Checkout flow
+
+1. Review cart
+2. Continue to checkout
+3. Add or edit delivery address
+4. Select Standard or Express delivery
+5. Select an available payment method
+6. Apply an optional promo code
+7. Review subtotal, shipping, discount, and final total
+8. Place the order
+9. Store the order under the authenticated customer
+10. Review it later from Orders
+
+Card and wallet methods are intentionally not faked. They remain disabled until a real secure payment gateway is connected.
+
+## Current commerce scope
+
+### Implemented
+- authentication
+- storefront
+- search
+- favorites
+- product details
+- cart
+- checkout
+- shipping selection
+- delivery estimates
+- discounts / promo code flow
+- Cash on Delivery
+- order creation
+- order history
+
+### Planned next
+- real card payment gateway
+- saved address book
+- order status tracking timeline
+- categories / filters / sorting
+- product variants
+- ratings and reviews
+- recently viewed products
+- push notifications for order updates
 
 ## Tech stack
 
@@ -29,33 +104,28 @@ A compact Flutter e-commerce portfolio app modernized from an older shop project
 - HTTP
 - Freezed API result model
 
-## Project direction
-
-The goal of this repository is intentionally practical: make the existing shop project feel like a small modern application while keeping the scope suitable for a portfolio project.
-
-It does **not** introduce a new custom backend, a large domain layer, or unnecessary infrastructure. The existing Firebase services remain the backend.
-
-## Main flow
-
-1. Sign in or create an account.
-2. Browse or search products.
-3. Save products as favorites.
-4. Open a product and add it to the cart.
-5. Adjust quantities in the cart.
-6. Place an order.
-7. Review previous orders from the navigation drawer.
-
 ## Run locally
 
 Use a recent Flutter SDK compatible with Dart 3.5+.
 
 ```bash
 flutter pub get
+flutter analyze
+flutter test
 flutter run
 ```
 
-The project uses the Firebase configuration already present in the repository. For production use, Firebase credentials, database rules, environment configuration, and release settings should be reviewed separately.
+## Design principle
 
-## Scope
+The project is intentionally not an enterprise commerce platform.
 
-This is a deliberately small storefront rather than a full commerce platform. Features such as payment gateways, shipping integrations, inventory systems, and a separate production backend are outside the current scope.
+The goal is to demonstrate:
+- strong UI quality
+- realistic commerce flows
+- maintainable architecture
+- backend replaceability
+- clear dependency boundaries
+- honest payment behavior
+- enough testability to support future growth
+
+without adding infrastructure only for the sake of complexity.
