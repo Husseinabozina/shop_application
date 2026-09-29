@@ -1,1 +1,4 @@
-  const String apiKey = 'AIzaSyBWyn5fCqngGVU03wvRoBVFpyAd_CxfAL0'; // API Key
+import 'package:shop_application/core/config/app_environment.dart';
+
+@Deprecated('Use AppEnvironment.firebaseWebApiKey instead.')
+const String apiKey = AppEnvironment.firebaseWebApiKey;
