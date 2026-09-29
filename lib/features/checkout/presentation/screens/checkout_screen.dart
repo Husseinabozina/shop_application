@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/address_book/domain/entities/saved_address.dart';
+import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
+import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 
@@ -31,8 +34,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(
         title: const Text('Checkout'),
       ),
-      body: Consumer<CheckoutController>(
-        builder: (context, checkout, _) {
+      body: Consumer2<CheckoutController, AddressBookController>(
+        builder: (context, checkout, addressBook, _) {
+          final defaultAddress = addressBook.defaultAddress;
+          if (checkout.address == null && defaultAddress != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && checkout.address == null) {
+                checkout.setAddress(defaultAddress.toCheckoutAddress());
+              }
+            });
+          }
+
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 130),
             children: [
@@ -40,14 +52,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 title: 'Delivery address',
                 icon: Icons.location_on_outlined,
                 trailing: TextButton(
-                  onPressed: () => _editAddress(context, checkout),
+                  onPressed: () => _chooseDeliveryAddress(context, checkout),
                   child: Text(
                     checkout.address == null ? 'Add' : 'Change',
                   ),
                 ),
                 child: checkout.address == null
                     ? const _EmptySection(
-                        text: 'Add an address to see delivery options.',
+                        text: 'Choose a saved address or add a new delivery address.',
                       )
                     : _AddressPreview(address: checkout.address!),
               ),
@@ -193,21 +205,138 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Future<void> _editAddress(
+  Future<void> _chooseDeliveryAddress(
     BuildContext context,
     CheckoutController checkout,
   ) async {
-    final address = await showModalBottomSheet<CheckoutAddress>(
+    final addressBook = context.read<AddressBookController>();
+
+    if (addressBook.addresses.isEmpty) {
+      await _addAndUseAddress(context, checkout);
+      return;
+    }
+
+    final choice = await showModalBottomSheet<_AddressChoice>(
+      context: context,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Choose delivery address',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: addressBook.addresses.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final address = addressBook.addresses[index];
+                      return Card(
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.of(sheetContext).pop(
+                              _AddressChoice(address: address),
+                            );
+                          },
+                          leading: Icon(
+                            address.isDefault
+                                ? Icons.home_rounded
+                                : Icons.location_on_outlined,
+                          ),
+                          title: Text(
+                            address.label,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          subtitle: Text(
+                            address.addressLine1 +
+                                ', ' +
+                                address.city +
+                                ', ' +
+                                address.country,
+                          ),
+                          trailing: address.isDefault
+                              ? const Icon(Icons.check_circle_rounded)
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.tonalIcon(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop(
+                      const _AddressChoice(addNew: true),
+                    );
+                  },
+                  icon: const Icon(Icons.add_location_alt_outlined),
+                  label: const Text('Add new address'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (choice == null || !mounted) {
+      return;
+    }
+
+    if (choice.addNew) {
+      await _addAndUseAddress(context, checkout);
+      return;
+    }
+
+    final selected = choice.address;
+    if (selected != null) {
+      await checkout.setAddress(selected.toCheckoutAddress());
+    }
+  }
+
+  Future<void> _addAndUseAddress(
+    BuildContext context,
+    CheckoutController checkout,
+  ) async {
+    final auth = context.read<AuthProvider>();
+    final token = auth.token;
+    final userId = auth.userId;
+
+    if (token == null || userId == null) {
+      return;
+    }
+
+    final address = await showModalBottomSheet<SavedAddress>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => _AddressForm(
-        initialAddress: checkout.address,
-      ),
+      builder: (_) => const AddressFormSheet(),
     );
 
-    if (address != null) {
-      await checkout.setAddress(address);
+    if (address == null || !mounted) {
+      return;
+    }
+
+    final saved = await context.read<AddressBookController>().save(
+          address: address,
+          userId: userId,
+          accessToken: token,
+        );
+
+    if (saved != null && mounted) {
+      await checkout.setAddress(saved.toCheckoutAddress());
     }
   }
 
@@ -611,172 +740,12 @@ class _SummaryRow extends StatelessWidget {
   }
 }
 
-class _AddressForm extends StatefulWidget {
-  final CheckoutAddress? initialAddress;
+class _AddressChoice {
+  final SavedAddress? address;
+  final bool addNew;
 
-  const _AddressForm({
-    this.initialAddress,
+  const _AddressChoice({
+    this.address,
+    this.addNew = false,
   });
-
-  @override
-  State<_AddressForm> createState() => _AddressFormState();
-}
-
-class _AddressFormState extends State<_AddressForm> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  late final TextEditingController _phoneController;
-  late final TextEditingController _line1Controller;
-  late final TextEditingController _line2Controller;
-  late final TextEditingController _cityController;
-  late final TextEditingController _countryController;
-  late final TextEditingController _postalCodeController;
-
-  @override
-  void initState() {
-    super.initState();
-    final address = widget.initialAddress;
-    _nameController = TextEditingController(text: address?.fullName ?? '');
-    _phoneController = TextEditingController(text: address?.phone ?? '');
-    _line1Controller = TextEditingController(text: address?.addressLine1 ?? '');
-    _line2Controller = TextEditingController(text: address?.addressLine2 ?? '');
-    _cityController = TextEditingController(text: address?.city ?? '');
-    _countryController =
-        TextEditingController(text: address?.country ?? 'Egypt');
-    _postalCodeController =
-        TextEditingController(text: address?.postalCode ?? '');
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _line1Controller.dispose();
-    _line2Controller.dispose();
-    _cityController.dispose();
-    _countryController.dispose();
-    _postalCodeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(18, 18, 18, 18 + bottomInset),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Delivery address',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
-              ),
-              const SizedBox(height: 18),
-              _field(
-                controller: _nameController,
-                label: 'Full name',
-                icon: Icons.person_outline_rounded,
-              ),
-              const SizedBox(height: 12),
-              _field(
-                controller: _phoneController,
-                label: 'Phone number',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              _field(
-                controller: _line1Controller,
-                label: 'Address line 1',
-                icon: Icons.home_outlined,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _line2Controller,
-                decoration: const InputDecoration(
-                  labelText: 'Address line 2 (optional)',
-                  prefixIcon: Icon(Icons.apartment_outlined),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _field(
-                controller: _cityController,
-                label: 'City',
-                icon: Icons.location_city_outlined,
-              ),
-              const SizedBox(height: 12),
-              _field(
-                controller: _countryController,
-                label: 'Country',
-                icon: Icons.public_outlined,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _postalCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Postal code (optional)',
-                  prefixIcon: Icon(Icons.local_post_office_outlined),
-                ),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _save,
-                child: const Text('Use this address'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  TextFormField _field({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType? keyboardType,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
-      validator: (value) {
-        if ((value ?? '').trim().isEmpty) {
-          return label + ' is required.';
-        }
-        return null;
-      },
-    );
-  }
-
-  void _save() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    Navigator.of(context).pop(
-      CheckoutAddress(
-        fullName: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
-        addressLine1: _line1Controller.text.trim(),
-        addressLine2: _line2Controller.text.trim().isEmpty
-            ? null
-            : _line2Controller.text.trim(),
-        city: _cityController.text.trim(),
-        country: _countryController.text.trim(),
-        postalCode: _postalCodeController.text.trim().isEmpty
-            ? null
-            : _postalCodeController.text.trim(),
-      ),
-    );
-  }
 }
