@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/order_provider/order_provider.dart';
+import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/widgets/cart_item.dart';
 
 class CartScreen extends StatelessWidget {
@@ -38,29 +38,17 @@ class CartScreen extends StatelessWidget {
             ),
       bottomNavigationBar: entries.isEmpty
           ? null
-          : _CheckoutBar(
-              total: cart.totalPrice,
-              cart: cart,
-            ),
+          : _CheckoutBar(total: cart.totalPrice),
     );
   }
 }
 
-class _CheckoutBar extends StatefulWidget {
+class _CheckoutBar extends StatelessWidget {
   final double total;
-  final CartProvider cart;
 
   const _CheckoutBar({
     required this.total,
-    required this.cart,
   });
-
-  @override
-  State<_CheckoutBar> createState() => _CheckoutBarState();
-}
-
-class _CheckoutBarState extends State<_CheckoutBar> {
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -85,14 +73,14 @@ class _CheckoutBarState extends State<_CheckoutBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Total',
+                    'Subtotal',
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '\$' + _formatPrice(widget.total),
+                    '\$' + _formatPrice(total),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
@@ -102,54 +90,15 @@ class _CheckoutBarState extends State<_CheckoutBar> {
             ),
             const SizedBox(width: 16),
             FilledButton.icon(
-              onPressed: _isLoading ? null : _placeOrder,
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.lock_outline_rounded),
-              label: Text(_isLoading ? 'Placing...' : 'Place order'),
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  CheckoutScreen.routeName,
+                );
+              },
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text('Checkout'),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _placeOrder() async {
-    setState(() => _isLoading = true);
-
-    final orderProvider = context.read<OrderProvider>();
-    final success = await orderProvider.addOrder(
-      products: widget.cart.Items.values.toList(),
-      amount: widget.cart.totalPrice,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() => _isLoading = false);
-
-    if (success) {
-      widget.cart.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order placed successfully'),
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          orderProvider.addOrderErrorMessage ??
-              'Could not place your order. Please try again.',
         ),
       ),
     );
