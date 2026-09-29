@@ -1,77 +1,196 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
-import '../provider/auth.dart';
-import '../controllers/cart_provider/cart_provider.dart';
-
 class ProductItem extends StatelessWidget {
+  const ProductItem({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false);
-    final product = Provider.of<Product>(context, listen: false);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: GestureDetector(
+    final theme = Theme.of(context);
+    final product = context.watch<Product>();
+    final imageUrl = product.imageUrl?.trim() ?? '';
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: () {
           Navigator.of(context).pushNamed(
             ProductDetailedScreen.routename,
             arguments: product.id,
           );
         },
-        child: GridTile(
-          footer: GridTileBar(
-            backgroundColor: Colors.black54,
-            title: Text(
-              "${product.title}",
-              textAlign: TextAlign.center,
-            ),
-            leading: Consumer<Product>(
-              builder: (ctx, productProvider, _) => IconButton(
-                onPressed: (() {
-                  productProvider.toggleFavoriteStatus(
-                    product.id!,
-                    Provider.of<AuthProvider>(context, listen: false).token!,
-                    Provider.of<AuthProvider>(context, listen: false).userId!,
-                  );
-                }),
-                icon: Icon(
-                  product.isFavorite! ? Icons.favorite : Icons.favorite_border,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ),
-            trailing: IconButton(
-              onPressed: () {
-                cart.addItem(product.id!, product.price!, product.title!);
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    action: SnackBarAction(
-                      label: "undo",
-                      onPressed: () {
-                        cart.removeSingleItem(product.id!);
-                      },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Hero(
+                    tag: product.id ?? product.productId ?? product.title ?? '',
+                    child: imageUrl.isEmpty
+                        ? _ProductImageFallback(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _ProductImageFallback(
+                              color:
+                                  theme.colorScheme.surfaceContainerHighest,
+                            ),
+                          ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Material(
+                      color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        tooltip: product.isFavorite == true
+                            ? 'Remove from saved'
+                            : 'Save product',
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => _toggleFavorite(context, product),
+                        icon: Icon(
+                          product.isFavorite == true
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: product.isFavorite == true
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
                     ),
-                    content: const Text("you added a product to the cart!!")));
-              },
-              icon: const Icon(
-                Icons.shopping_cart,
-                color: Colors.redAccent,
+                  ),
+                ],
               ),
             ),
-          ),
-          child: Hero(
-            tag: product.id!,
-            child: FadeInImage(
-              placeholder:
-                  const AssetImage('assets/images/placeholderimage.png'),
-              image: NetworkImage(product.imageUrl!),
-              fit: BoxFit.cover,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 13, 10, 11),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.title ?? 'Untitled product',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '\$' + _formatPrice(product.price),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filledTonal(
+                    tooltip: 'Add to cart',
+                    onPressed: () => _addToCart(context, product),
+                    icon: const Icon(
+                      Icons.add_shopping_cart_rounded,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleFavorite(
+    BuildContext context,
+    Product product,
+  ) async {
+    final auth = context.read<AuthProvider>();
+    if (product.id == null ||
+        auth.token == null ||
+        auth.userId == null ||
+        product.productsRepo == null) {
+      return;
+    }
+
+    await product.toggleFavoriteStatus(
+      product.id!,
+      auth.token!,
+      auth.userId!,
+    );
+  }
+
+  void _addToCart(
+    BuildContext context,
+    Product product,
+  ) {
+    if (product.id == null ||
+        product.price == null ||
+        product.title == null) {
+      return;
+    }
+
+    context.read<CartProvider>().addItem(
+          product.id!,
+          product.price!,
+          product.title!,
+        );
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(product.title! + ' added to cart'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () {
+              context.read<CartProvider>().removeSingleItem(product.id!);
+            },
           ),
+        ),
+      );
+  }
+
+  String _formatPrice(num? price) {
+    final value = price?.toDouble() ?? 0;
+    return value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(2);
+  }
+}
+
+class _ProductImageFallback extends StatelessWidget {
+  final Color color;
+
+  const _ProductImageFallback({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color,
+      child: Center(
+        child: Icon(
+          Icons.inventory_2_outlined,
+          size: 42,
+          color: Theme.of(context).colorScheme.outline,
         ),
       ),
     );
