@@ -1,20 +1,33 @@
 import 'package:shop_application/core/network/api_result.dart';
 import 'package:shop_application/core/network/error_handler.dart';
-import 'package:shop_application/data/models/auth/register_response.dart';
 import 'package:shop_application/data/models/products/add_products_response_body.dart';
 import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/provider/product.dart';
 
 abstract class ProductsRepo {
-  Future<APIResult<List<Product>>> fetchProductsFromJson(
-      {bool? filterByUser, String? userId, String? token});
+  Future<APIResult<List<Product>>> fetchProductsFromJson({
+    bool? filterByUser,
+    String? userId,
+    String? token,
+  });
+
   Future<APIResult<void>> deleteProduct(String productId, String token);
+
   Future<APIResult<AddProductsResponseBody>> addProduct(
-      Product product, String? token);
-  Future<APIResult<Product>> updateProduct(Product product, String? token);
+    Product product,
+    String? token,
+  );
+
+  Future<APIResult<Product>> updateProduct(
+    Product product,
+    String? token,
+  );
 
   Future<APIResult<Product>> fetchSingleProduct(
-      String productId, String? token);
+    String productId,
+    String? token,
+  );
+
   Future<APIResult<void>> toggleFavoriteStatus({
     required String productId,
     required String token,
@@ -25,6 +38,7 @@ abstract class ProductsRepo {
 
 class ProductsRepoImpl extends ProductsRepo {
   final ProductService productService;
+
   ProductsRepoImpl(this.productService);
 
   @override
@@ -39,11 +53,13 @@ class ProductsRepoImpl extends ProductsRepo {
         userId: userId,
         token: token,
       );
+
       final products = data.entries.map((entry) {
         final productId = entry.key;
         final productData = entry.value as Map<String, dynamic>;
         return Product.fromJson(productData, productId);
       }).toList();
+
       return APIResult.success(products);
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
@@ -52,7 +68,9 @@ class ProductsRepoImpl extends ProductsRepo {
 
   @override
   Future<APIResult<AddProductsResponseBody>> addProduct(
-      Product product, String? token) async {
+    Product product,
+    String? token,
+  ) async {
     try {
       final data = await productService.addProduct(product, token);
       return APIResult.success(AddProductsResponseBody.fromJson(data));
@@ -62,7 +80,10 @@ class ProductsRepoImpl extends ProductsRepo {
   }
 
   @override
-  Future<APIResult<void>> deleteProduct(String productId, String token) async {
+  Future<APIResult<void>> deleteProduct(
+    String productId,
+    String token,
+  ) async {
     try {
       await productService.deleteProduct(productId, token);
       return APIResult.success(null);
@@ -73,10 +94,16 @@ class ProductsRepoImpl extends ProductsRepo {
 
   @override
   Future<APIResult<Product>> updateProduct(
-      Product product, String? token) async {
+    Product product,
+    String? token,
+  ) async {
     try {
       final data = await productService.updateProduct(product, token);
-      return APIResult.success(Product.updateFromJson(data));
+      final updatedProduct = Product.updateFromJson(
+        data,
+        productId: product.productId ?? product.id,
+      );
+      return APIResult.success(updatedProduct);
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
     }
@@ -84,7 +111,9 @@ class ProductsRepoImpl extends ProductsRepo {
 
   @override
   Future<APIResult<Product>> fetchSingleProduct(
-      String productId, String? token) async {
+    String productId,
+    String? token,
+  ) async {
     try {
       final data = await productService.fetchSingleProduct(productId, token);
       return APIResult.success(Product.fromJson(data, productId));
