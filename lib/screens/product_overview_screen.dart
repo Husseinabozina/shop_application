@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
-import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/widgets/product_grid.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
@@ -52,26 +50,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('MyShop'),
-        actions: [
-          Consumer<CartProvider>(
-            builder: (context, cart, _) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Badge.count(
-                  count: cart.cartlengh,
-                  isLabelVisible: cart.cartlengh > 0,
-                  child: IconButton(
-                    tooltip: 'Cart',
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(CartScreen.routName);
-                    },
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+        automaticallyImplyLeading: false,
       ),
       bottomNavigationBar: const StoreBottomNavigation(
         selectedIndex: 0,
