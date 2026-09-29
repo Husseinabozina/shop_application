@@ -273,7 +273,7 @@ class _StorefrontHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Spend $500 or more and standard delivery is on us.',
+                  'Spend \$500 or more and standard delivery is on us.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: scheme.onPrimary.withValues(alpha: 0.86),
                     height: 1.35,
