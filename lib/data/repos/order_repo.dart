@@ -64,7 +64,10 @@ class OrderRepoImpl implements OrderRepo {
       final data = await orderServices.fetchOrders(userId, token);
       final result = data.entries.map((entry) {
         final orderData = entry.value as Map<String, dynamic>;
-        return Order.fromJson(orderData);
+        return Order.fromJson({
+          ...orderData,
+          'id': entry.key,
+        });
       }).toList()
         ..sort(
           (a, b) => (b.datetime ?? DateTime(0))
