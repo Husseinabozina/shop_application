@@ -13,9 +13,13 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 ### Catalog
 - product grid
 - responsive layout
-- search
-- product details
+- search across products and categories
+- category discovery
+- price/name sorting
+- product details with delivery information
 - per-user favorites
+- product ownership metadata
+- user-scoped product management
 - pull to refresh
 
 ### Cart
@@ -47,7 +51,15 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - default address
 - reuse saved address at checkout
 
+### Navigation and account
+- five-destination bottom navigation
+- cart-count badge
+- dedicated Categories experience
+- Account hub
+- Saved Addresses and seller tools as account subflows
+
 ### Orders
+- feature-first order data/domain/presentation layers
 - per-user order history
 - Firebase order IDs preserved
 - active/delivered/cancelled filters
@@ -59,10 +71,23 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - shipping/payment/address details
 - compatibility with legacy quantity data
 
+### Backend hardening
+- centralized Firebase REST client
+- typed environment configuration via Dart defines
+- user-scoped single-order reads
+- privacy-safe debug networking logs
+- no request/response body logging
+
+### Payments foundation
+- PaymentGateway contract
+- payment capability model
+- safe unconfigured gateway adapter
+- checkout derives card/wallet availability from gateway capabilities
+
 ## Next — high value, still portfolio-sized
 
 ### 1. Real payment gateway
-The application already models card and wallet payment methods, but does not fake successful payment.
+The application already models card and wallet payment methods and now has a provider-agnostic gateway boundary, but it does not fake successful payment.
 
 Target architecture:
 
@@ -93,12 +118,10 @@ Next backend work:
 - verify and version Realtime Database security rules
 - validate customer ownership for addresses/orders/favorites
 - review product/admin write permissions
-- move backend endpoints into typed environment configuration
+- verify the creatorId index for seller product queries
 
-### 4. Catalog discovery
-- category chips
-- filter sheet
-- sort by price/newest
+### 4. Catalog depth
+- filter sheet for additional attributes
 - search history
 - recently viewed products
 
