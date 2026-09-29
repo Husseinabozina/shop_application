@@ -4,7 +4,6 @@ import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/features/address_book/domain/entities/saved_address.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
-import 'package:shop_application/widgets/app_drawer.dart';
 
 class AddressBookScreen extends StatelessWidget {
   static const routeName = '/addresses';
@@ -17,7 +16,6 @@ class AddressBookScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Saved addresses'),
       ),
