@@ -3,15 +3,16 @@ import 'package:shop_application/core/app_strings.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
 import 'package:shop_application/provider/product.dart';
 
-// ProductsRepo Implementation
-
-// ProductsProvider Implementation
 class ProductsProvider with ChangeNotifier {
   final ProductsRepo productsRepo;
   final String? token;
   final String? userId;
 
-  ProductsProvider({required this.productsRepo, this.token, this.userId});
+  ProductsProvider({
+    required this.productsRepo,
+    this.token,
+    this.userId,
+  });
 
   List<Product> _products = [];
   Product? _updatedProduct;
@@ -23,8 +24,9 @@ class ProductsProvider with ChangeNotifier {
   String? deleteProductSuccessMessage;
   String? deleteProductErrorMessage;
   String? updateProductErrorMessage;
+
   List<Product> get favitem {
-    return _products.where((proditem) => proditem.isFavorite == true).toList();
+    return _products.where((product) => product.isFavorite == true).toList();
   }
 
   Future<void> fetchProducts({bool? filterByUser}) async {
@@ -33,9 +35,14 @@ class ProductsProvider with ChangeNotifier {
       userId: userId,
       token: token,
     );
+
     result.when(
       success: (products) {
+        for (final product in products) {
+          product.productsRepo = productsRepo;
+        }
         _products = products;
+        fetchProductsErrorMessage = null;
         notifyListeners();
       },
       failure: (exception) {
@@ -46,17 +53,21 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Product findById(String id) {
-    return _products.firstWhere((product) {
-      return product.id == id;
-    });
+    return _products.firstWhere((product) => product.id == id);
   }
 
   Future<void> deleteProduct(String productId) async {
+    if (token == null) {
+      deleteProductErrorMessage = 'Please sign in again.';
+      notifyListeners();
+      return;
+    }
+
     final result = await productsRepo.deleteProduct(productId, token!);
     result.when(
       success: (_) {
         deleteProductSuccessMessage = AppStrings.deleteProductSuccessMessage;
-        _products?.removeWhere((product) => product.id == productId);
+        _products.removeWhere((product) => product.id == productId);
         notifyListeners();
       },
       failure: (exception) {
@@ -70,7 +81,18 @@ class ProductsProvider with ChangeNotifier {
     final result = await productsRepo.updateProduct(product, token);
     result.when(
       success: (updatedProduct) {
+        updatedProduct.productsRepo = productsRepo;
         _updatedProduct = updatedProduct;
+
+        final index = _products.indexWhere(
+          (existingProduct) =>
+              existingProduct.id == product.id ||
+              existingProduct.productId == product.productId,
+        );
+        if (index >= 0) {
+          _products[index] = updatedProduct;
+        }
+
         notifyListeners();
       },
       failure: (exception) {
