@@ -64,21 +64,21 @@ class _UserProductScreenState extends State<UserProductScreen> {
       ),
       body: Consumer<ProductsProvider>(
         builder: (context, provider, _) {
-          if (_isLoading && provider.products.isEmpty) {
+          if (_isLoading && provider.managedProducts.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
           if (provider.fetchProductsErrorMessage != null &&
-              provider.products.isEmpty) {
+              provider.managedProducts.isEmpty) {
             return _ManageProductsError(
               message: provider.fetchProductsErrorMessage!,
               onRetry: _loadProducts,
             );
           }
 
-          if (provider.products.isEmpty) {
+          if (provider.managedProducts.isEmpty) {
             return const _EmptyManagedProducts();
           }
 
@@ -87,10 +87,10 @@ class _UserProductScreenState extends State<UserProductScreen> {
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
-              itemCount: provider.products.length,
+              itemCount: provider.managedProducts.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (_, index) {
-                final product = provider.products[index];
+                final product = provider.managedProducts[index];
 
                 return UserProductItem(
                   id: product.id,
