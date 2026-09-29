@@ -94,6 +94,7 @@ class ProductsProvider with ChangeNotifier {
       success: (updatedProduct) {
         updatedProduct.productsRepo = productsRepo;
         _updatedProduct = updatedProduct;
+        updateProductErrorMessage = null;
 
         final index = _products.indexWhere(
           (existingProduct) =>
