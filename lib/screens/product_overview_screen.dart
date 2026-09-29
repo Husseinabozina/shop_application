@@ -93,6 +93,16 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                _StorefrontHero(
+                  onBrowse: () {
+                    setState(() {
+                      _category = null;
+                      _favoritesOnly = false;
+                      _sort = ProductSortOption.featured;
+                    });
+                  },
+                ),
+                const SizedBox(height: 18),
                 TextField(
                   onChanged: (value) {
                     setState(() => _query = value);
@@ -209,6 +219,96 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           description.contains(normalizedQuery) ||
           category.contains(normalizedQuery);
     }).length;
+  }
+}
+
+
+class _StorefrontHero extends StatelessWidget {
+  final VoidCallback onBrowse;
+
+  const _StorefrontHero({
+    required this.onBrowse,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.primary,
+            scheme.primary.withValues(alpha: 0.78),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DELIVERY PERK',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onPrimary.withValues(alpha: 0.78),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Free standard delivery',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Spend $500 or more and standard delivery is on us.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onPrimary.withValues(alpha: 0.86),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.tonalIcon(
+                  onPressed: onBrowse,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text('Browse products'),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: scheme.onPrimaryContainer,
+                    backgroundColor: scheme.primaryContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Container(
+            width: 82,
+            height: 82,
+            decoration: BoxDecoration(
+              color: scheme.onPrimary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.local_shipping_rounded,
+              size: 42,
+              color: scheme.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
