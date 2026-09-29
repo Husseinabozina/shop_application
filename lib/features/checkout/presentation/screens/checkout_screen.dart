@@ -295,7 +295,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       },
     );
 
-    if (choice == null || !mounted) {
+    if (choice == null || !context.mounted) {
       return;
     }
 
@@ -329,7 +329,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       builder: (_) => const AddressFormSheet(),
     );
 
-    if (address == null || !mounted) {
+    if (address == null || !context.mounted) {
       return;
     }
 
@@ -339,7 +339,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           accessToken: token,
         );
 
-    if (saved != null && mounted) {
+    if (saved != null && context.mounted) {
       await checkout.setAddress(saved.toCheckoutAddress());
     }
   }
@@ -366,7 +366,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       accessToken: token,
     );
 
-    if (!mounted || !success) {
+    if (!context.mounted || !success) {
       return;
     }
 
@@ -394,7 +394,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
 
-    if (mounted) {
+    if (context.mounted) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
