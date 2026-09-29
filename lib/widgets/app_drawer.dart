@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/screens/orders_screen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
 
@@ -68,6 +69,14 @@ class AppDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.of(context)
                     .pushReplacementNamed(OrdersScreen.routeName);
+              },
+            ),
+            _DrawerTile(
+              icon: Icons.location_on_outlined,
+              label: 'Saved addresses',
+              onTap: () {
+                Navigator.of(context)
+                    .pushReplacementNamed(AddressBookScreen.routeName);
               },
             ),
             _DrawerTile(
