@@ -2,6 +2,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shop_application/features/checkout/data/datasources/checkout_remote_data_source.dart';
 import 'package:shop_application/features/checkout/data/repositories/checkout_repository_impl.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
+import 'package:shop_application/features/payments/domain/entities/payment_capability.dart';
+import 'package:shop_application/features/payments/domain/gateways/payment_gateway.dart';
+
+class _FakePaymentGateway implements PaymentGateway {
+  final bool configured;
+  final Set<PaymentCapability> supported;
+
+  const _FakePaymentGateway({
+    this.configured = false,
+    this.supported = const {},
+  });
+
+  @override
+  String get providerName => 'TestPay';
+
+  @override
+  bool get isConfigured => configured;
+
+  @override
+  Set<PaymentCapability> get capabilities => supported;
+}
 
 class _FakeCheckoutRemoteDataSource implements CheckoutRemoteDataSource {
   @override
@@ -20,6 +41,7 @@ void main() {
   setUp(() {
     repository = CheckoutRepositoryImpl(
       remoteDataSource: _FakeCheckoutRemoteDataSource(),
+      paymentGateway: const _FakePaymentGateway(),
     );
   });
 
@@ -56,6 +78,30 @@ void main() {
     expect(
       methods.firstWhere((method) => method.id == 'card').isEnabled,
       isFalse,
+    );
+    expect(
+      methods.firstWhere((method) => method.id == 'wallet').isEnabled,
+      isFalse,
+    );
+  });
+
+  test('configured gateway enables only supported payment capabilities',
+      () async {
+    repository = CheckoutRepositoryImpl(
+      remoteDataSource: _FakeCheckoutRemoteDataSource(),
+      paymentGateway: const _FakePaymentGateway(
+        configured: true,
+        supported: {
+          PaymentCapability.card,
+        },
+      ),
+    );
+
+    final methods = await repository.getPaymentMethods();
+
+    expect(
+      methods.firstWhere((method) => method.id == 'card').isEnabled,
+      isTrue,
     );
     expect(
       methods.firstWhere((method) => method.id == 'wallet').isEnabled,
