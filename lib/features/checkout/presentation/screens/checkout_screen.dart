@@ -19,6 +19,7 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _promoController = TextEditingController();
+  bool _didAutoApplyAddress = false;
 
   @override
   void dispose() {
@@ -37,7 +38,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       body: Consumer2<CheckoutController, AddressBookController>(
         builder: (context, checkout, addressBook, _) {
           final defaultAddress = addressBook.defaultAddress;
-          if (checkout.address == null && defaultAddress != null) {
+          if (!_didAutoApplyAddress &&
+              checkout.address == null &&
+              defaultAddress != null) {
+            _didAutoApplyAddress = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && checkout.address == null) {
                 checkout.setAddress(defaultAddress.toCheckoutAddress());
