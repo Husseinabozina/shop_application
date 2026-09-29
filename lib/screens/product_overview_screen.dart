@@ -4,8 +4,8 @@ import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/screens/cart_screen.dart';
-import 'package:shop_application/widgets/app_drawer.dart';
 import 'package:shop_application/widgets/product_grid.dart';
+import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
 class ProductOverviewScreen extends StatefulWidget {
   const ProductOverviewScreen({super.key});
@@ -50,7 +50,6 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('MyShop'),
         actions: [
@@ -73,6 +72,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             },
           ),
         ],
+      ),
+      bottomNavigationBar: const StoreBottomNavigation(
+        selectedIndex: 0,
       ),
       body: Consumer<ProductsProvider>(
         builder: (context, productsProvider, _) {
