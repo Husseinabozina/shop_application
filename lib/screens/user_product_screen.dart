@@ -49,8 +49,6 @@ class _UserProductScreenState extends State<UserProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage products'),
