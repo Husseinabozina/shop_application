@@ -21,6 +21,8 @@ lib/
     app_dependencies.dart
 
   core/
+    config/
+    firebase/
     network/
     theme/
     session/
@@ -116,6 +118,8 @@ Examples:
 
 Replacing Firebase with a custom backend should primarily affect this layer.
 
+A centralized `FirebaseRestClient` owns Firebase REST URL construction and auth query handling. Feature services receive that client rather than embedding Firebase URLs.
+
 ## State management
 
 Provider / ChangeNotifier remains acceptable for this project because the app is intentionally medium-small.
@@ -135,6 +139,32 @@ Rules:
 - keep registration in one composition root
 - never call GetIt from random widgets
 - inject dependencies into controllers/repositories
+
+## Orders architecture
+
+Order history and tracking now follow the same feature-first direction:
+
+```text
+OrdersScreen / OrderDetailsScreen
+   |
+OrderController
+   |
+OrderRepository
+   |
+OrderRepositoryImpl
+   |
+OrderRemoteDataSource
+   |
+FirebaseRestClient
+```
+
+Single-order refresh is user-scoped at `order/{uid}/{orderId}`, matching the ownership model expected by database security rules.
+
+## Backend configuration
+
+Firebase database URL and Firebase Web API key are centralized in `AppEnvironment` and can be overridden with Dart defines.
+
+HTTP debug logging redacts auth tokens, API keys, passwords, ID tokens, refresh tokens and access tokens. Networking logs are disabled in release mode.
 
 ## Checkout architecture
 
