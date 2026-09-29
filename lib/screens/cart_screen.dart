@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/widgets/cart_item.dart';
+import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -16,6 +17,7 @@ class CartScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Your cart'),
       ),
       body: entries.isEmpty
@@ -36,9 +38,16 @@ class CartScreen extends StatelessWidget {
                 );
               },
             ),
-      bottomNavigationBar: entries.isEmpty
-          ? null
-          : _CheckoutBar(total: cart.totalPrice),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (entries.isNotEmpty)
+            _CheckoutBar(total: cart.totalPrice),
+          const StoreBottomNavigation(
+            selectedIndex: 2,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -54,8 +63,8 @@ class _CheckoutBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
