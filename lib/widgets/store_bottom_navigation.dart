@@ -41,13 +41,13 @@ class StoreBottomNavigation extends StatelessWidget {
           (route) => route.isFirst,
         );
       },
-      destinations: const [
-        NavigationDestination(
+      destinations: [
+        const NavigationDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home_rounded),
           label: 'Home',
         ),
-        NavigationDestination(
+        const NavigationDestination(
           icon: Icon(Icons.grid_view_outlined),
           selectedIcon: Icon(Icons.grid_view_rounded),
           label: 'Categories',
@@ -65,12 +65,12 @@ class StoreBottomNavigation extends StatelessWidget {
           ),
           label: 'Cart',
         ),
-        NavigationDestination(
+        const NavigationDestination(
           icon: Icon(Icons.receipt_long_outlined),
           selectedIcon: Icon(Icons.receipt_long_rounded),
           label: 'Orders',
         ),
-        NavigationDestination(
+        const NavigationDestination(
           icon: Icon(Icons.person_outline_rounded),
           selectedIcon: Icon(Icons.person_rounded),
           label: 'Account',
