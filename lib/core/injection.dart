@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/data/repos/auth_repo.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
@@ -24,6 +25,9 @@ void setup() {
   }
 
   getIt.registerLazySingleton<Api>(() => ApiImpl());
+  getIt.registerLazySingleton<FirebaseRestClient>(
+    () => FirebaseRestClientImpl(api: getIt<Api>()),
+  );
 
   getIt.registerLazySingleton<AuthService>(
     () => AuthServiceImpl(getIt<Api>()),
@@ -36,21 +40,23 @@ void setup() {
   );
 
   getIt.registerLazySingleton<ProductService>(
-    () => ProductServiceImpl(api: getIt<Api>()),
+    () => ProductServiceImpl(database: getIt<FirebaseRestClient>()),
   );
   getIt.registerLazySingleton<ProductsRepo>(
     () => ProductsRepoImpl(getIt<ProductService>()),
   );
 
   getIt.registerLazySingleton<OrderServices>(
-    () => OrderServicesImpl(getIt<Api>()),
+    () => OrderServicesImpl(getIt<FirebaseRestClient>()),
   );
   getIt.registerLazySingleton<OrderRepo>(
     () => OrderRepoImpl(orderServices: getIt<OrderServices>()),
   );
 
   getIt.registerLazySingleton<AddressBookRemoteDataSource>(
-    () => FirebaseAddressBookRemoteDataSource(api: getIt<Api>()),
+    () => FirebaseAddressBookRemoteDataSource(
+      database: getIt<FirebaseRestClient>(),
+    ),
   );
   getIt.registerLazySingleton<AddressBookRepository>(
     () => AddressBookRepositoryImpl(
@@ -65,7 +71,7 @@ void setup() {
 
   getIt.registerLazySingleton<CheckoutRemoteDataSource>(
     () => FirebaseCheckoutRemoteDataSource(
-      api: getIt<Api>(),
+      database: getIt<FirebaseRestClient>(),
     ),
   );
   getIt.registerLazySingleton<CheckoutRepository>(
