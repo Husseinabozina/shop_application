@@ -25,8 +25,16 @@ class StoreBottomNavigation extends StatelessWidget {
           return;
         }
 
-        Navigator.of(context).pushReplacementNamed(
+        final navigator = Navigator.of(context);
+
+        if (index == 0) {
+          navigator.popUntil((route) => route.isFirst);
+          return;
+        }
+
+        navigator.pushNamedAndRemoveUntil(
           _routes[index],
+          (route) => route.isFirst,
         );
       },
       destinations: const [
