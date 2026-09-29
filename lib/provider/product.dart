@@ -7,6 +7,8 @@ class Product with ChangeNotifier {
   final String? productId;
   final String? id;
   final String? imageUrl;
+  final String category;
+  final String? creatorId;
   bool? isFavorite;
   final num? price;
 
@@ -19,6 +21,8 @@ class Product with ChangeNotifier {
     this.description,
     this.id,
     this.imageUrl,
+    this.category = 'General',
+    this.creatorId,
     this.isFavorite = false,
     this.title,
   });
@@ -32,6 +36,8 @@ class Product with ChangeNotifier {
         productId = firebaseProductId,
         imageUrl =
             (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
+        category = _normalizedCategory(json['category']),
+        creatorId = json['creatorId'] as String?,
         isFavorite = json['isFavorite'] as bool? ?? false,
         price = json['price'] as num?;
 
@@ -46,6 +52,8 @@ class Product with ChangeNotifier {
       description: json['description'] as String?,
       imageUrl:
           (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
+      category: _normalizedCategory(json['category']),
+      creatorId: json['creatorId'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
       price: json['price'] as num?,
     );
@@ -57,6 +65,8 @@ class Product with ChangeNotifier {
       'description': description,
       'id': id,
       'imageUrl': imageUrl,
+      'category': category,
+      'creatorId': creatorId,
       'isFavorite': isFavorite,
       'price': price,
     };
@@ -68,6 +78,8 @@ class Product with ChangeNotifier {
     String? productId,
     String? id,
     String? imageUrl,
+    String? category,
+    String? creatorId,
     bool? isFavorite,
     num? price,
   }) {
@@ -78,6 +90,8 @@ class Product with ChangeNotifier {
       productId: productId ?? this.productId,
       id: id ?? this.id,
       imageUrl: imageUrl ?? this.imageUrl,
+      category: category ?? this.category,
+      creatorId: creatorId ?? this.creatorId,
       isFavorite: isFavorite ?? this.isFavorite,
       price: price ?? this.price,
     );
@@ -119,5 +133,10 @@ class Product with ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  static String _normalizedCategory(Object? raw) {
+    final value = raw?.toString().trim();
+    return value == null || value.isEmpty ? 'General' : value;
   }
 }
