@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:shop_application/core/network/api.dart';
+import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/features/address_book/domain/entities/saved_address.dart';
 
 abstract class AddressBookRemoteDataSource {
@@ -30,32 +30,20 @@ abstract class AddressBookRemoteDataSource {
 
 class FirebaseAddressBookRemoteDataSource
     implements AddressBookRemoteDataSource {
-  final Api api;
+  final FirebaseRestClient database;
 
   FirebaseAddressBookRemoteDataSource({
-    required this.api,
+    required this.database,
   });
-
-  String _baseUrl({
-    required String userId,
-    required String accessToken,
-  }) {
-    return 'https://shopapp-29118-default-rtdb.firebaseio.com/addresses/' +
-        userId +
-        '.json?auth=' +
-        accessToken;
-  }
 
   @override
   Future<List<SavedAddress>> fetchAddresses({
     required String userId,
     required String accessToken,
   }) async {
-    final response = await api.get(
-      url: _baseUrl(
-        userId: userId,
-        accessToken: accessToken,
-      ),
+    final response = await database.get(
+      path: 'addresses/$userId',
+      authToken: accessToken,
     );
 
     _ensureSuccess(response.statusCode, 'Could not load addresses.');
@@ -89,11 +77,9 @@ class FirebaseAddressBookRemoteDataSource
     required String accessToken,
   }) async {
     if (address.id.isEmpty) {
-      final response = await api.post(
-        url: _baseUrl(
-          userId: userId,
-          accessToken: accessToken,
-        ),
+      final response = await database.post(
+        path: 'addresses/$userId',
+        authToken: accessToken,
         data: address.toJson(),
       );
 
@@ -120,16 +106,9 @@ class FirebaseAddressBookRemoteDataSource
       );
     }
 
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/addresses/' +
-            userId +
-            '/' +
-            address.id +
-            '.json?auth=' +
-            accessToken;
-
-    final response = await api.put(
-      url: url,
+    final response = await database.put(
+      path: 'addresses/$userId/${address.id}',
+      authToken: accessToken,
       data: address.toJson(),
     );
 
@@ -143,15 +122,10 @@ class FirebaseAddressBookRemoteDataSource
     required String userId,
     required String accessToken,
   }) async {
-    final url =
-        'https://shopapp-29118-default-rtdb.firebaseio.com/addresses/' +
-            userId +
-            '/' +
-            addressId +
-            '.json?auth=' +
-            accessToken;
-
-    final response = await api.delete(url: url);
+    final response = await database.delete(
+      path: 'addresses/$userId/$addressId',
+      authToken: accessToken,
+    );
     _ensureSuccess(response.statusCode, 'Could not delete address.');
   }
 
@@ -168,18 +142,16 @@ class FirebaseAddressBookRemoteDataSource
 
     final updates = <String, dynamic>{};
     for (final address in addresses) {
-      updates[address.id + '/isDefault'] = address.id == addressId;
+      updates['${address.id}/isDefault'] = address.id == addressId;
     }
 
     if (updates.isEmpty) {
       return;
     }
 
-    final response = await api.patch(
-      url: _baseUrl(
-        userId: userId,
-        accessToken: accessToken,
-      ),
+    final response = await database.patch(
+      path: 'addresses/$userId',
+      authToken: accessToken,
       data: updates,
     );
 
@@ -191,7 +163,7 @@ class FirebaseAddressBookRemoteDataSource
 
   void _ensureSuccess(int statusCode, String message) {
     if (statusCode < 200 || statusCode >= 300) {
-      throw Exception(message + ' Status ' + statusCode.toString() + '.');
+      throw Exception('$message Status $statusCode.');
     }
   }
 }
