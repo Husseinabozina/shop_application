@@ -15,9 +15,11 @@ class ProductsProvider with ChangeNotifier {
   });
 
   List<Product> _products = [];
+  List<Product> _managedProducts = [];
   Product? _updatedProduct;
 
   List<Product> get products => _products;
+  List<Product> get managedProducts => _managedProducts;
   Product? get updatedProduct => _updatedProduct;
 
   List<String> get categories {
@@ -52,7 +54,11 @@ class ProductsProvider with ChangeNotifier {
         for (final product in products) {
           product.productsRepo = productsRepo;
         }
-        _products = products;
+        if (filterByUser == true) {
+          _managedProducts = products;
+        } else {
+          _products = products;
+        }
         fetchProductsErrorMessage = null;
         notifyListeners();
       },
@@ -64,7 +70,15 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Product findById(String id) {
-    return _products.firstWhere((product) => product.id == id);
+    for (final product in _managedProducts) {
+      if (product.id == id || product.productId == id) {
+        return product;
+      }
+    }
+
+    return _products.firstWhere(
+      (product) => product.id == id || product.productId == id,
+    );
   }
 
   Future<void> deleteProduct(String productId) async {
@@ -78,7 +92,13 @@ class ProductsProvider with ChangeNotifier {
     result.when(
       success: (_) {
         deleteProductSuccessMessage = AppStrings.deleteProductSuccessMessage;
-        _products.removeWhere((product) => product.id == productId);
+        _products.removeWhere(
+          (product) => product.id == productId || product.productId == productId,
+        );
+        _managedProducts.removeWhere(
+          (product) => product.id == productId || product.productId == productId,
+        );
+        deleteProductErrorMessage = null;
         notifyListeners();
       },
       failure: (exception) {
@@ -103,6 +123,15 @@ class ProductsProvider with ChangeNotifier {
         );
         if (index >= 0) {
           _products[index] = updatedProduct;
+        }
+
+        final managedIndex = _managedProducts.indexWhere(
+          (existingProduct) =>
+              existingProduct.id == product.id ||
+              existingProduct.productId == product.productId,
+        );
+        if (managedIndex >= 0) {
+          _managedProducts[managedIndex] = updatedProduct;
         }
 
         notifyListeners();
@@ -143,6 +172,7 @@ class ProductsProvider with ChangeNotifier {
         created.productsRepo = productsRepo;
 
         _products.insert(0, created);
+        _managedProducts.insert(0, created);
         updateProductErrorMessage = null;
         notifyListeners();
       },
