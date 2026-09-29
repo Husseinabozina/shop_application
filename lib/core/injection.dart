@@ -3,10 +3,8 @@ import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/data/repos/auth_repo.dart';
-import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
 import 'package:shop_application/data/services/auth_services.dart';
-import 'package:shop_application/data/services/order_services.dart';
 import 'package:shop_application/data/services/product_service.dart';
 import 'package:shop_application/features/address_book/data/datasources/address_book_remote_data_source.dart';
 import 'package:shop_application/features/address_book/data/repositories/address_book_repository_impl.dart';
@@ -16,6 +14,9 @@ import 'package:shop_application/features/checkout/data/datasources/checkout_rem
 import 'package:shop_application/features/checkout/data/repositories/checkout_repository_impl.dart';
 import 'package:shop_application/features/checkout/domain/repositories/checkout_repository.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
+import 'package:shop_application/features/orders/data/datasources/order_remote_data_source.dart';
+import 'package:shop_application/features/orders/data/repositories/order_repository_impl.dart';
+import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -46,11 +47,15 @@ void setup() {
     () => ProductsRepoImpl(getIt<ProductService>()),
   );
 
-  getIt.registerLazySingleton<OrderServices>(
-    () => OrderServicesImpl(getIt<FirebaseRestClient>()),
+  getIt.registerLazySingleton<OrderRemoteDataSource>(
+    () => FirebaseOrderRemoteDataSource(
+      database: getIt<FirebaseRestClient>(),
+    ),
   );
-  getIt.registerLazySingleton<OrderRepo>(
-    () => OrderRepoImpl(orderServices: getIt<OrderServices>()),
+  getIt.registerLazySingleton<OrderRepository>(
+    () => OrderRepositoryImpl(
+      remoteDataSource: getIt<OrderRemoteDataSource>(),
+    ),
   );
 
   getIt.registerLazySingleton<AddressBookRemoteDataSource>(
