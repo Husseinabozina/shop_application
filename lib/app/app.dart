@@ -105,19 +105,20 @@ class MyShopApp extends StatelessWidget {
 
   Widget _buildAddressBookRoute(BuildContext context) {
     final auth = context.read<AuthProvider>();
-    final controller = getIt<AddressBookController>();
     final token = auth.token;
     final userId = auth.userId;
 
-    if (token != null && userId != null) {
-      controller.load(
-        userId: userId,
-        accessToken: token,
-      );
-    }
-
-    return ChangeNotifierProvider<AddressBookController>.value(
-      value: controller,
+    return ChangeNotifierProvider<AddressBookController>(
+      create: (_) {
+        final controller = getIt<AddressBookController>();
+        if (token != null && userId != null) {
+          controller.load(
+            userId: userId,
+            accessToken: token,
+          );
+        }
+        return controller;
+      },
       child: const AddressBookScreen(),
     );
   }
@@ -136,16 +137,8 @@ class MyShopApp extends StatelessWidget {
       );
     }).toList();
 
-    final addressController = getIt<AddressBookController>();
     final token = auth.token;
     final userId = auth.userId;
-
-    if (token != null && userId != null) {
-      addressController.load(
-        userId: userId,
-        accessToken: token,
-      );
-    }
 
     return MultiProvider(
       providers: [
@@ -153,8 +146,17 @@ class MyShopApp extends StatelessWidget {
           create: (_) => getIt<CheckoutController>()
             ..initialize(items: items),
         ),
-        ChangeNotifierProvider<AddressBookController>.value(
-          value: addressController,
+        ChangeNotifierProvider<AddressBookController>(
+          create: (_) {
+            final controller = getIt<AddressBookController>();
+            if (token != null && userId != null) {
+              controller.load(
+                userId: userId,
+                accessToken: token,
+              );
+            }
+            return controller;
+          },
         ),
       ],
       child: const CheckoutScreen(),
