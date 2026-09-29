@@ -4,24 +4,27 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 
 ## Highlights
 
-- Material 3 storefront with system light/dark mode
+- Warm premium Material 3 storefront with system light/dark mode
+- Home / Categories / Cart / Orders / Account bottom navigation
 - Firebase Authentication with persistent sessions
-- Product catalog and product details
+- Product catalog with categories, search, sorting, and product details
 - Search and per-user favorites
+- User-scoped seller product management
 - Cart with quantity controls
 - Full checkout flow
 - Saved delivery address book with default address
 - Standard / Express shipping with delivery estimates
 - Free-shipping threshold
 - Promo codes
-- Payment-method architecture
+- Provider-agnostic PaymentGateway architecture
 - Cash on Delivery
-- Gateway-ready card and wallet options
+- Capability-driven card and wallet options that stay disabled until a real gateway is configured
 - Per-user order history and visual delivery tracking
 - Firebase Realtime Database
 - Feature-first checkout architecture
+- Feature-first checkout, address-book, and orders architecture
 - Repository and data-source boundaries
-- Centralized backend environment configuration
+- Centralized Firebase REST client and backend environment configuration
 - Redacted debug networking logs
 - Focused checkout, address, and order-domain tests
 
@@ -54,6 +57,7 @@ Read the full architecture notes in:
 - `docs/COMMERCE_ROADMAP.md`
 - `docs/FIREBASE_SCHEMA.md`
 - `docs/ENVIRONMENT.md`
+- `docs/DESIGN_SYSTEM.md`
 
 ## Checkout flow
 
@@ -90,12 +94,15 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - order status filters
 - order details + tracking timeline
 - user-scoped live order refresh
+- category discovery + sorting
+- seller/catalog state separation
+- modern Account hub and bottom navigation
 
 ### Planned next
-- real card payment gateway
+- real card payment gateway adapter + secure server endpoint
 - backend/admin-driven order status updates
 - Firebase security-rule verification and deployment
-- categories / filters / sorting
+- advanced attribute filters / recently viewed
 - product variants
 - ratings and reviews
 - recently viewed products
