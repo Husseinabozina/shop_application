@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_application/controllers/order_provider/order_provider.dart';
 import 'package:shop_application/features/orders/domain/entities/order.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
 
-class OrderDetailsScreen extends StatelessWidget {
+class OrderDetailsScreen extends StatefulWidget {
   final Order order;
 
   const OrderDetailsScreen({
@@ -12,181 +14,259 @@ class OrderDetailsScreen extends StatelessWidget {
   });
 
   @override
+  State<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
+}
+
+class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
+  bool _isRefreshing = false;
+
+  @override
   Widget build(BuildContext context) {
+    final provider = context.watch<OrderProvider>();
+    final order = _currentOrder(provider);
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order details'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _orderNumber(order.id),
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      _StatusChip(status: order.status),
-                    ],
-                  ),
-                  if (order.datetime != null) ...[
-                    const SizedBox(height: 7),
-                    Text(
-                      'Placed ' +
-                          DateFormat('MMM d, yyyy • h:mm a')
-                              .format(order.datetime!),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+        actions: [
+          IconButton(
+            tooltip: 'Refresh status',
+            onPressed: order.id == null || _isRefreshing
+                ? null
+                : () => _refreshOrder(context, order),
+            icon: _isRefreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
                     ),
-                  ],
-                  const SizedBox(height: 18),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.local_shipping_outlined,
-                          color: theme.colorScheme.onPrimaryContainer,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                order.status == OrderStatus.delivered
-                                    ? 'Delivered'
-                                    : 'Estimated delivery',
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: theme
-                                      .colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _deliveryEstimate(order),
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme
-                                      .colorScheme.onPrimaryContainer,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          _SectionCard(
-            title: 'Track order',
-            icon: Icons.route_outlined,
-            child: _TrackingTimeline(order: order),
-          ),
-          const SizedBox(height: 14),
-          if (order.deliveryAddress != null)
-            _SectionCard(
-              title: 'Delivery address',
-              icon: Icons.location_on_outlined,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (order.recipientName != null)
-                    Text(
-                      order.recipientName!,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  if (order.recipientPhone != null) ...[
-                    const SizedBox(height: 4),
-                    Text(order.recipientPhone!),
-                  ],
-                  const SizedBox(height: 4),
-                  Text(order.deliveryAddress!),
-                ],
-              ),
-            ),
-          if (order.deliveryAddress != null) const SizedBox(height: 14),
-          _SectionCard(
-            title: 'Delivery & payment',
-            icon: Icons.inventory_2_outlined,
-            child: Column(
-              children: [
-                _InfoRow(
-                  label: 'Shipping',
-                  value: order.shippingMethodTitle ?? 'Standard delivery',
-                ),
-                const SizedBox(height: 12),
-                _InfoRow(
-                  label: 'Payment',
-                  value: order.paymentMethodTitle ??
-                      _paymentStatusLabel(order.paymentStatus),
-                ),
-                if (order.paymentStatus != null) ...[
-                  const SizedBox(height: 12),
-                  _InfoRow(
-                    label: 'Payment status',
-                    value: _paymentStatusLabel(order.paymentStatus),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          _SectionCard(
-            title: 'Items',
-            icon: Icons.shopping_bag_outlined,
-            child: _OrderProducts(order: order),
-          ),
-          const SizedBox(height: 14),
-          _SectionCard(
-            title: 'Order total',
-            icon: Icons.receipt_long_outlined,
-            child: Row(
-              children: [
-                Text(
-                  'Total',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '\$' + _formatPrice(order.amount ?? 0),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
+                  )
+                : const Icon(Icons.refresh_rounded),
           ),
         ],
       ),
+      body: RefreshIndicator(
+        onRefresh: () => _refreshOrder(context, order),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _orderNumber(order.id),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        _StatusChip(status: order.status),
+                      ],
+                    ),
+                    if (order.datetime != null) ...[
+                      const SizedBox(height: 7),
+                      Text(
+                        'Placed ' +
+                            DateFormat('MMM d, yyyy • h:mm a')
+                                .format(order.datetime!),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.local_shipping_outlined,
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  order.status == OrderStatus.delivered
+                                      ? 'Delivered'
+                                      : 'Estimated delivery',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color:
+                                        theme.colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _deliveryEstimate(order),
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color:
+                                        theme.colorScheme.onPrimaryContainer,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _SectionCard(
+              title: 'Track order',
+              icon: Icons.route_outlined,
+              child: _TrackingTimeline(order: order),
+            ),
+            const SizedBox(height: 14),
+            if (order.deliveryAddress != null)
+              _SectionCard(
+                title: 'Delivery address',
+                icon: Icons.location_on_outlined,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (order.recipientName != null)
+                      Text(
+                        order.recipientName!,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    if (order.recipientPhone != null) ...[
+                      const SizedBox(height: 4),
+                      Text(order.recipientPhone!),
+                    ],
+                    const SizedBox(height: 4),
+                    Text(order.deliveryAddress!),
+                  ],
+                ),
+              ),
+            if (order.deliveryAddress != null) const SizedBox(height: 14),
+            _SectionCard(
+              title: 'Delivery & payment',
+              icon: Icons.inventory_2_outlined,
+              child: Column(
+                children: [
+                  _InfoRow(
+                    label: 'Shipping',
+                    value: order.shippingMethodTitle ?? 'Standard delivery',
+                  ),
+                  const SizedBox(height: 12),
+                  _InfoRow(
+                    label: 'Payment',
+                    value: order.paymentMethodTitle ??
+                        _paymentStatusLabel(order.paymentStatus),
+                  ),
+                  if (order.paymentStatus != null) ...[
+                    const SizedBox(height: 12),
+                    _InfoRow(
+                      label: 'Payment status',
+                      value: _paymentStatusLabel(order.paymentStatus),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _SectionCard(
+              title: 'Items',
+              icon: Icons.shopping_bag_outlined,
+              child: _OrderProducts(order: order),
+            ),
+            const SizedBox(height: 14),
+            _SectionCard(
+              title: 'Order total',
+              icon: Icons.receipt_long_outlined,
+              child: Row(
+                children: [
+                  Text(
+                    'Total',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '\$' + _formatPrice(order.amount ?? 0),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Order _currentOrder(OrderProvider provider) {
+    for (final item in provider.orders) {
+      if (item.id != null && item.id == widget.order.id) {
+        return item;
+      }
+    }
+
+    final focusedOrder = provider.order;
+    if (focusedOrder?.id != null && focusedOrder?.id == widget.order.id) {
+      return focusedOrder!;
+    }
+
+    return widget.order;
+  }
+
+  Future<void> _refreshOrder(
+    BuildContext context,
+    Order order,
+  ) async {
+    final orderId = order.id;
+    if (orderId == null || orderId.isEmpty || _isRefreshing) {
+      return;
+    }
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    final provider = context.read<OrderProvider>();
+    final updated = await provider.fetchOrder(orderId);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isRefreshing = false;
+    });
+
+    if (updated == null && provider.fetchOrderErrorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.fetchOrderErrorMessage!),
+        ),
+      );
+    }
   }
 
   String _orderNumber(String? id) {
@@ -247,13 +327,13 @@ class OrderDetailsScreen extends StatelessWidget {
         return raw?.replaceAll('_', ' ') ?? 'Not specified';
     }
   }
+}
 
-  static String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
+String _formatPrice(num value) {
+  final number = value.toDouble();
+  return number == number.roundToDouble()
+      ? number.toStringAsFixed(0)
+      : number.toStringAsFixed(2);
 }
 
 class _TrackingTimeline extends StatelessWidget {
@@ -531,7 +611,7 @@ class _OrderProducts extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$' + OrderDetailsScreen._formatPrice(total),
+                '\$' + _formatPrice(total),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
