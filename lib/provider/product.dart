@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
 
 class Product with ChangeNotifier {
@@ -26,28 +23,34 @@ class Product with ChangeNotifier {
     this.title,
   });
 
-  // fromJson constructor to create a Product object from JSON data
-  Product.fromJson(Map<String, dynamic> json, String? productId)
-      : title = json['title'],
-        description = json['description'],
-        id = json['id'],
-        this.productId = productId,
-        imageUrl = json['imageUrl'],
-        isFavorite = json['isFavorite'] ?? false,
-        price = json['price'];
+  Product.fromJson(
+    Map<String, dynamic> json,
+    String? firebaseProductId,
+  )   : title = json['title'] as String?,
+        description = json['description'] as String?,
+        id = (json['id'] as String?) ?? firebaseProductId,
+        productId = firebaseProductId,
+        imageUrl =
+            (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
+        isFavorite = json['isFavorite'] as bool? ?? false,
+        price = json['price'] as num?;
 
-  factory Product.updateFromJson(Map<String, dynamic> json) {
+  factory Product.updateFromJson(
+    Map<String, dynamic> json, {
+    String? productId,
+  }) {
     return Product(
-      title: json['title'],
-      description: json['description'],
-      id: json['id'],
-      imageUrl: json['imageUrl'],
-      isFavorite: json['isFavorite'] ?? false,
-      price: json['price'],
+      productId: productId,
+      id: (json['id'] as String?) ?? productId,
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      imageUrl:
+          (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      price: json['price'] as num?,
     );
   }
 
-  // toJson method to convert a Product object to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -59,7 +62,6 @@ class Product with ChangeNotifier {
     };
   }
 
-  // copyWith method to create a new instance with updated fields
   Product copyWith({
     String? title,
     String? description,
@@ -70,6 +72,7 @@ class Product with ChangeNotifier {
     num? price,
   }) {
     return Product(
+      productsRepo: productsRepo,
       title: title ?? this.title,
       description: description ?? this.description,
       productId: productId ?? this.productId,
@@ -80,41 +83,38 @@ class Product with ChangeNotifier {
     );
   }
 
-  // Future<void> toggleFavoriteStatus(String token, String userId) async {
-  //   final url = Uri.parse(
-  //       "https://shopapp-29118-default-rtdb.firebaseio.com/userfavorite/$userId/$id.json?auth=$token");
-  //   bool oldStatus = isFavorite!;
-
-  //   isFavorite = !isFavorite!;
-  // notifyListeners();
-
-  //   final response = await http.put(url, body: json.encode(isFavorite));
-  //   if (response.statusCode >= 400) {
-  //     isFavorite = oldStatus;
-  //     notifyListeners();
-  //   }
-
-  //   notifyListeners();
-  // }
   String? toggleFavoriteStatusErrorMessage;
-  Future<void> toggleFavoriteStatus(
-      String productId, String token, String userId) async {
-    bool oldStatus = isFavorite!;
 
-    isFavorite = !isFavorite!;
+  Future<void> toggleFavoriteStatus(
+    String productId,
+    String token,
+    String userId,
+  ) async {
+    final repository = productsRepo;
+    if (repository == null) {
+      toggleFavoriteStatusErrorMessage =
+          'Favorites are temporarily unavailable.';
+      notifyListeners();
+      return;
+    }
+
+    final oldStatus = isFavorite ?? false;
+    isFavorite = !oldStatus;
     notifyListeners();
 
-    final result = await productsRepo!.toggleFavoriteStatus(
+    final result = await repository.toggleFavoriteStatus(
       productId: productId,
-      token: token!,
-      userId: userId!,
+      token: token,
+      userId: userId,
       isFavorite: isFavorite,
     );
+
     result.when(
       success: (_) {
-        notifyListeners();
+        toggleFavoriteStatusErrorMessage = null;
       },
       failure: (exception) {
+        isFavorite = oldStatus;
         toggleFavoriteStatusErrorMessage = exception.message;
         notifyListeners();
       },
