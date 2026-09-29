@@ -152,5 +152,3 @@ class ProductsProvider with ChangeNotifier {
     );
   }
 }
-
-}
