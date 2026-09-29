@@ -9,6 +9,9 @@ import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/data/repos/order_repo.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
+import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
+import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/screens/cart_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/screens/login_screen.dart';
@@ -74,7 +77,7 @@ class MyApp extends StatelessWidget {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const SplashScreen();
                     }
-                    return LoginScreen();
+                    return const LoginScreen();
                   },
                 ),
           routes: {
@@ -82,8 +85,28 @@ class MyApp extends StatelessWidget {
                 const ProductDetailedScreen(),
             CartScreen.routName: (_) => const CartScreen(),
             OrdersScreen.routeName: (_) => const OrdersScreen(),
-            UserProductScreen.routeName: (_) => const UserProductScreen(),
-            EditProductScreen.routeName: (_) => const EditProductScreen(),
+            UserProductScreen.routeName: (_) =>
+                const UserProductScreen(),
+            EditProductScreen.routeName: (_) =>
+                const EditProductScreen(),
+            CheckoutScreen.routeName: (routeContext) {
+              final cart = routeContext.read<CartProvider>();
+              final items = cart.Items.entries.map((entry) {
+                final item = entry.value;
+                return CheckoutLineItem(
+                  productId: entry.key,
+                  title: item.title ?? 'Product',
+                  quantity: item.quantity ?? 1,
+                  unitPrice: item.price ?? 0,
+                );
+              }).toList();
+
+              return ChangeNotifierProvider<CheckoutController>(
+                create: (_) => getIt<CheckoutController>()
+                  ..initialize(items: items),
+                child: const CheckoutScreen(),
+              );
+            },
           },
         ),
       ),
