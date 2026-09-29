@@ -1,12 +1,16 @@
 import 'package:shop_application/features/checkout/data/datasources/checkout_remote_data_source.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/domain/repositories/checkout_repository.dart';
+import 'package:shop_application/features/payments/domain/entities/payment_capability.dart';
+import 'package:shop_application/features/payments/domain/gateways/payment_gateway.dart';
 
 class CheckoutRepositoryImpl implements CheckoutRepository {
   final CheckoutRemoteDataSource remoteDataSource;
+  final PaymentGateway paymentGateway;
 
   CheckoutRepositoryImpl({
     required this.remoteDataSource,
+    required this.paymentGateway,
   });
 
   @override
@@ -45,8 +49,16 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
 
   @override
   Future<List<PaymentMethodOption>> getPaymentMethods() async {
-    return const [
-      PaymentMethodOption(
+    final gatewayReady = paymentGateway.isConfigured;
+    final supportsCard =
+        gatewayReady &&
+        paymentGateway.capabilities.contains(PaymentCapability.card);
+    final supportsWallet =
+        gatewayReady &&
+        paymentGateway.capabilities.contains(PaymentCapability.wallet);
+
+    return [
+      const PaymentMethodOption(
         id: 'cod',
         type: PaymentMethodType.cashOnDelivery,
         title: 'Cash on delivery',
@@ -56,15 +68,19 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
         id: 'card',
         type: PaymentMethodType.card,
         title: 'Card payment',
-        description: 'Gateway-ready — secure provider connection required',
-        isEnabled: false,
+        description: supportsCard
+            ? 'Secure card payment via ${paymentGateway.providerName}'
+            : 'Secure gateway connection required',
+        isEnabled: supportsCard,
       ),
       PaymentMethodOption(
         id: 'wallet',
         type: PaymentMethodType.digitalWallet,
         title: 'Digital wallet',
-        description: 'Gateway-ready for wallet integrations',
-        isEnabled: false,
+        description: supportsWallet
+            ? 'Wallet payment via ${paymentGateway.providerName}'
+            : 'Wallet gateway connection required',
+        isEnabled: supportsWallet,
       ),
     ];
   }
