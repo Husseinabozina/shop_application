@@ -183,6 +183,14 @@ class CheckoutOrderDraft {
   });
 
   Map<String, dynamic> toJson() {
+    final placedAt = DateTime.now();
+    final estimatedDeliveryStart = placedAt.add(
+      Duration(days: shippingMethod.minDeliveryDays),
+    );
+    final estimatedDeliveryEnd = placedAt.add(
+      Duration(days: shippingMethod.maxDeliveryDays),
+    );
+
     return {
       'items': items.map((item) => item.toJson()).toList(),
       'shippingAddress': address.toJson(),
@@ -193,8 +201,13 @@ class CheckoutOrderDraft {
       'shippingAmount': totals.shipping,
       'discountAmount': totals.discount,
       'amount': totals.total,
-      'datetime': DateTime.now().toIso8601String(),
+      'datetime': placedAt.toIso8601String(),
       'status': 'placed',
+      'statusHistory': {
+        'placed': placedAt.toIso8601String(),
+      },
+      'estimatedDeliveryStart': estimatedDeliveryStart.toIso8601String(),
+      'estimatedDeliveryEnd': estimatedDeliveryEnd.toIso8601String(),
       'paymentStatus':
           paymentMethod.type == PaymentMethodType.cashOnDelivery
               ? 'cash_on_delivery'
