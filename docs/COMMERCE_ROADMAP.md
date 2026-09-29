@@ -27,6 +27,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 
 ### Checkout
 - delivery address form
+- saved address selection
+- automatic default address reuse
 - Standard and Express shipping options
 - delivery estimates
 - free-shipping threshold
@@ -39,9 +41,23 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - order confirmation
 - backend-agnostic CheckoutRepository contract
 
+### Address book
+- Firebase-backed saved addresses
+- add/edit/delete
+- default address
+- reuse saved address at checkout
+
 ### Orders
 - per-user order history
-- expandable order details
+- Firebase order IDs preserved
+- active/delivered/cancelled filters
+- order status model
+- status chips
+- order tracking details screen
+- visual tracking timeline
+- estimated delivery window
+- shipping/payment/address details
+- compatibility with legacy quantity data
 
 ## Next — high value, still portfolio-sized
 
@@ -64,28 +80,20 @@ Candidate providers depend on target market:
 
 A real gateway requires secure server-side handling for secret credentials. Firebase Cloud Functions can be used if Firebase remains the backend.
 
-### 2. Saved addresses
-- address book
-- default address
-- edit/delete address
-- reuse address at checkout
-- local cache + remote repository contract
+### 2. Backend-driven order updates
+The customer tracking UI and status model are implemented.
 
-### 3. Order tracking
-Target statuses:
-- placed
-- confirmed
-- packed
-- shipped
-- out for delivery
-- delivered
-- cancelled
+Next backend work:
+- update order status from an admin/backend workflow
+- append status timestamps
+- send customer notifications when status changes
+- optionally connect carrier tracking
 
-UI:
-- status chip in Orders
-- order details screen
-- visual timeline
-- estimated delivery date
+### 3. Firebase production hardening
+- verify and version Realtime Database security rules
+- validate customer ownership for addresses/orders/favorites
+- review product/admin write permissions
+- move backend endpoints into typed environment configuration
 
 ### 4. Catalog discovery
 - category chips
