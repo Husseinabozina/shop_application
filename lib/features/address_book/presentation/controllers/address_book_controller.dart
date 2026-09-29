@@ -90,10 +90,12 @@ class AddressBookController with ChangeNotifier {
         accessToken: accessToken,
       );
 
-      return _addresses.cast<SavedAddress?>().firstWhere(
-            (item) => item?.id == saved.id,
-            orElse: () => saved,
-          );
+      for (final item in _addresses) {
+        if (item.id == saved.id) {
+          return item;
+        }
+      }
+      return saved;
     } catch (error) {
       _errorMessage = _cleanError(error);
       return null;
