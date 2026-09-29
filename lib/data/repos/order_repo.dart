@@ -2,15 +2,19 @@ import 'package:shop_application/core/network/api_result.dart';
 import 'package:shop_application/core/network/error_handler.dart';
 import 'package:shop_application/data/models/order/add_order_response_body.dart';
 import 'package:shop_application/data/services/order_services.dart';
-import 'package:shop_application/provider/order.dart';
+import 'package:shop_application/features/orders/domain/entities/order.dart';
 
 abstract class OrderRepo {
-  Future<APIResult<Order>> fetchOrder(String orderId, String? token);
+  Future<APIResult<Order>> fetchOrder({
+    required String userId,
+    required String orderId,
+    required String token,
+  });
 
   Future<APIResult<AddOrderResponseBody>> addOrder({
     required Order order,
-    String? userId,
-    String? token,
+    required String userId,
+    required String token,
   });
 
   Future<APIResult<List<Order>>> fetchOrders(
@@ -25,13 +29,23 @@ class OrderRepoImpl implements OrderRepo {
   OrderRepoImpl({required this.orderServices});
 
   @override
-  Future<APIResult<Order>> fetchOrder(
-    String orderId,
-    String? token,
-  ) async {
+  Future<APIResult<Order>> fetchOrder({
+    required String userId,
+    required String orderId,
+    required String token,
+  }) async {
     try {
-      final data = await orderServices.fetchSingleOrder(orderId, token);
-      return APIResult.success(Order.fromJson(data));
+      final data = await orderServices.fetchSingleOrder(
+        userId,
+        orderId,
+        token,
+      );
+      return APIResult.success(
+        Order.fromJson({
+          ...data,
+          'id': orderId,
+        }),
+      );
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
     }
@@ -40,8 +54,8 @@ class OrderRepoImpl implements OrderRepo {
   @override
   Future<APIResult<AddOrderResponseBody>> addOrder({
     required Order order,
-    String? userId,
-    String? token,
+    required String userId,
+    required String token,
   }) async {
     try {
       final data = await orderServices.addOrder(
@@ -63,7 +77,7 @@ class OrderRepoImpl implements OrderRepo {
     try {
       final data = await orderServices.fetchOrders(userId, token);
       final result = data.entries.map((entry) {
-        final orderData = entry.value as Map<String, dynamic>;
+        final orderData = Map<String, dynamic>.from(entry.value as Map);
         return Order.fromJson({
           ...orderData,
           'id': entry.key,
