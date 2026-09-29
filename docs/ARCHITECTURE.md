@@ -35,6 +35,14 @@ lib/
       presentation/
 
     catalog/
+      domain/
+      presentation/
+
+    payments/
+      data/
+      domain/
+
+    address_book/
       data/
       domain/
       presentation/
@@ -202,11 +210,43 @@ without rewriting the checkout screen.
 
 A payment UI must never pretend a card payment succeeded.
 
-Current architecture distinguishes payment method selection from payment authorization.
+Checkout depends on the provider-agnostic `PaymentGateway` contract.
 
-A real card gateway requires a secure server-side component for secret-key operations. When a real provider is connected, its implementation belongs behind the payment/checkout data layer.
+```text
+CheckoutRepository
+   |
+PaymentGateway
+   |
+   +--> UnconfiguredPaymentGateway today
+   +--> Paymob / Stripe / Moyasar adapter later
+```
 
-Cash on Delivery can be completed without a payment gateway.
+Gateway capabilities decide whether Card and Wallet options are enabled. The current adapter intentionally exposes no online-payment capabilities, so Cash on Delivery remains the only executable method until a secure real provider is connected.
+
+A real card gateway requires a trusted server-side component for secret-key operations. Secret credentials must never be bundled in Flutter.
+
+## Catalog state
+
+Customer catalog state and seller-managed inventory are kept separately.
+
+This prevents a user-scoped seller query from replacing the global storefront catalog in memory.
+
+Product records support:
+
+- category
+- creator ownership
+- favorites
+- title/description/image/price
+
+Legacy records without a category map to `General`.
+
+## Navigation and design
+
+Primary customer navigation is Home / Categories / Cart / Orders / Account.
+
+Account-specific and seller-specific tools remain secondary subflows.
+
+The visual system is documented in `docs/DESIGN_SYSTEM.md` and uses a warm brown/ivory Material 3 palette with equivalent dark-mode roles.
 
 ## Migration strategy
 
