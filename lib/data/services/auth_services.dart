@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:shop_application/core/config/app_environment.dart';
 import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/network/api.dart';
@@ -29,28 +31,29 @@ class AuthServiceImpl implements AuthService {
   ) async {
     try {
       final response = await api.post(
-        url:
-            'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment',
-        query: {
-          'key': AppEnvironment.firebaseWebApiKey,
-        },
-        data: {
-          'email': email,
-          'password': password,
-          'returnSecureToken': true,
-        },
+        url: 'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment',
+        query: {'key': AppEnvironment.firebaseWebApiKey},
+        data: {'email': email, 'password': password, 'returnSecureToken': true},
       );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final failure = ExceptionHandler.handleFirebaseAuthResponse(response);
+        if (kDebugMode) {
+          debugPrint(
+            'Firebase Auth $urlSegment failed: ${failure.errorCode} '
+            '(HTTP ${response.statusCode})',
+          );
+        }
+        throw failure;
+      }
 
       final responseData = json.decode(response.body) as Map<String, dynamic>;
 
-      if (responseData['error'] != null) {
-        throw ExceptionHandler.handle(responseData['error']);
-      }
-
       final expiresInSeconds =
           int.tryParse(responseData['expiresIn']?.toString() ?? '') ?? 3600;
-      final expiryDate =
-          DateTime.now().add(Duration(seconds: expiresInSeconds));
+      final expiryDate = DateTime.now().add(
+        Duration(seconds: expiresInSeconds),
+      );
 
       await CacheHelper.saveUserData(
         responseData['idToken'] as String,

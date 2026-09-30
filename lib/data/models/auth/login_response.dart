@@ -1,5 +1,5 @@
 class LoginResponse {
-  final String kind;
+  final String? kind;
   final String localId;
   final String email;
   final String? displayName;
@@ -9,7 +9,7 @@ class LoginResponse {
   final String expiresIn;
 
   LoginResponse({
-    required this.kind,
+    this.kind,
     required this.localId,
     required this.email,
     required this.displayName,
@@ -21,7 +21,7 @@ class LoginResponse {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      kind: json['kind'] as String,
+      kind: json['kind'] as String?,
       localId: json['localId'] as String,
       email: json['email'] as String,
       displayName: json['displayName'] as String?,
