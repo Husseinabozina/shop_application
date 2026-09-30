@@ -34,7 +34,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             tooltip: 'Refresh status',
             onPressed: order.id == null || _isRefreshing
                 ? null
-                : () => _refreshOrder(context, order),
+                : () => _refreshOrder(order),
             icon: _isRefreshing
                 ? const SizedBox(
                     width: 20,
@@ -48,7 +48,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => _refreshOrder(context, order),
+        onRefresh: () => _refreshOrder(order),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
@@ -75,9 +75,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     if (order.datetime != null) ...[
                       const SizedBox(height: 7),
                       Text(
-                        'Placed ' +
-                            DateFormat('MMM d, yyyy • h:mm a')
-                                .format(order.datetime!),
+                        'Placed ${DateFormat('MMM d, yyyy • h:mm a').format(order.datetime!)}',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -206,7 +204,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '\$' + _formatPrice(order.amount ?? 0),
+                    '\${_formatPrice(order.amount ?? 0)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
@@ -236,10 +234,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     return widget.order;
   }
 
-  Future<void> _refreshOrder(
-    BuildContext context,
-    Order order,
-  ) async {
+  Future<void> _refreshOrder(Order order) async {
     final orderId = order.id;
     if (orderId == null || orderId.isEmpty || _isRefreshing) {
       return;
@@ -275,7 +270,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
 
     final suffix = id.length <= 8 ? id : id.substring(id.length - 8);
-    return 'Order #' + suffix.toUpperCase();
+    return 'Order #${suffix.toUpperCase()}';
   }
 
   String _deliveryEstimate(Order order) {
@@ -286,9 +281,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       if (_isSameDay(start, end)) {
         return DateFormat('EEE, MMM d').format(end);
       }
-      return DateFormat('MMM d').format(start) +
-          ' – ' +
-          DateFormat('MMM d').format(end);
+      return '${DateFormat('MMM d').format(start)} – ${DateFormat('MMM d').format(end)}';
     }
 
     if (end != null) {
@@ -296,10 +289,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
 
     if (order.shippingMinDays != null && order.shippingMaxDays != null) {
-      return order.shippingMinDays.toString() +
-          '–' +
-          order.shippingMaxDays.toString() +
-          ' business days';
+      return '${order.shippingMinDays}–${order.shippingMaxDays} business days';
     }
 
     return 'Delivery estimate unavailable';
@@ -611,7 +601,7 @@ class _OrderProducts extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$' + _formatPrice(total),
+                '\${_formatPrice(total)}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
