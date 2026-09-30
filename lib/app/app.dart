@@ -21,7 +21,7 @@ import 'package:shop_application/screens/login_screen.dart';
 import 'package:shop_application/screens/orders_screen.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 import 'package:shop_application/screens/product_overview_screen.dart';
-import 'package:shop_application/screens/splashScreen.dart';
+import 'package:shop_application/screens/splash_screen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
 
 class MyShopApp extends StatelessWidget {
@@ -131,7 +131,7 @@ class MyShopApp extends StatelessWidget {
     final cart = context.read<CartProvider>();
     final auth = context.read<AuthProvider>();
 
-    final items = cart.Items.entries.map((entry) {
+    final items = cart.items.entries.map((entry) {
       final item = entry.value;
       return CheckoutLineItem(
         productId: entry.key,
