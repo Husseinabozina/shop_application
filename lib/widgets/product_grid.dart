@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/provider/product.dart';
 import 'package:shop_application/widgets/product_item.dart';
@@ -10,6 +11,7 @@ class ProductsGrid extends StatelessWidget {
   final String query;
   final String? category;
   final ProductSortOption sort;
+  final CatalogFilter filter;
 
   const ProductsGrid({
     super.key,
@@ -17,6 +19,7 @@ class ProductsGrid extends StatelessWidget {
     this.query = '',
     this.category,
     this.sort = ProductSortOption.featured,
+    this.filter = CatalogFilter.empty,
   });
 
   @override
@@ -33,6 +36,10 @@ class ProductsGrid extends StatelessWidget {
       if (selectedCategory != null &&
           selectedCategory.isNotEmpty &&
           product.category.trim().toLowerCase() != selectedCategory) {
+        return false;
+      }
+
+      if (!filter.matches(product)) {
         return false;
       }
 
@@ -76,7 +83,7 @@ class ProductsGrid extends StatelessWidget {
             Text(
               favoritesOnly && normalizedQuery.isEmpty
                   ? 'Save products or try another category.'
-                  : 'Try another search, category, or sort option.',
+                  : 'Try another search, category, filter, or sort option.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
