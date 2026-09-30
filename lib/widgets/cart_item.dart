@@ -142,7 +142,7 @@ class CartItem extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (!canIncrease && stockQuantity != null) ...[
+                    if (!canIncrease) ...[
                       const SizedBox(height: 7),
                       Text(
                         'Maximum available quantity reached',
