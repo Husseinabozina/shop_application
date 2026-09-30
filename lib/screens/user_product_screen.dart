@@ -96,6 +96,7 @@ class _UserProductScreenState extends State<UserProductScreen> {
                   title: product.title,
                   category: product.category,
                   price: product.price,
+                  stockQuantity: product.stockQuantity,
                 );
               },
             ),
