@@ -502,7 +502,7 @@ class _AddressPreview extends StatelessWidget {
         const SizedBox(height: 5),
         Text(address.addressLine1),
         if (secondLine != null && secondLine.isNotEmpty) Text(secondLine),
-        Text(address.city + ', ' + address.country),
+        Text('${address.city}, ${address.country}'),
       ],
     );
   }
@@ -690,7 +690,7 @@ class _AddressPreview extends StatelessWidget {
         const SizedBox(height: 5),
         Text(address.addressLine1),
         if (secondLine != null && secondLine.isNotEmpty) Text(secondLine),
-        Text(address.city + ', ' + address.country),
+        Text('${address.city}, ${address.country}'),
       ],
     );
   }
@@ -727,7 +727,7 @@ class _ShippingOptions extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           subtitle: Text(
-            method.description + ' • ' + method.deliveryEstimate,
+            '${method.description} • ${method.deliveryEstimate}',
           ),
           secondary: Text(
             method.price == 0
