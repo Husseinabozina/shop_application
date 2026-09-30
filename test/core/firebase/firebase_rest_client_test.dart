@@ -121,8 +121,7 @@ void main() {
     expect(api.lastMethod, 'GET');
     expect(
       api.lastUrl,
-      AppEnvironment.normalizedFirebaseDatabaseUrl +
-          '/order/user-1.json',
+      '${AppEnvironment.normalizedFirebaseDatabaseUrl}/order/user-1.json',
     );
     expect(api.lastQuery?['auth'], 'test-token');
     expect(api.lastQuery?['orderBy'], '"datetime"');
@@ -140,8 +139,7 @@ void main() {
     expect(api.lastMethod, 'POST');
     expect(
       api.lastUrl,
-      AppEnvironment.normalizedFirebaseDatabaseUrl +
-          '/addresses/user-1.json',
+      '${AppEnvironment.normalizedFirebaseDatabaseUrl}/addresses/user-1.json',
     );
     expect(api.lastData, const {'label': 'Home'});
   });
