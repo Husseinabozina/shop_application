@@ -242,6 +242,11 @@ class Product with ChangeNotifier {
   ) {
     final images = <String>[];
 
+    final primary = imageUrl?.trim();
+    if (primary != null && primary.isNotEmpty) {
+      images.add(primary);
+    }
+
     if (imageUrls != null) {
       for (final value in imageUrls) {
         final image = value.trim();
@@ -249,13 +254,6 @@ class Product with ChangeNotifier {
           images.add(image);
         }
       }
-    }
-
-    final primary = imageUrl?.trim();
-    if (primary != null &&
-        primary.isNotEmpty &&
-        !images.contains(primary)) {
-      images.insert(0, primary);
     }
 
     return List.unmodifiable(images);
