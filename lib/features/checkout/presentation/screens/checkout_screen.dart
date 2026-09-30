@@ -199,7 +199,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     )
                   : Text(
-                      'Place order • \${_formatPrice(checkout.totals.total)}',
+                      'Place order • \$${_formatPrice(checkout.totals.total)}',
                     ),
             ),
           );
@@ -663,7 +663,7 @@ class _OrderSummary extends StatelessWidget {
                     '${item.title} × ${_formatQuantity(item.quantity)}',
                   ),
                 ),
-                Text('\${_formatPrice(item.total)}'),
+                Text('\$${_formatPrice(item.total)}'),
               ],
             ),
           ),
@@ -671,20 +671,20 @@ class _OrderSummary extends StatelessWidget {
         const Divider(height: 26),
         _SummaryRow(
           label: 'Subtotal',
-          value: '\${_formatPrice(totals.subtotal)}',
+          value: '\$${_formatPrice(totals.subtotal)}',
         ),
         const SizedBox(height: 9),
         _SummaryRow(
           label: 'Shipping',
           value: totals.shipping == 0
               ? 'Free'
-              : '\${_formatPrice(totals.shipping)}',
+              : '\$${_formatPrice(totals.shipping)}',
         ),
         if (totals.discount > 0) ...[
           const SizedBox(height: 9),
           _SummaryRow(
             label: 'Discount',
-            value: '-\${_formatPrice(totals.discount)}',
+            value: '-\$${_formatPrice(totals.discount)}',
           ),
         ],
         const Divider(height: 26),
@@ -698,7 +698,7 @@ class _OrderSummary extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '\${_formatPrice(totals.total)}',
+              '\$${_formatPrice(totals.total)}',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: theme.colorScheme.primary,
