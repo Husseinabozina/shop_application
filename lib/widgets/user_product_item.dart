@@ -128,7 +128,7 @@ class UserProductItem extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete product?'),
         content: Text(
-          'Remove ' + (title ?? 'this product') + ' from the storefront?',
+          'Remove ${title ?? 'this product'} from the storefront?',
         ),
         actions: [
           TextButton(
