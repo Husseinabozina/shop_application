@@ -89,12 +89,9 @@ class ShippingMethod {
 
   String get deliveryEstimate {
     if (minDeliveryDays == maxDeliveryDays) {
-      return minDeliveryDays.toString() + ' day delivery';
+      return '$minDeliveryDays day delivery';
     }
-    return minDeliveryDays.toString() +
-        '–' +
-        maxDeliveryDays.toString() +
-        ' business days';
+    return '$minDeliveryDays–$maxDeliveryDays business days';
   }
 
   Map<String, dynamic> toJson() {
