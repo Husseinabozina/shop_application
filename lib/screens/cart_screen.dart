@@ -186,10 +186,11 @@ class _CheckoutBarState extends State<_CheckoutBar> {
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
+      isScrollControlled: true,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
 
-        return Padding(
+        return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
