@@ -8,6 +8,7 @@ import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/data/repos/products_repo.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
@@ -46,6 +47,9 @@ class MyShopApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
+        ),
+        ChangeNotifierProvider<RecentlyViewedController>(
+          create: (_) => getIt<RecentlyViewedController>()..load(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrderController>(
           create: (_) => OrderController(
