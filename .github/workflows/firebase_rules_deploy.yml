@@ -1,0 +1,48 @@
+name: Deploy Firebase Rules
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: Firebase project ID
+        required: true
+        default: shopapp-29118
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-database-rules:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Prepare service account credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "Missing FIREBASE_SERVICE_ACCOUNT_JSON GitHub secret."
+            exit 1
+          fi
+
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          chmod 600 "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Deploy Realtime Database rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          firebase deploy             --only database             --project "${{ inputs.project_id }}"             --non-interactive
