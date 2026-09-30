@@ -111,10 +111,7 @@ class FirebaseRestClientImpl implements FirebaseRestClient {
         .where((segment) => segment.trim().isNotEmpty)
         .join('/');
 
-    return AppEnvironment.normalizedFirebaseDatabaseUrl +
-        '/' +
-        cleanPath +
-        '.json';
+    return '${AppEnvironment.normalizedFirebaseDatabaseUrl}/$cleanPath.json';
   }
 
   Map<String, dynamic>? _query({
