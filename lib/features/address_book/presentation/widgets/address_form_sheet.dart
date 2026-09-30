@@ -172,7 +172,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
       ),
       validator: (value) {
         if ((value ?? '').trim().isEmpty) {
-          return label + ' is required.';
+          return '$label is required.';
         }
         return null;
       },
