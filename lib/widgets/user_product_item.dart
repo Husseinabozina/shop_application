@@ -62,7 +62,7 @@ class UserProductItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '\$' + _formatPrice(price),
+                    '\${_formatPrice(price)}',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
