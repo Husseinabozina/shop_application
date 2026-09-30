@@ -8,7 +8,7 @@ import 'package:shop_application/widgets/store_bottom_navigation.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
-  static const routName = '/cartScreen';
+  static const routeName = '/cartScreen';
 
   @override
   Widget build(BuildContext context) {
