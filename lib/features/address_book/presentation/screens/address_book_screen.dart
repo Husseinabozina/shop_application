@@ -163,7 +163,7 @@ class AddressBookScreen extends StatelessWidget {
                         Text(address.addressLine1),
                         if ((address.addressLine2 ?? '').trim().isNotEmpty)
                           Text(address.addressLine2!),
-                        Text(address.city + ', ' + address.country),
+                        Text('${address.city}, ${address.country}'),
                       ],
                     ),
                   ),
@@ -251,7 +251,7 @@ class AddressBookScreen extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete address?'),
         content: Text(
-          'Remove ' + address.label + ' from your saved addresses?',
+          'Remove ${address.label} from your saved addresses?',
         ),
         actions: [
           TextButton(
