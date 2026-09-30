@@ -129,3 +129,20 @@ Before deploying strict product-write rules to a live database containing legacy
 Never store payment gateway secret keys in the Flutter application or Realtime Database.
 
 A real card or wallet integration should use a trusted server-side environment such as Firebase Cloud Functions or a separate backend behind the payment repository/gateway contract.
+
+
+## GitHub Actions deployment
+
+The repository includes a manual workflow at:
+
+`.github/workflows/firebase_rules_deploy.yml`
+
+It deploys Realtime Database rules only.
+
+Required GitHub secret:
+
+- `FIREBASE_SERVICE_ACCOUNT_JSON` — the complete JSON key for a service account that has permission to deploy Firebase Realtime Database rules.
+
+The workflow defaults to project ID `shopapp-29118`, but the project ID can be changed when manually starting the workflow.
+
+Do not commit the service-account JSON to the repository and do not paste it into source files.
