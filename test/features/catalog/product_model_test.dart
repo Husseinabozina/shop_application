@@ -42,12 +42,12 @@ void main() {
       ],
     );
 
-    expect(product.imageUrl, 'https://example.com/side.jpg');
+    expect(product.imageUrl, 'https://example.com/main.jpg');
     expect(
       product.imageUrls,
       [
-        'https://example.com/side.jpg',
         'https://example.com/main.jpg',
+        'https://example.com/side.jpg',
       ],
     );
   });
