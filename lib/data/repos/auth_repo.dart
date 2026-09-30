@@ -15,9 +15,9 @@ abstract class AuthRepo {
 }
 
 class AuthRepoImpl implements AuthRepo {
-  AuthService authService;
+  final AuthService authService;
 
-  AuthRepoImpl({required this.authService});
+  const AuthRepoImpl({required this.authService});
 
   @override
   Future<APIResult<LoginResponse>> login(String email, String password) async {
@@ -58,7 +58,7 @@ class AuthRepoImpl implements AuthRepo {
   Future<APIResult<void>> logout() async {
     try {
       await authService.logout();
-      return APIResult.success(null);
+      return const APIResult<void>.success(null);
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
     }
