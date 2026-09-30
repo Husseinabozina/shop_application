@@ -2,10 +2,11 @@
   "rules": {
     ".read": false,
     ".write": false,
-
     "products": {
       ".read": "auth != null",
-      ".indexOn": ["creatorId"],
+      ".indexOn": [
+        "creatorId"
+      ],
       "$productId": {
         ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('creatorId').val() === auth.uid) || (data.exists() && data.child('creatorId').val() === auth.uid && (!newData.exists() || newData.child('creatorId').val() === auth.uid)))",
         ".validate": "!newData.exists() || (newData.hasChildren(['title', 'description', 'imageUrl', 'price', 'category', 'creatorId']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('description').isString() && newData.child('description').val().length > 0 && newData.child('imageUrl').isString() && newData.child('imageUrl').val().length > 0 && newData.child('price').isNumber() && newData.child('price').val() > 0 && newData.child('category').isString() && newData.child('category').val().length > 0 && newData.child('creatorId').val() === auth.uid)",
@@ -13,14 +14,12 @@
           ".validate": "newData.isNumber() && newData.val() >= 0"
         },
         "imageUrls": {
-          ".validate": "newData.numChildren() <= 6",
           "$index": {
-            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2048"
+            ".validate": "$index.matches(/^[0-5]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 2048"
           }
         }
       }
     },
-
     "userfavorite": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
@@ -30,7 +29,6 @@
         }
       }
     },
-
     "addresses": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
@@ -67,7 +65,6 @@
         }
       }
     },
-
     "order": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
