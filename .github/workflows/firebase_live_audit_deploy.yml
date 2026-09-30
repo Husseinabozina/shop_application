@@ -1,0 +1,213 @@
+name: Firebase Live Audit and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/firebase_live_audit_deploy.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      FIREBASE_PROJECT_ID: shopapp-29118
+      FIREBASE_DATABASE_URL: https://shopapp-29118-default-rtdb.firebaseio.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install Firebase tooling
+        run: |
+          npm install --global firebase-tools
+          npm install --no-save google-auth-library
+
+      - name: Prepare service account credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "Missing FIREBASE_SERVICE_ACCOUNT_JSON GitHub secret."
+            exit 1
+          fi
+
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          chmod 600 "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Audit live products and current rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { GoogleAuth } = require('google-auth-library');
+
+          const databaseUrl = process.env.FIREBASE_DATABASE_URL.replace(/\/$/, '');
+
+          async function accessToken() {
+            const auth = new GoogleAuth({
+              keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+              scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+            });
+            const client = await auth.getClient();
+            const token = await client.getAccessToken();
+            if (!token.token) throw new Error('Could not obtain Google access token.');
+            return token.token;
+          }
+
+          async function readJson(url, token) {
+            const response = await fetch(url, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) {
+              const body = await response.text();
+              throw new Error(`GET ${url} failed: ${response.status} ${body.slice(0, 300)}`);
+            }
+            return response.json();
+          }
+
+          function stable(value) {
+            if (Array.isArray(value)) return value.map(stable);
+            if (value && typeof value === 'object') {
+              return Object.fromEntries(
+                Object.keys(value).sort().map((key) => [key, stable(value[key])]),
+              );
+            }
+            return value;
+          }
+
+          (async () => {
+            const token = await accessToken();
+            const products = await readJson(`${databaseUrl}/products.json`, token);
+            const entries = products && typeof products === 'object'
+              ? Object.entries(products)
+              : [];
+
+            const missingCreatorId = [];
+            let missingStockQuantity = 0;
+            let missingImageUrls = 0;
+
+            for (const [id, product] of entries) {
+              if (!product || typeof product !== 'object') continue;
+              if (!product.creatorId) missingCreatorId.push(id);
+              if (!Object.prototype.hasOwnProperty.call(product, 'stockQuantity')) {
+                missingStockQuantity++;
+              }
+              if (!Array.isArray(product.imageUrls)) {
+                missingImageUrls++;
+              }
+            }
+
+            console.log(`Live products: ${entries.length}`);
+            console.log(`Products missing creatorId: ${missingCreatorId.length}`);
+            console.log(`Products without stockQuantity: ${missingStockQuantity}`);
+            console.log(`Products without imageUrls: ${missingImageUrls}`);
+
+            if (missingCreatorId.length > 0) {
+              console.error(
+                `BLOCKED: ${missingCreatorId.length} product(s) are missing creatorId. ` +
+                'Strict owner-write rules would make those legacy products non-editable. No rules were deployed.'
+              );
+              process.exit(20);
+            }
+
+            try {
+              const live = await readJson(
+                `${databaseUrl}/.settings/rules.json`,
+                token,
+              );
+              const repo = JSON.parse(fs.readFileSync('database.rules.json', 'utf8'));
+              const liveRules = live && live.rules ? live.rules : live;
+              const same = JSON.stringify(stable(liveRules)) ===
+                JSON.stringify(stable(repo.rules));
+              console.log(`Live rules already match repository: ${same}`);
+            } catch (error) {
+              console.log(
+                'Current live-rules read was unavailable; product audit passed, so deployment may continue.'
+              );
+              console.log(String(error.message).slice(0, 300));
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Deploy Realtime Database rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          firebase deploy \
+            --only database \
+            --project "$FIREBASE_PROJECT_ID" \
+            --non-interactive
+
+      - name: Verify deployed live rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { GoogleAuth } = require('google-auth-library');
+
+          function stable(value) {
+            if (Array.isArray(value)) return value.map(stable);
+            if (value && typeof value === 'object') {
+              return Object.fromEntries(
+                Object.keys(value).sort().map((key) => [key, stable(value[key])]),
+              );
+            }
+            return value;
+          }
+
+          (async () => {
+            const auth = new GoogleAuth({
+              keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+              scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+            });
+            const client = await auth.getClient();
+            const token = await client.getAccessToken();
+            if (!token.token) throw new Error('Could not obtain Google access token.');
+
+            const databaseUrl = process.env.FIREBASE_DATABASE_URL.replace(/\/$/, '');
+            const response = await fetch(
+              `${databaseUrl}/.settings/rules.json`,
+              { headers: { Authorization: `Bearer ${token.token}` } },
+            );
+
+            if (!response.ok) {
+              const body = await response.text();
+              throw new Error(
+                `Live rules verification failed: ${response.status} ${body.slice(0, 300)}`
+              );
+            }
+
+            const live = await response.json();
+            const repo = JSON.parse(fs.readFileSync('database.rules.json', 'utf8'));
+            const liveRules = live && live.rules ? live.rules : live;
+
+            if (
+              JSON.stringify(stable(liveRules)) !==
+              JSON.stringify(stable(repo.rules))
+            ) {
+              throw new Error('Deployed live rules do not match database.rules.json.');
+            }
+
+            console.log('Verified: live Realtime Database rules match database.rules.json.');
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
