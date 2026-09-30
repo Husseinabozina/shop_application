@@ -18,6 +18,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
   final _categoryController = TextEditingController();
+  final _stockController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
@@ -46,6 +47,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _priceController.text =
         _product.price == null ? '' : _product.price.toString();
     _categoryController.text = _product.category;
+    _stockController.text = _product.stockQuantity?.toString() ?? '';
     _descriptionController.text = _product.description ?? '';
     _imageUrlController.text = _product.imageUrl ?? '';
   }
@@ -55,6 +57,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _titleController.dispose();
     _priceController.dispose();
     _categoryController.dispose();
+    _stockController.dispose();
     _descriptionController.dispose();
     _imageUrlController.dispose();
     super.dispose();
@@ -142,6 +145,29 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: _stockController,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Stock quantity (optional)',
+                helperText: 'Leave empty if inventory is not tracked',
+                prefixIcon: Icon(Icons.inventory_outlined),
+              ),
+              validator: (value) {
+                final text = (value ?? '').trim();
+                if (text.isEmpty) {
+                  return null;
+                }
+
+                final stock = int.tryParse(text);
+                if (stock == null || stock < 0) {
+                  return 'Enter a whole number of zero or more.';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 14),
             TextFormField(
@@ -240,10 +266,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     final provider = context.read<ProductsProvider>();
+    final stockText = _stockController.text.trim();
     final updatedProduct = _product.copyWith(
       title: _titleController.text.trim(),
       price: double.parse(_priceController.text.trim()),
       category: _categoryController.text.trim(),
+      stockQuantity: stockText.isEmpty ? null : int.parse(stockText),
+      clearStock: stockText.isEmpty,
       description: _descriptionController.text.trim(),
       imageUrl: _imageUrlController.text.trim(),
     );

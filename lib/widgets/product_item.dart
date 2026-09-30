@@ -69,6 +69,12 @@ class ProductItem extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (product.tracksStock)
+                    Positioned(
+                      left: 10,
+                      bottom: 10,
+                      child: _StockBadge(product: product),
+                    ),
                 ],
               ),
             ),
@@ -113,10 +119,14 @@ class ProductItem extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filledTonal(
-                    tooltip: 'Add to cart',
-                    onPressed: () => _addToCart(context, product),
-                    icon: const Icon(
-                      Icons.add_shopping_cart_rounded,
+                    tooltip: product.isInStock ? 'Add to cart' : 'Sold out',
+                    onPressed: product.isInStock
+                        ? () => _addToCart(context, product)
+                        : null,
+                    icon: Icon(
+                      product.isInStock
+                          ? Icons.add_shopping_cart_rounded
+                          : Icons.block_rounded,
                       size: 20,
                     ),
                   ),
@@ -152,16 +162,18 @@ class ProductItem extends StatelessWidget {
     BuildContext context,
     Product product,
   ) {
-    if (product.id == null ||
+    if (!product.isInStock ||
+        product.id == null ||
         product.price == null ||
         product.title == null) {
       return;
     }
 
-    context.read<CartProvider>().addItem(
+    final added = context.read<CartProvider>().addItem(
           product.id!,
           product.price!,
           product.title!,
+          maxQuantity: product.stockQuantity?.toDouble(),
         );
 
     final messenger = ScaffoldMessenger.of(context);
@@ -169,13 +181,21 @@ class ProductItem extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('${product.title!} added to cart'),
-          action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () {
-              context.read<CartProvider>().removeSingleItem(product.id!);
-            },
+          content: Text(
+            added
+                ? '${product.title!} added to cart'
+                : 'Maximum available stock is already in your cart',
           ),
+          action: added
+              ? SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () {
+                    context
+                        .read<CartProvider>()
+                        .removeSingleItem(product.id!);
+                  },
+                )
+              : null,
         ),
       );
   }
@@ -185,6 +205,49 @@ class ProductItem extends StatelessWidget {
     return value == value.roundToDouble()
         ? value.toStringAsFixed(0)
         : value.toStringAsFixed(2);
+  }
+}
+
+
+class _StockBadge extends StatelessWidget {
+  final Product product;
+
+  const _StockBadge({
+    required this.product,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isOut = !product.isInStock;
+    final background = isOut
+        ? theme.colorScheme.errorContainer
+        : product.isLowStock
+            ? theme.colorScheme.tertiaryContainer
+            : theme.colorScheme.surface.withValues(alpha: 0.92);
+    final foreground = isOut
+        ? theme.colorScheme.onErrorContainer
+        : product.isLowStock
+            ? theme.colorScheme.onTertiaryContainer
+            : theme.colorScheme.onSurface;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 9,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        product.stockLabel,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
   }
 }
 

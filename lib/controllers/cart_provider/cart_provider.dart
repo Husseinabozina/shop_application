@@ -16,15 +16,29 @@ class CartProvider with ChangeNotifier {
     );
   }
 
-  void addItem(String productId, num price, String title) {
+  bool addItem(
+    String productId,
+    num price,
+    String title, {
+    double? maxQuantity,
+  }) {
+    if (maxQuantity != null && maxQuantity <= 0) {
+      return false;
+    }
+
     final existing = _items[productId];
 
     if (existing != null) {
+      final currentQuantity = existing.quantity ?? 0;
+      if (maxQuantity != null && currentQuantity >= maxQuantity) {
+        return false;
+      }
+
       _items[productId] = CartModel(
         id: existing.id,
         title: existing.title,
         price: existing.price,
-        quantity: (existing.quantity ?? 0) + 1,
+        quantity: currentQuantity + 1,
       );
     } else {
       _items[productId] = CartModel(
@@ -36,6 +50,7 @@ class CartProvider with ChangeNotifier {
     }
 
     notifyListeners();
+    return true;
   }
 
   void removeItem(String productId) {

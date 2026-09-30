@@ -23,11 +23,14 @@ class CartItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cart = context.read<CartProvider>();
-    final products = context.read<ProductsProvider>().products;
+    final products = context.watch<ProductsProvider>().products;
     final matches = products.where((product) => product.id == productId);
-    final imageUrl =
-        matches.isEmpty ? '' : (matches.first.imageUrl?.trim() ?? '');
+    final matchedProduct = matches.isEmpty ? null : matches.first;
+    final imageUrl = matchedProduct?.imageUrl?.trim() ?? '';
+    final stockQuantity = matchedProduct?.stockQuantity;
     final itemQuantity = quantity ?? 0;
+    final canIncrease =
+        stockQuantity == null || itemQuantity < stockQuantity;
     final itemTotal = (price ?? 0) * itemQuantity;
 
     return Dismissible(
@@ -121,16 +124,34 @@ class CartItem extends StatelessWidget {
                         ),
                         _QuantityButton(
                           icon: Icons.add_rounded,
-                          onPressed: () {
-                            if (productId != null &&
-                                price != null &&
-                                title != null) {
-                              cart.addItem(productId!, price!, title!);
-                            }
-                          },
+                          onPressed: canIncrease
+                              ? () {
+                                  if (productId != null &&
+                                      price != null &&
+                                      title != null) {
+                                    cart.addItem(
+                                      productId!,
+                                      price!,
+                                      title!,
+                                      maxQuantity:
+                                          stockQuantity?.toDouble(),
+                                    );
+                                  }
+                                }
+                              : null,
                         ),
                       ],
                     ),
+                    if (!canIncrease) ...[
+                      const SizedBox(height: 7),
+                      Text(
+                        'Maximum available quantity reached',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.tertiary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -189,11 +210,11 @@ class CartItem extends StatelessWidget {
 
 class _QuantityButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _QuantityButton({
     required this.icon,
-    required this.onPressed,
+    this.onPressed,
   });
 
   @override

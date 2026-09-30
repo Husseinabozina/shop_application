@@ -19,6 +19,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - product details with delivery information
 - per-user favorites
 - product ownership metadata
+- optional stock tracking with sold-out/low-stock states
+- cart quantity caps for tracked stock
 - user-scoped product management
 - pull to refresh
 
@@ -130,7 +132,6 @@ Next backend work:
 ### 5. Product detail depth
 - image gallery
 - product variants such as size/color
-- stock state
 - delivery estimate
 - ratings summary
 - reviews

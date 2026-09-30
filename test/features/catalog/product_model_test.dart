@@ -15,6 +15,52 @@ void main() {
     expect(product.category, 'General');
   });
 
+
+  test('legacy products remain purchasable when stock is not tracked', () {
+    final product = Product.fromJson(
+      {
+        'title': 'Legacy product',
+        'price': 10,
+      },
+      'legacy-id',
+    );
+
+    expect(product.stockQuantity, isNull);
+    expect(product.tracksStock, isFalse);
+    expect(product.isInStock, isTrue);
+    expect(product.stockLabel, 'In stock');
+  });
+
+  test('zero tracked stock is sold out', () {
+    final product = Product.fromJson(
+      {
+        'title': 'Sold out product',
+        'price': 10,
+        'stockQuantity': 0,
+      },
+      'sold-out-id',
+    );
+
+    expect(product.isInStock, isFalse);
+    expect(product.isLowStock, isFalse);
+    expect(product.stockLabel, 'Sold out');
+  });
+
+  test('small tracked quantities expose a low-stock state', () {
+    final product = Product.fromJson(
+      {
+        'title': 'Low stock product',
+        'price': 10,
+        'stockQuantity': 3,
+      },
+      'low-stock-id',
+    );
+
+    expect(product.isInStock, isTrue);
+    expect(product.isLowStock, isTrue);
+    expect(product.stockLabel, 'Only 3 left');
+  });
+
   test('product JSON preserves category and creator ownership', () {
     final product = Product(
       id: 'product-1',
@@ -25,6 +71,7 @@ void main() {
       price: 50,
       category: 'Electronics',
       creatorId: 'user-1',
+      stockQuantity: 12,
     );
 
     final json = product.toJson();
@@ -32,5 +79,6 @@ void main() {
     expect(json['category'], 'Electronics');
     expect(json['creatorId'], 'user-1');
     expect(json['price'], 50);
+    expect(json['stockQuantity'], 12);
   });
 }
