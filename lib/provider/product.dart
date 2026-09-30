@@ -9,6 +9,7 @@ class Product with ChangeNotifier {
   final String? imageUrl;
   final String category;
   final String? creatorId;
+  final int? stockQuantity;
   bool? isFavorite;
   final num? price;
 
@@ -23,6 +24,7 @@ class Product with ChangeNotifier {
     this.imageUrl,
     this.category = 'General',
     this.creatorId,
+    this.stockQuantity,
     this.isFavorite = false,
     this.title,
   });
@@ -38,6 +40,7 @@ class Product with ChangeNotifier {
             (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
         category = _normalizedCategory(json['category']),
         creatorId = json['creatorId'] as String?,
+        stockQuantity = _parseStockQuantity(json['stockQuantity']),
         isFavorite = json['isFavorite'] as bool? ?? false,
         price = json['price'] as num?;
 
@@ -54,9 +57,31 @@ class Product with ChangeNotifier {
           (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
       category: _normalizedCategory(json['category']),
       creatorId: json['creatorId'] as String?,
+      stockQuantity: _parseStockQuantity(json['stockQuantity']),
       isFavorite: json['isFavorite'] as bool? ?? false,
       price: json['price'] as num?,
     );
+  }
+
+  bool get tracksStock => stockQuantity != null;
+
+  bool get isInStock => stockQuantity == null || stockQuantity! > 0;
+
+  bool get isLowStock =>
+      stockQuantity != null && stockQuantity! > 0 && stockQuantity! <= 5;
+
+  String get stockLabel {
+    final stock = stockQuantity;
+    if (stock == null) {
+      return 'In stock';
+    }
+    if (stock == 0) {
+      return 'Sold out';
+    }
+    if (stock <= 5) {
+      return 'Only $stock left';
+    }
+    return '$stock in stock';
   }
 
   Map<String, dynamic> toJson() {
@@ -67,6 +92,7 @@ class Product with ChangeNotifier {
       'imageUrl': imageUrl,
       'category': category,
       'creatorId': creatorId,
+      'stockQuantity': stockQuantity,
       'isFavorite': isFavorite,
       'price': price,
     };
@@ -80,6 +106,8 @@ class Product with ChangeNotifier {
     String? imageUrl,
     String? category,
     String? creatorId,
+    int? stockQuantity,
+    bool clearStock = false,
     bool? isFavorite,
     num? price,
   }) {
@@ -92,6 +120,9 @@ class Product with ChangeNotifier {
       imageUrl: imageUrl ?? this.imageUrl,
       category: category ?? this.category,
       creatorId: creatorId ?? this.creatorId,
+      stockQuantity: clearStock
+          ? null
+          : stockQuantity ?? this.stockQuantity,
       isFavorite: isFavorite ?? this.isFavorite,
       price: price ?? this.price,
     );
@@ -138,5 +169,21 @@ class Product with ChangeNotifier {
   static String _normalizedCategory(Object? raw) {
     final value = raw?.toString().trim();
     return value == null || value.isEmpty ? 'General' : value;
+  }
+
+  static int? _parseStockQuantity(Object? raw) {
+    if (raw == null) {
+      return null;
+    }
+
+    final value = raw is num
+        ? raw.toInt()
+        : int.tryParse(raw.toString());
+
+    if (value == null) {
+      return null;
+    }
+
+    return value < 0 ? 0 : value;
   }
 }
