@@ -123,9 +123,10 @@ Next backend work:
 - optionally connect carrier tracking
 
 ### 3. Firebase production deployment
-- deploy the versioned Realtime Database rules to the live Firebase project
-- verify live reads/writes with authenticated users
-- migrate trusted legacy products to a creatorId before relying on seller editing
+- Rules deployed on 2026-09-30; live unauthenticated read/write probes passed.
+- Authorized cleanup removed legacy app data, so no ownership migration is pending.
+- Emulator-based authenticated ownership tests are run through GitHub Actions.
+- Remaining: verify live authenticated reads/writes and the Flutter checkout flow.
 - keep backend/Admin SDK responsible for post-creation order status changes
 
 ### 4. Catalog depth

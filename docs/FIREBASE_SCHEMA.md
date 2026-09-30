@@ -125,7 +125,19 @@ Customer clients cannot update or delete orders after creation. Future order-sta
 
 ### Deployment state
 
-The rules file is versioned and CI-valid JSON, but the live Firebase project still needs an authenticated deployment/verification step before these rules can be claimed as active in production.
+On 2026-09-30, the project owner deployed the versioned rules from `master` to
+`shopapp-29118-default-rtdb`. The Firebase CLI output confirmed valid rule syntax
+and successful release. Live REST probes also confirmed that unauthenticated
+catalog reads and writes to an undeclared path are denied.
+
+Legacy data in `products`, `userfavorite`, `addresses`, and `order` was cleared
+with the project owner's authorization before that deployment. Auth users were
+preserved. Do not rerun `scripts/firebase_clean_reset.sh` for a routine deployment;
+it deletes application data. Use `firebase deploy --only database` instead.
+
+Authenticated access is tested separately against the local database emulator
+with two different user IDs and a guest context. See `security-tests/README.md`.
+These tests do not claim a live authenticated-user or end-to-end Flutter check.
 
 ### Legacy product ownership
 
