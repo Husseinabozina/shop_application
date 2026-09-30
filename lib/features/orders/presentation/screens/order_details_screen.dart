@@ -595,7 +595,7 @@ class _OrderProducts extends StatelessWidget {
                 ),
               ),
               Text(
-                _formatQuantity(quantity) + ' × ',
+                '${_formatQuantity(quantity)} × ',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
