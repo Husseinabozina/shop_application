@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
+import 'package:shop_application/features/catalog/presentation/widgets/catalog_filter_sheet.dart';
+import 'package:shop_application/features/catalog/presentation/widgets/recently_viewed_section.dart';
 import 'package:shop_application/widgets/product_grid.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
@@ -19,6 +22,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   String _query = '';
   String? _category;
   ProductSortOption _sort = ProductSortOption.featured;
+  CatalogFilter _filter = CatalogFilter.empty;
 
   @override
   void didChangeDependencies() {
@@ -99,9 +103,12 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                       _category = null;
                       _favoritesOnly = false;
                       _sort = ProductSortOption.featured;
+                      _filter = CatalogFilter.empty;
                     });
                   },
                 ),
+                const SizedBox(height: 20),
+                const RecentlyViewedSection(),
                 const SizedBox(height: 18),
                 TextField(
                   onChanged: (value) {
@@ -124,7 +131,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     FilterChip(
                       avatar: const Icon(
@@ -137,7 +146,18 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                         setState(() => _favoritesOnly = selected);
                       },
                     ),
-                    const SizedBox(width: 10),
+                    ActionChip(
+                      avatar: const Icon(
+                        Icons.tune_rounded,
+                        size: 18,
+                      ),
+                      label: Text(
+                        _filter.activeCount == 0
+                            ? 'Filters'
+                            : 'Filters (${_filter.activeCount})',
+                      ),
+                      onPressed: _openFilters,
+                    ),
                     PopupMenuButton<ProductSortOption>(
                       initialValue: _sort,
                       onSelected: (value) {
@@ -147,19 +167,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                         return ProductSortOption.values.map((option) {
                           return PopupMenuItem<ProductSortOption>(
                             value: option,
-                            child: Row(
-                              children: [
-                                if (_sort == option)
-                                  const Padding(
-                                    padding: EdgeInsets.only(right: 8),
-                                    child: Icon(
-                                      Icons.check_rounded,
-                                      size: 18,
-                                    ),
-                                  ),
-                                Text(option.label),
-                              ],
-                            ),
+                            child: Text(option.label),
                           );
                         }).toList();
                       },
@@ -171,14 +179,14 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                         label: Text(_sort.label),
                       ),
                     ),
-                    const Spacer(),
-                    Text(
-                      '${_visibleCount(productsProvider)} items',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
                   ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${_visibleCount(productsProvider)} items',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 ProductsGrid(
@@ -186,6 +194,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                   query: _query,
                   category: _category,
                   sort: _sort,
+                  filter: _filter,
                 ),
               ],
             ),
@@ -207,6 +216,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         return false;
       }
 
+      if (!_filter.matches(product)) {
+        return false;
+      }
+
       if (normalizedQuery.isEmpty) {
         return true;
       }
@@ -220,6 +233,23 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           category.contains(normalizedQuery);
     }).length;
   }
+  Future<void> _openFilters() async {
+    final result = await showModalBottomSheet<CatalogFilter>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => CatalogFilterSheet(
+        initialFilter: _filter,
+      ),
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    setState(() => _filter = result);
+  }
+
 }
 
 
