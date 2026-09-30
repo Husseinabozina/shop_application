@@ -89,7 +89,7 @@ class _CheckoutBar extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '\${_formatPrice(total)}',
+                    '\$${_formatPrice(total)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
