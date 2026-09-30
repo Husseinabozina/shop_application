@@ -6,7 +6,7 @@ import 'package:shop_application/controllers/products_provider/products_provider
 import 'package:shop_application/provider/product.dart';
 
 class ProductDetailedScreen extends StatelessWidget {
-  static const routename = '/ProductDetailed';
+  static const routeName = '/ProductDetailed';
 
   const ProductDetailedScreen({super.key});
 
