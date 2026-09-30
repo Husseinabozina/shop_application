@@ -91,7 +91,7 @@ class CartItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '\${_formatPrice(itemTotal)}',
+                      '\$${_formatPrice(itemTotal)}',
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w800,
