@@ -21,7 +21,11 @@ New and updated products keep catalog and ownership metadata:
 {
   "title": "Wireless Headphones",
   "description": "Product description",
-  "imageUrl": "https://example.com/product.jpg",
+  "imageUrl": "https://example.com/product-main.jpg",
+  "imageUrls": [
+    "https://example.com/product-main.jpg",
+    "https://example.com/product-side.jpg"
+  ],
   "price": 59.99,
   "category": "Electronics",
   "creatorId": "firebase-auth-user-id",
@@ -30,6 +34,8 @@ New and updated products keep catalog and ownership metadata:
 ```
 
 Legacy products without a category are displayed as `General`.
+
+`imageUrls` is optional and supports up to 6 gallery images. `imageUrl` remains the required primary image for backward compatibility and compact storefront cards. Legacy products with only `imageUrl` automatically behave as a one-image gallery.
 
 `stockQuantity` is optional for backward compatibility. If it is omitted, inventory is treated as not tracked. A value of `0` means Sold out; positive values represent the available quantity. The Flutter client prevents obvious over-ordering in the UI, but this is not an authoritative inventory reservation system.
 
