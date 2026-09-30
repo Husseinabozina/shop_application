@@ -1,3 +1,0 @@
-String? token;
-
-String? userId;
