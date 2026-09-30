@@ -24,11 +24,14 @@ New and updated products keep catalog and ownership metadata:
   "imageUrl": "https://example.com/product.jpg",
   "price": 59.99,
   "category": "Electronics",
-  "creatorId": "firebase-auth-user-id"
+  "creatorId": "firebase-auth-user-id",
+  "stockQuantity": 12
 }
 ```
 
 Legacy products without a category are displayed as `General`.
+
+`stockQuantity` is optional for backward compatibility. If it is omitted, inventory is treated as not tracked. A value of `0` means Sold out; positive values represent the available quantity. The Flutter client prevents obvious over-ordering in the UI, but this is not an authoritative inventory reservation system.
 
 User-scoped product management queries by `creatorId`. The versioned rules now include an index for this field:
 
@@ -40,7 +43,7 @@ User-scoped product management queries by `creatorId`. The versioned rules now i
 }
 ```
 
-Product writes are owner-scoped in `database.rules.json`: authenticated users can create products with their own `creatorId`, and can update/delete only products already owned by their UID. Legacy products without `creatorId` therefore remain readable but are intentionally not writable until ownership is migrated.
+Product writes are owner-scoped in `database.rules.json`: authenticated users can create products with their own `creatorId`, and can update/delete only products already owned by their UID. Optional `stockQuantity` values are validated as non-negative numbers. Legacy products without `creatorId` therefore remain readable but are intentionally not writable until ownership is migrated.
 
 ## Saved address record
 
@@ -123,6 +126,10 @@ The rules file is versioned and CI-valid JSON, but the live Firebase project sti
 Products created before `creatorId` was introduced cannot be safely assigned to a user from the client.
 
 Before deploying strict product-write rules to a live database containing legacy products, migrate each trusted legacy product to the correct creator UID with an administrative script or Firebase console operation. Do not infer ownership from the current signed-in client.
+
+## Inventory authority
+
+Tracked stock in the mobile app is currently a storefront/UX feature. Before a real online payment flow is considered production-ready, inventory must be revalidated and reserved in a trusted backend transaction at order/payment time so two customers cannot purchase the same final unit.
 
 ## Production payment note
 
