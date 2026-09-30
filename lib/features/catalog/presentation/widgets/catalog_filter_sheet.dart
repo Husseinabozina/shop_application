@@ -131,8 +131,20 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
   }
 
   void _apply() {
-    final minPrice = _parsePrice(_minPriceController.text);
-    final maxPrice = _parsePrice(_maxPriceController.text);
+    final minRaw = _minPriceController.text.trim();
+    final maxRaw = _maxPriceController.text.trim();
+    final minPrice = _parsePrice(minRaw);
+    final maxPrice = _parsePrice(maxRaw);
+
+    if ((minRaw.isNotEmpty && minPrice == null) ||
+        (maxRaw.isNotEmpty && maxPrice == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter valid non-negative prices.'),
+        ),
+      );
+      return;
+    }
 
     if (minPrice != null &&
         maxPrice != null &&
