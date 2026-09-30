@@ -91,14 +91,14 @@ class OrderItem extends StatelessWidget {
                     Text(
                       products.length == 1
                           ? '1 item'
-                          : products.length.toString() + ' items',
+                          : '${products.length} items',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const Spacer(),
                     Text(
-                      '\$' + _formatPrice(currentOrder.amount ?? 0),
+                      '\$${_formatPrice(currentOrder.amount ?? 0)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
@@ -117,9 +117,7 @@ class OrderItem extends StatelessWidget {
                       ),
                       const SizedBox(width: 7),
                       Text(
-                        'Estimated ' +
-                            DateFormat('MMM d')
-                                .format(currentOrder.estimatedDeliveryEnd!),
+                        'Estimated ${DateFormat('MMM d').format(currentOrder.estimatedDeliveryEnd!)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w800,
@@ -161,7 +159,7 @@ class OrderItem extends StatelessWidget {
     }
 
     final suffix = id.length <= 8 ? id : id.substring(id.length - 8);
-    return 'Order #' + suffix.toUpperCase();
+    return 'Order #${suffix.toUpperCase()}';
   }
 
   String _formatPrice(num value) {

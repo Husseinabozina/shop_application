@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
-import 'package:shop_application/widgets/orderItem.dart';
+import 'package:shop_application/widgets/order_item.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
 enum _OrderFilter {

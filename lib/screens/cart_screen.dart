@@ -8,12 +8,12 @@ import 'package:shop_application/widgets/store_bottom_navigation.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
-  static const routName = '/cartScreen';
+  static const routeName = '/cartScreen';
 
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
-    final entries = cart.Items.entries.toList();
+    final entries = cart.items.entries.toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +89,7 @@ class _CheckoutBar extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '\$' + _formatPrice(total),
+                    '\$${_formatPrice(total)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),

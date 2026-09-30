@@ -19,7 +19,7 @@ class ProductItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.of(context).pushNamed(
-            ProductDetailedScreen.routename,
+            ProductDetailedScreen.routeName,
             arguments: product.id,
           );
         },
@@ -102,7 +102,7 @@ class ProductItem extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '\$' + _formatPrice(product.price),
+                          '\$${_formatPrice(product.price)}',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w900,
@@ -169,7 +169,7 @@ class ProductItem extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(product.title! + ' added to cart'),
+          content: Text('${product.title!} added to cart'),
           action: SnackBarAction(
             label: 'Undo',
             onPressed: () {

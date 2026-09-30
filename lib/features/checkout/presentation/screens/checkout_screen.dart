@@ -199,8 +199,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     )
                   : Text(
-                      'Place order • \$' +
-                          _formatPrice(checkout.totals.total),
+                      'Place order • \$${_formatPrice(checkout.totals.total)}',
                     ),
             ),
           );
@@ -264,11 +263,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                           ),
                           subtitle: Text(
-                            address.addressLine1 +
-                                ', ' +
-                                address.city +
-                                ', ' +
-                                address.country,
+                            '${address.addressLine1}, ${address.city}, ${address.country}',
                           ),
                           trailing: address.isDefault
                               ? const Icon(Icons.check_circle_rounded)
@@ -379,9 +374,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         icon: const Icon(Icons.check_circle_outline_rounded),
         title: const Text('Order placed'),
         content: Text(
-          'Order #' +
-              (checkout.completedOrderId ?? '') +
-              ' has been created successfully.',
+          'Order #${checkout.completedOrderId ?? ''} has been created successfully.',
         ),
         actions: [
           FilledButton(
@@ -502,7 +495,7 @@ class _AddressPreview extends StatelessWidget {
         const SizedBox(height: 5),
         Text(address.addressLine1),
         if (secondLine != null && secondLine.isNotEmpty) Text(secondLine),
-        Text(address.city + ', ' + address.country),
+        Text('${address.city}, ${address.country}'),
       ],
     );
   }
@@ -523,37 +516,47 @@ class _ShippingOptions extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: controller.shippingMethods.map((method) {
-        final selected = controller.selectedShippingMethod?.id == method.id;
+    return RadioGroup<String>(
+      groupValue: controller.selectedShippingMethod?.id,
+      onChanged: (methodId) {
+        if (methodId == null) {
+          return;
+        }
 
-        return RadioListTile<String>(
-          contentPadding: EdgeInsets.zero,
-          value: method.id,
-          groupValue: controller.selectedShippingMethod?.id,
-          onChanged: (_) {
-            controller.selectShippingMethod(method);
-          },
-          title: Text(
-            method.title,
-            style: const TextStyle(fontWeight: FontWeight.w800),
-          ),
-          subtitle: Text(
-            method.description + ' • ' + method.deliveryEstimate,
-          ),
-          secondary: Text(
-            method.price == 0
-                ? 'FREE'
-                : '\$' + _formatPrice(method.price),
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: selected
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
-          ),
+        final method = controller.shippingMethods.firstWhere(
+          (item) => item.id == methodId,
         );
-      }).toList(),
+        controller.selectShippingMethod(method);
+      },
+      child: Column(
+        children: controller.shippingMethods.map((method) {
+          final selected =
+              controller.selectedShippingMethod?.id == method.id;
+
+          return RadioListTile<String>(
+            contentPadding: EdgeInsets.zero,
+            value: method.id,
+            title: Text(
+              method.title,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            subtitle: Text(
+              '${method.description} • ${method.deliveryEstimate}',
+            ),
+            secondary: Text(
+              method.price == 0
+                  ? 'FREE'
+                  : '\$${_formatPrice(method.price)}',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -580,35 +583,47 @@ class _PaymentOptions extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: controller.paymentMethods.map((method) {
-        final selected = controller.selectedPaymentMethod?.id == method.id;
+    return RadioGroup<String>(
+      groupValue: controller.selectedPaymentMethod?.id,
+      onChanged: (methodId) {
+        if (methodId == null) {
+          return;
+        }
 
-        return Opacity(
-          opacity: method.isEnabled ? 1 : 0.55,
-          child: RadioListTile<String>(
-            contentPadding: EdgeInsets.zero,
-            value: method.id,
-            groupValue: controller.selectedPaymentMethod?.id,
-            onChanged: method.isEnabled
-                ? (_) {
-                    controller.selectPaymentMethod(method);
-                  }
-                : null,
-            title: Text(
-              method.title,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            subtitle: Text(method.description),
-            secondary: Icon(
-              _paymentIcon(method.type),
-              color: selected
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
-          ),
+        final method = controller.paymentMethods.firstWhere(
+          (item) => item.id == methodId,
         );
-      }).toList(),
+
+        if (method.isEnabled) {
+          controller.selectPaymentMethod(method);
+        }
+      },
+      child: Column(
+        children: controller.paymentMethods.map((method) {
+          final selected =
+              controller.selectedPaymentMethod?.id == method.id;
+
+          return Opacity(
+            opacity: method.isEnabled ? 1 : 0.55,
+            child: RadioListTile<String>(
+              contentPadding: EdgeInsets.zero,
+              value: method.id,
+              enabled: method.isEnabled,
+              title: Text(
+                method.title,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(method.description),
+              secondary: Icon(
+                _paymentIcon(method.type),
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -645,12 +660,10 @@ class _OrderSummary extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    item.title +
-                        ' × ' +
-                        _formatQuantity(item.quantity),
+                    '${item.title} × ${_formatQuantity(item.quantity)}',
                   ),
                 ),
-                Text('\$' + _formatPrice(item.total)),
+                Text('\$${_formatPrice(item.total)}'),
               ],
             ),
           ),
@@ -658,20 +671,20 @@ class _OrderSummary extends StatelessWidget {
         const Divider(height: 26),
         _SummaryRow(
           label: 'Subtotal',
-          value: '\$' + _formatPrice(totals.subtotal),
+          value: '\$${_formatPrice(totals.subtotal)}',
         ),
         const SizedBox(height: 9),
         _SummaryRow(
           label: 'Shipping',
           value: totals.shipping == 0
               ? 'Free'
-              : '\$' + _formatPrice(totals.shipping),
+              : '\$${_formatPrice(totals.shipping)}',
         ),
         if (totals.discount > 0) ...[
           const SizedBox(height: 9),
           _SummaryRow(
             label: 'Discount',
-            value: '-\$' + _formatPrice(totals.discount),
+            value: '-\$${_formatPrice(totals.discount)}',
           ),
         ],
         const Divider(height: 26),
@@ -685,7 +698,7 @@ class _OrderSummary extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '\$' + _formatPrice(totals.total),
+              '\$${_formatPrice(totals.total)}',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: theme.colorScheme.primary,

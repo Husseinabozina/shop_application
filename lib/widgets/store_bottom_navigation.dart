@@ -20,7 +20,7 @@ class StoreBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cartCount = context.watch<CartProvider>().cartlengh;
+    final cartCount = context.watch<CartProvider>().cartLength;
 
     return NavigationBar(
       selectedIndex: selectedIndex,

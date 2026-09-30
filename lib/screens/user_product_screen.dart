@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
-import 'package:shop_application/widgets/user_produt_Item.dart';
+import 'package:shop_application/widgets/user_product_item.dart';
 
 class UserProductScreen extends StatefulWidget {
   static const routeName = '/userproducts';

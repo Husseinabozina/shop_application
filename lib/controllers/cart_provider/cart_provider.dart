@@ -1,70 +1,76 @@
 import 'package:flutter/foundation.dart';
-
-import '../../data/models/cart/cart_model.dart';
+import 'package:shop_application/data/models/cart/cart_model.dart';
 
 class CartProvider with ChangeNotifier {
-  Map<String, CartModel>? _items = {};
-  Map<String, CartModel> get Items {
-    return {..._items!};
-  }
+  final Map<String, CartModel> _items = {};
+
+  Map<String, CartModel> get items => Map.unmodifiable(_items);
+
+  int get cartLength => _items.length;
 
   double get totalPrice {
-    double total = 0.0;
-    _items!.forEach((key, value) {
-      total += value.price! * value.quantity!.toDouble();
-    });
-    return total;
+    return _items.values.fold<double>(
+      0,
+      (total, item) =>
+          total + (item.price ?? 0).toDouble() * (item.quantity ?? 0),
+    );
   }
 
   void addItem(String productId, num price, String title) {
-    if (_items!.containsKey(productId)) {
-      _items!.update(
-          productId,
-          (existencartItem) => CartModel(
-              id: existencartItem.id,
-              title: existencartItem.title,
-              price: existencartItem.price,
-              quantity: existencartItem.quantity! + 1));
-    } else {
-      _items!.putIfAbsent(
-          productId,
-          () => CartModel(
-              id: DateTime.now().toString(),
-              title: title,
-              price: price,
-              quantity: 1));
-    }
-    notifyListeners();
-  }
+    final existing = _items[productId];
 
-  int get cartlengh {
-    return _items == null ? 0 : _items!.length;
+    if (existing != null) {
+      _items[productId] = CartModel(
+        id: existing.id,
+        title: existing.title,
+        price: existing.price,
+        quantity: (existing.quantity ?? 0) + 1,
+      );
+    } else {
+      _items[productId] = CartModel(
+        id: DateTime.now().toIso8601String(),
+        title: title,
+        price: price,
+        quantity: 1,
+      );
+    }
+
+    notifyListeners();
   }
 
   void removeItem(String productId) {
-    _items!.remove(productId);
-    notifyListeners();
+    if (_items.remove(productId) != null) {
+      notifyListeners();
+    }
   }
 
   void removeSingleItem(String productId) {
-    if (!_items!.containsKey(productId)) {
+    final existing = _items[productId];
+    if (existing == null) {
       return;
-    } else if (_items![productId]!.quantity! > 1) {
-      _items!.update(
-          productId,
-          (existingCartItem) => CartModel(
-              id: existingCartItem.id,
-              title: existingCartItem.title,
-              price: existingCartItem.price,
-              quantity: existingCartItem.quantity! - 1));
-    } else {
-      removeItem(productId);
     }
+
+    final quantity = existing.quantity ?? 0;
+    if (quantity <= 1) {
+      _items.remove(productId);
+    } else {
+      _items[productId] = CartModel(
+        id: existing.id,
+        title: existing.title,
+        price: existing.price,
+        quantity: quantity - 1,
+      );
+    }
+
     notifyListeners();
   }
 
   void clear() {
-    _items = {};
+    if (_items.isEmpty) {
+      return;
+    }
+
+    _items.clear();
     notifyListeners();
   }
 }
