@@ -1,0 +1,72 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "products": {
+      ".read": "auth != null",
+      ".indexOn": ["creatorId"],
+      "$productId": {
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('creatorId').val() === auth.uid) || (data.exists() && data.child('creatorId').val() === auth.uid && (!newData.exists() || newData.child('creatorId').val() === auth.uid)))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['title', 'description', 'imageUrl', 'price', 'category', 'creatorId']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('description').isString() && newData.child('description').val().length > 0 && newData.child('imageUrl').isString() && newData.child('imageUrl').val().length > 0 && newData.child('price').isNumber() && newData.child('price').val() > 0 && newData.child('category').isString() && newData.child('category').val().length > 0 && newData.child('creatorId').val() === auth.uid)"
+      }
+    },
+
+    "userfavorite": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$productId": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+
+    "addresses": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$addressId": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "!newData.exists() || newData.hasChildren(['label', 'fullName', 'phone', 'addressLine1', 'city', 'country', 'isDefault'])",
+          "label": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+          },
+          "fullName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+          },
+          "phone": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 32"
+          },
+          "addressLine1": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+          },
+          "addressLine2": {
+            ".validate": "newData.isString() && newData.val().length <= 200"
+          },
+          "city": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+          },
+          "country": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+          },
+          "postalCode": {
+            ".validate": "newData.isString() && newData.val().length <= 24"
+          },
+          "isDefault": {
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      }
+    },
+
+    "order": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$orderId": {
+          ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['amount', 'datetime', 'status', 'products']) && newData.child('amount').isNumber() && newData.child('amount').val() >= 0 && newData.child('datetime').isString() && newData.child('datetime').val().length > 0 && newData.child('status').val() === 'placed'"
+        }
+      }
+    }
+  }
+}

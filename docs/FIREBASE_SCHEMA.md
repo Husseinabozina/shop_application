@@ -30,7 +30,7 @@ New and updated products keep catalog and ownership metadata:
 
 Legacy products without a category are displayed as `General`.
 
-User-scoped product management queries by `creatorId`. If Firebase rules are versioned later, the products collection should include an index for this field:
+User-scoped product management queries by `creatorId`. The versioned rules now include an index for this field:
 
 ```json
 {
@@ -40,7 +40,7 @@ User-scoped product management queries by `creatorId`. If Firebase rules are ver
 }
 ```
 
-Product write permissions still need a real seller/admin authorization policy before this is considered production-ready.
+Product writes are owner-scoped in `database.rules.json`: authenticated users can create products with their own `creatorId`, and can update/delete only products already owned by their UID. Legacy products without `creatorId` therefore remain readable but are intentionally not writable until ownership is migrated.
 
 ## Saved address record
 
@@ -98,38 +98,31 @@ delivered
 cancelled
 ```
 
-## Security requirement
+## Security rules
 
-Database rules are not currently versioned in this repository, so the live Firebase rules must be verified before the address book is considered production-ready.
+Realtime Database rules are now versioned in `database.rules.json` and referenced by `firebase.json`.
 
-At minimum, customer-scoped paths should enforce ownership:
+The rules enforce:
 
-```json
-{
-  "rules": {
-    "addresses": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
-      }
-    },
-    "order": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
-      }
-    },
-    "userfavorite": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
-      }
-    }
-  }
-}
-```
+- authenticated product reads
+- owner-scoped product create/update/delete via `creatorId`
+- `creatorId` indexing for seller queries
+- per-user favorites
+- per-user saved addresses with field validation
+- per-user order reads
+- create-only customer order writes
 
-This snippet is documentation, not a deployed rules file. Existing product/admin access requirements must be reviewed before applying any complete ruleset.
+Customer clients cannot update or delete orders after creation. Future order-status changes should be performed by a trusted backend/Admin SDK, which is the intended path for tracking updates.
+
+### Deployment state
+
+The rules file is versioned and CI-valid JSON, but the live Firebase project still needs an authenticated deployment/verification step before these rules can be claimed as active in production.
+
+### Legacy product ownership
+
+Products created before `creatorId` was introduced cannot be safely assigned to a user from the client.
+
+Before deploying strict product-write rules to a live database containing legacy products, migrate each trusted legacy product to the correct creator UID with an administrative script or Firebase console operation. Do not infer ownership from the current signed-in client.
 
 ## Production payment note
 

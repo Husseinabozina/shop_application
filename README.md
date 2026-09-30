@@ -20,7 +20,7 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Cash on Delivery
 - Capability-driven card and wallet options that stay disabled until a real gateway is configured
 - Per-user order history and visual delivery tracking
-- Firebase Realtime Database
+- Firebase Realtime Database with versioned ownership rules
 - Feature-first checkout architecture
 - Feature-first checkout, address-book, and orders architecture
 - Repository and data-source boundaries
@@ -101,7 +101,7 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 ### Planned next
 - real card payment gateway adapter + secure server endpoint
 - backend/admin-driven order status updates
-- Firebase security-rule verification and deployment
+- deploy and verify versioned Firebase security rules on the live project
 - advanced attribute filters / recently viewed
 - product variants
 - ratings and reviews
