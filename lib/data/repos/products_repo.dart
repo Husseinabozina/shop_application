@@ -39,7 +39,7 @@ abstract class ProductsRepo {
 class ProductsRepoImpl extends ProductsRepo {
   final ProductService productService;
 
-  ProductsRepoImpl(this.productService);
+  const ProductsRepoImpl(this.productService);
 
   @override
   Future<APIResult<List<Product>>> fetchProductsFromJson({
@@ -86,7 +86,7 @@ class ProductsRepoImpl extends ProductsRepo {
   ) async {
     try {
       await productService.deleteProduct(productId, token);
-      return APIResult.success(null);
+      return const APIResult<void>.success(null);
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
     }
@@ -136,7 +136,7 @@ class ProductsRepoImpl extends ProductsRepo {
         userId: userId,
         isFavorite: isFavorite,
       );
-      return APIResult.success(null);
+      return const APIResult<void>.success(null);
     } catch (e) {
       return APIResult.failure(ExceptionHandler.handle(e));
     }
