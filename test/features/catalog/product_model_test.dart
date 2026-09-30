@@ -16,6 +16,62 @@ void main() {
   });
 
 
+  test('legacy single image becomes a one-image gallery', () {
+    final product = Product.fromJson(
+      {
+        'title': 'Legacy product',
+        'imageUrl': 'https://example.com/legacy.jpg',
+      },
+      'legacy-image-id',
+    );
+
+    expect(product.imageUrl, 'https://example.com/legacy.jpg');
+    expect(
+      product.imageUrls,
+      ['https://example.com/legacy.jpg'],
+    );
+  });
+
+  test('gallery keeps the primary image first and removes duplicates', () {
+    final product = Product(
+      imageUrl: 'https://example.com/main.jpg',
+      imageUrls: const [
+        'https://example.com/side.jpg',
+        'https://example.com/main.jpg',
+        'https://example.com/side.jpg',
+      ],
+    );
+
+    expect(product.imageUrl, 'https://example.com/side.jpg');
+    expect(
+      product.imageUrls,
+      [
+        'https://example.com/side.jpg',
+        'https://example.com/main.jpg',
+      ],
+    );
+  });
+
+  test('gallery JSON preserves all image urls', () {
+    final product = Product(
+      imageUrls: const [
+        'https://example.com/main.jpg',
+        'https://example.com/side.jpg',
+      ],
+    );
+
+    final json = product.toJson();
+
+    expect(json['imageUrl'], 'https://example.com/main.jpg');
+    expect(
+      json['imageUrls'],
+      [
+        'https://example.com/main.jpg',
+        'https://example.com/side.jpg',
+      ],
+    );
+  });
+
   test('legacy products remain purchasable when stock is not tracked', () {
     final product = Product.fromJson(
       {
