@@ -38,22 +38,26 @@ class Product with ChangeNotifier {
           imageUrl,
         );
 
-  Product.fromJson(
+  factory Product.fromJson(
     Map<String, dynamic> json,
     String? firebaseProductId,
-  )   : title = json['title'] as String?,
-        description = json['description'] as String?,
-        id = (json['id'] as String?) ?? firebaseProductId,
-        productId = firebaseProductId,
-        imageUrls = _parseImageUrls(json),
-        imageUrl = _parseImageUrls(json).isEmpty
-            ? null
-            : _parseImageUrls(json).first,
-        category = _normalizedCategory(json['category']),
-        creatorId = json['creatorId'] as String?,
-        stockQuantity = _parseStockQuantity(json['stockQuantity']),
-        isFavorite = json['isFavorite'] as bool? ?? false,
-        price = json['price'] as num?;
+  ) {
+    final images = _parseImageUrls(json);
+
+    return Product(
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      id: (json['id'] as String?) ?? firebaseProductId,
+      productId: firebaseProductId,
+      imageUrl: images.isEmpty ? null : images.first,
+      imageUrls: images,
+      category: _normalizedCategory(json['category']),
+      creatorId: json['creatorId'] as String?,
+      stockQuantity: _parseStockQuantity(json['stockQuantity']),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      price: json['price'] as num?,
+    );
+  }
 
   factory Product.updateFromJson(
     Map<String, dynamic> json, {
