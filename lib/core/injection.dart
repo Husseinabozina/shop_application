@@ -10,6 +10,9 @@ import 'package:shop_application/features/address_book/data/datasources/address_
 import 'package:shop_application/features/address_book/data/repositories/address_book_repository_impl.dart';
 import 'package:shop_application/features/address_book/domain/repositories/address_book_repository.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
+import 'package:shop_application/features/catalog/data/repositories/recently_viewed_repository_impl.dart';
+import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/features/checkout/data/datasources/checkout_remote_data_source.dart';
 import 'package:shop_application/features/checkout/data/repositories/checkout_repository_impl.dart';
 import 'package:shop_application/features/checkout/domain/repositories/checkout_repository.dart';
@@ -47,6 +50,15 @@ void setup() {
   );
   getIt.registerLazySingleton<ProductsRepo>(
     () => ProductsRepoImpl(getIt<ProductService>()),
+  );
+
+  getIt.registerLazySingleton<RecentlyViewedRepository>(
+    () => RecentlyViewedRepositoryImpl(),
+  );
+  getIt.registerFactory<RecentlyViewedController>(
+    () => RecentlyViewedController(
+      repository: getIt<RecentlyViewedRepository>(),
+    ),
   );
 
   getIt.registerLazySingleton<OrderRemoteDataSource>(

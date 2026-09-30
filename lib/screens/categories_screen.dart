@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
+import 'package:shop_application/features/catalog/presentation/widgets/catalog_filter_sheet.dart';
 import 'package:shop_application/widgets/product_grid.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
@@ -20,6 +22,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   String? _category;
   String _query = '';
   ProductSortOption _sort = ProductSortOption.featured;
+  CatalogFilter _filter = CatalogFilter.empty;
 
   @override
   void didChangeDependencies() {
@@ -118,35 +121,51 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: PopupMenuButton<ProductSortOption>(
-                    initialValue: _sort,
-                    onSelected: (value) {
-                      setState(() => _sort = value);
-                    },
-                    itemBuilder: (_) {
-                      return ProductSortOption.values.map((option) {
-                        return PopupMenuItem(
-                          value: option,
-                          child: Text(option.label),
-                        );
-                      }).toList();
-                    },
-                    child: Chip(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ActionChip(
                       avatar: const Icon(
-                        Icons.swap_vert_rounded,
+                        Icons.tune_rounded,
                         size: 18,
                       ),
-                      label: Text(_sort.label),
+                      label: Text(
+                        _filter.activeCount == 0
+                            ? 'Filters'
+                            : 'Filters (${_filter.activeCount})',
+                      ),
+                      onPressed: _openFilters,
                     ),
-                  ),
+                    PopupMenuButton<ProductSortOption>(
+                      initialValue: _sort,
+                      onSelected: (value) {
+                        setState(() => _sort = value);
+                      },
+                      itemBuilder: (_) {
+                        return ProductSortOption.values.map((option) {
+                          return PopupMenuItem(
+                            value: option,
+                            child: Text(option.label),
+                          );
+                        }).toList();
+                      },
+                      child: Chip(
+                        avatar: const Icon(
+                          Icons.swap_vert_rounded,
+                          size: 18,
+                        ),
+                        label: Text(_sort.label),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 14),
                 ProductsGrid(
                   query: _query,
                   category: _category,
                   sort: _sort,
+                  filter: _filter,
                 ),
               ],
             ),
@@ -155,4 +174,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
     );
   }
+  Future<void> _openFilters() async {
+    final result = await showModalBottomSheet<CatalogFilter>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => CatalogFilterSheet(
+        initialFilter: _filter,
+      ),
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    setState(() => _filter = result);
+  }
+
 }

@@ -42,6 +42,21 @@ class CacheHelper {
     await _prefs.remove(_userDataKey);
   }
 
+  static List<String> getStringList(String key) {
+    return _prefs.getStringList(key) ?? const [];
+  }
+
+  static Future<bool> setStringList(
+    String key,
+    List<String> values,
+  ) {
+    return _prefs.setStringList(key, values);
+  }
+
+  static Future<bool> remove(String key) {
+    return _prefs.remove(key);
+  }
+
   // Check if user is logged in by verifying if 'UserData' exists
   static bool isLoggedIn() {
     return _prefs.containsKey(_userDataKey);

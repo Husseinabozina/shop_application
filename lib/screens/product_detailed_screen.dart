@@ -1,19 +1,57 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/provider/product.dart';
 
-class ProductDetailedScreen extends StatelessWidget {
+class ProductDetailedScreen extends StatefulWidget {
   static const routeName = '/ProductDetailed';
 
   const ProductDetailedScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ProductDetailedScreen> createState() => _ProductDetailedScreenState();
+}
+
+class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
+  Product? _product;
+  bool _didInitialize = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_didInitialize) {
+      return;
+    }
+
+    _didInitialize = true;
     final productId = ModalRoute.of(context)!.settings.arguments as String;
     final product = context.read<ProductsProvider>().findById(productId);
+    _product = product;
+
+    final canonicalId = product.id ?? product.productId;
+    if (canonicalId != null) {
+      unawaited(
+        context.read<RecentlyViewedController>().record(canonicalId),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final product = _product;
+    if (product == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return ChangeNotifierProvider<Product>.value(
       value: product,
