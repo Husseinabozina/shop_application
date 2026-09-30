@@ -37,18 +37,14 @@ class MyShopApp extends StatelessWidget {
           value: getIt<AuthProvider>(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
-          create: (_) => ProductsProvider(
-            productsRepo: getIt<ProductsRepo>(),
-          ),
+          create: (_) => ProductsProvider(productsRepo: getIt<ProductsRepo>()),
           update: (_, auth, __) => ProductsProvider(
             productsRepo: getIt<ProductsRepo>(),
             token: auth.token,
             userId: auth.userId,
           ),
         ),
-        ChangeNotifierProvider<CartProvider>(
-          create: (_) => CartProvider(),
-        ),
+        ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
         ChangeNotifierProxyProvider<AuthProvider, RecentlyViewedController>(
           create: (_) => RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
@@ -59,9 +55,7 @@ class MyShopApp extends StatelessWidget {
           )..load(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrderController>(
-          create: (_) => OrderController(
-            repository: getIt<OrderRepository>(),
-          ),
+          create: (_) => OrderController(repository: getIt<OrderRepository>()),
           update: (_, auth, __) => OrderController(
             repository: getIt<OrderRepository>(),
             token: auth.token,
@@ -77,7 +71,7 @@ class MyShopApp extends StatelessWidget {
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: ThemeMode.system,
-            home: _homeFor(auth),
+            home: const _AuthGate(),
             routes: _routes(),
           );
         },
@@ -85,34 +79,15 @@ class MyShopApp extends StatelessWidget {
     );
   }
 
-  Widget _homeFor(AuthProvider auth) {
-    if (auth.isAuth) {
-      return const ProductOverviewScreen();
-    }
-
-    return FutureBuilder<bool>(
-      future: auth.tryAutoLogin(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SplashScreen();
-        }
-        return const LoginScreen();
-      },
-    );
-  }
-
   Map<String, WidgetBuilder> _routes() {
     return {
-      ProductDetailedScreen.routeName: (_) =>
-          const ProductDetailedScreen(),
+      ProductDetailedScreen.routeName: (_) => const ProductDetailedScreen(),
       CartScreen.routeName: (_) => const CartScreen(),
       CategoriesScreen.routeName: (_) => const CategoriesScreen(),
       AccountScreen.routeName: (_) => const AccountScreen(),
       OrdersScreen.routeName: (_) => const OrdersScreen(),
-      UserProductScreen.routeName: (_) =>
-          const UserProductScreen(),
-      EditProductScreen.routeName: (_) =>
-          const EditProductScreen(),
+      UserProductScreen.routeName: (_) => const UserProductScreen(),
+      EditProductScreen.routeName: (_) => const EditProductScreen(),
       AddressBookScreen.routeName: _buildAddressBookRoute,
       CheckoutScreen.routeName: _buildCheckoutRoute,
     };
@@ -127,10 +102,7 @@ class MyShopApp extends StatelessWidget {
       create: (_) {
         final controller = getIt<AddressBookController>();
         if (token != null && userId != null) {
-          controller.load(
-            userId: userId,
-            accessToken: token,
-          );
+          controller.load(userId: userId, accessToken: token);
         }
         return controller;
       },
@@ -158,23 +130,54 @@ class MyShopApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CheckoutController>(
-          create: (_) => getIt<CheckoutController>()
-            ..initialize(items: items),
+          create: (_) => getIt<CheckoutController>()..initialize(items: items),
         ),
         ChangeNotifierProvider<AddressBookController>(
           create: (_) {
             final controller = getIt<AddressBookController>();
             if (token != null && userId != null) {
-              controller.load(
-                userId: userId,
-                accessToken: token,
-              );
+              controller.load(userId: userId, accessToken: token);
             }
             return controller;
           },
         ),
       ],
       child: const CheckoutScreen(),
+    );
+  }
+}
+
+/// Restore once so a failed sign-in does not replace and clear the form.
+class _AuthGate extends StatefulWidget {
+  const _AuthGate();
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  late final Future<bool> _restoredSession;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoredSession = context.read<AuthProvider>().tryAutoLogin();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (context.watch<AuthProvider>().isAuth) {
+      return const ProductOverviewScreen();
+    }
+
+    return FutureBuilder<bool>(
+      future: _restoredSession,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SplashScreen();
+        }
+        return const LoginScreen();
+      },
     );
   }
 }

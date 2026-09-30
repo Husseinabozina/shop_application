@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   AuthMode _authMode = AuthMode.login;
   bool _isLoading = false;
   bool _hidePassword = true;
+  String? _errorMessage;
 
   bool get _isLogin => _authMode == AuthMode.login;
 
@@ -32,52 +33,46 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isLoading) {
+      return;
+    }
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     final auth = context.read<AuthProvider>();
 
     if (_isLogin) {
-      await auth.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      await auth.login(_emailController.text.trim(), _passwordController.text);
     } else {
-      await auth.signup(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      await auth.signup(_emailController.text.trim(), _passwordController.text);
     }
 
     if (!mounted) {
       return;
     }
 
-    setState(() => _isLoading = false);
-
-    if (!auth.isAuth) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              auth.failureMessage ??
-                  'Could not authenticate. Please check your details and try again.',
-            ),
-          ),
-        );
-    }
+    setState(() {
+      _isLoading = false;
+      _errorMessage = auth.isAuth
+          ? null
+          : auth.failureMessage ??
+                'Could not authenticate. Please check your details and try again.';
+    });
   }
 
   void _switchMode() {
     setState(() {
       _authMode = _isLogin ? AuthMode.signup : AuthMode.login;
       _confirmPasswordController.clear();
+      _errorMessage = null;
     });
   }
 
@@ -89,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(22),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
@@ -138,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           children: [
                             TextFormField(
+                              enabled: !_isLoading,
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
@@ -145,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: const InputDecoration(
                                 labelText: 'Email',
                                 prefixIcon: Icon(Icons.mail_outline_rounded),
+                                errorMaxLines: 3,
                               ),
                               validator: (value) {
                                 final email = value?.trim() ?? '';
@@ -156,26 +154,35 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 14),
                             TextFormField(
+                              enabled: !_isLoading,
                               controller: _passwordController,
                               obscureText: _hidePassword,
-                              textInputAction:
-                                  _isLogin ? TextInputAction.done : TextInputAction.next,
+                              textInputAction: _isLogin
+                                  ? TextInputAction.done
+                                  : TextInputAction.next,
                               autofillHints: _isLogin
                                   ? const [AutofillHints.password]
                                   : const [AutofillHints.newPassword],
-                              onFieldSubmitted: _isLogin ? (_) => _submit() : null,
+                              onFieldSubmitted: _isLogin
+                                  ? (_) => _submit()
+                                  : null,
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                                errorMaxLines: 3,
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline_rounded,
+                                ),
                                 suffixIcon: IconButton(
                                   tooltip: _hidePassword
                                       ? 'Show password'
                                       : 'Hide password',
-                                  onPressed: () {
-                                    setState(() {
-                                      _hidePassword = !_hidePassword;
-                                    });
-                                  },
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            _hidePassword = !_hidePassword;
+                                          });
+                                        },
                                   icon: Icon(
                                     _hidePassword
                                         ? Icons.visibility_outlined
@@ -193,14 +200,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (!_isLogin) ...[
                               const SizedBox(height: 14),
                               TextFormField(
+                                enabled: !_isLoading,
                                 controller: _confirmPasswordController,
                                 obscureText: _hidePassword,
                                 textInputAction: TextInputAction.done,
                                 onFieldSubmitted: (_) => _submit(),
                                 decoration: const InputDecoration(
                                   labelText: 'Confirm password',
-                                  prefixIcon:
-                                      Icon(Icons.lock_reset_rounded),
+                                  errorMaxLines: 3,
+                                  prefixIcon: Icon(Icons.lock_reset_rounded),
                                 ),
                                 validator: (value) {
                                   if (value != _passwordController.text) {
@@ -211,6 +219,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                             const SizedBox(height: 22),
+                            if (_errorMessage != null) ...[
+                              Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  _errorMessage!,
+                                  key: const ValueKey('auth-error'),
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.error,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton(
@@ -224,9 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       )
                                     : Text(
-                                        _isLogin
-                                            ? 'Sign in'
-                                            : 'Create account',
+                                        _isLogin ? 'Sign in' : 'Create account',
                                       ),
                               ),
                             ),
@@ -236,8 +255,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 4,
                     children: [
                       Text(
                         _isLogin
@@ -249,9 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextButton(
                         onPressed: _isLoading ? null : _switchMode,
-                        child: Text(
-                          _isLogin ? 'Create account' : 'Sign in',
-                        ),
+                        child: Text(_isLogin ? 'Create account' : 'Sign in'),
                       ),
                     ],
                   ),
