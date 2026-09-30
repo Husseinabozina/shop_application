@@ -7,7 +7,7 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Warm premium Material 3 storefront with system light/dark mode
 - Home / Categories / Cart / Orders / Account bottom navigation
 - Firebase Authentication with persistent sessions
-- Product catalog with categories, search, sorting, stock availability, and product details
+- Product catalog with categories, search, sorting, price/availability filters, stock availability, and product details
 - Search and per-user favorites
 - User-scoped seller product management
 - Cart with quantity controls
@@ -95,6 +95,8 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - order details + tracking timeline
 - user-scoped live order refresh
 - category discovery + sorting
+- per-user recently viewed products
+- price range + in-stock filters
 - optional stock tracking with sold-out/low-stock states and cart caps
 - seller/catalog state separation
 - modern Account hub and bottom navigation
