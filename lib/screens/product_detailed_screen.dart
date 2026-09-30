@@ -139,14 +139,14 @@ class _ProductDetailsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  _InfoCard(
+                  const _InfoCard(
                     icon: Icons.local_shipping_outlined,
                     title: 'Delivery options',
                     description:
                         'Standard delivery in 3–5 business days, or Express in 1–2 days at checkout.',
                   ),
                   const SizedBox(height: 12),
-                  _InfoCard(
+                  const _InfoCard(
                     icon: Icons.verified_user_outlined,
                     title: 'Secure shopping',
                     description:
@@ -200,7 +200,7 @@ class _ProductDetailsView extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(product.title! + ' added to cart'),
+          content: Text('${product.title!} added to cart'),
         ),
       );
   }
