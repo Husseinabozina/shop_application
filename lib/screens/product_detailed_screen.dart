@@ -36,9 +36,17 @@ class _ProductDetailsView extends StatelessWidget {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(18, 10, 18, 14),
         child: FilledButton.icon(
-          onPressed: () => _addToCart(context, product),
-          icon: const Icon(Icons.shopping_bag_outlined),
-          label: const Text('Add to cart'),
+          onPressed: product.isInStock
+              ? () => _addToCart(context, product)
+              : null,
+          icon: Icon(
+            product.isInStock
+                ? Icons.shopping_bag_outlined
+                : Icons.block_rounded,
+          ),
+          label: Text(
+            product.isInStock ? 'Add to cart' : 'Sold out',
+          ),
         ),
       ),
       body: CustomScrollView(
@@ -105,6 +113,8 @@ class _ProductDetailsView extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  _StockStatusChip(product: product),
                   const SizedBox(height: 12),
                   Text(
                     product.title ?? 'Untitled product',
@@ -184,7 +194,8 @@ class _ProductDetailsView extends StatelessWidget {
     BuildContext context,
     Product product,
   ) {
-    if (product.id == null ||
+    if (!product.isInStock ||
+        product.id == null ||
         product.price == null ||
         product.title == null) {
       return;
@@ -210,6 +221,70 @@ class _ProductDetailsView extends StatelessWidget {
     return value == value.roundToDouble()
         ? value.toStringAsFixed(0)
         : value.toStringAsFixed(2);
+  }
+}
+
+
+class _StockStatusChip extends StatelessWidget {
+  final Product product;
+
+  const _StockStatusChip({
+    required this.product,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isOut = !product.isInStock;
+    final isLow = product.isLowStock;
+
+    final background = isOut
+        ? theme.colorScheme.errorContainer
+        : isLow
+            ? theme.colorScheme.tertiaryContainer
+            : theme.colorScheme.surfaceContainerHigh;
+
+    final foreground = isOut
+        ? theme.colorScheme.onErrorContainer
+        : isLow
+            ? theme.colorScheme.onTertiaryContainer
+            : theme.colorScheme.onSurfaceVariant;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(99),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isOut
+                  ? Icons.block_rounded
+                  : isLow
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline_rounded,
+              size: 16,
+              color: foreground,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              product.stockLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
