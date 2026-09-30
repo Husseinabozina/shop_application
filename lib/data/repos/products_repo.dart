@@ -39,7 +39,7 @@ abstract class ProductsRepo {
 class ProductsRepoImpl extends ProductsRepo {
   final ProductService productService;
 
-  const ProductsRepoImpl(this.productService);
+  ProductsRepoImpl(this.productService);
 
   @override
   Future<APIResult<List<Product>>> fetchProductsFromJson({
