@@ -92,9 +92,9 @@ class MyShopApp extends StatelessWidget {
 
   Map<String, WidgetBuilder> _routes() {
     return {
-      ProductDetailedScreen.routename: (_) =>
+      ProductDetailedScreen.routeName: (_) =>
           const ProductDetailedScreen(),
-      CartScreen.routName: (_) => const CartScreen(),
+      CartScreen.routeName: (_) => const CartScreen(),
       CategoriesScreen.routeName: (_) => const CategoriesScreen(),
       AccountScreen.routeName: (_) => const AccountScreen(),
       OrdersScreen.routeName: (_) => const OrdersScreen(),
