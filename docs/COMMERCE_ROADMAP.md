@@ -32,6 +32,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - remove item
 - subtotal
 - empty state
+- refresh catalog before checkout
+- block checkout when products disappear, sell out, or exceed tracked stock
 
 ### Checkout
 - delivery address form
