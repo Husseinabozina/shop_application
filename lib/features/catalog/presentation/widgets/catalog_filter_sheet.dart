@@ -80,7 +80,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
                     ),
                     decoration: const InputDecoration(
                       labelText: 'Min price',
-                      prefixText: '$ ',
+                      prefixText: '\$ ',
                     ),
                   ),
                 ),
@@ -93,7 +93,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
                     ),
                     decoration: const InputDecoration(
                       labelText: 'Max price',
-                      prefixText: '$ ',
+                      prefixText: '\$ ',
                     ),
                   ),
                 ),
