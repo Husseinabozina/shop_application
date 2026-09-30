@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/cart/domain/services/cart_availability_validator.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/widgets/cart_item.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
@@ -52,12 +54,21 @@ class CartScreen extends StatelessWidget {
   }
 }
 
-class _CheckoutBar extends StatelessWidget {
+class _CheckoutBar extends StatefulWidget {
   final double total;
 
   const _CheckoutBar({
     required this.total,
   });
+
+  @override
+  State<_CheckoutBar> createState() => _CheckoutBarState();
+}
+
+class _CheckoutBarState extends State<_CheckoutBar> {
+  static const _availabilityValidator = CartAvailabilityValidator();
+
+  bool _isChecking = false;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +100,7 @@ class _CheckoutBar extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '\$${_formatPrice(total)}',
+                    '\$${_formatPrice(widget.total)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
@@ -99,17 +110,144 @@ class _CheckoutBar extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             FilledButton.icon(
-              onPressed: () {
-                Navigator.of(context).pushNamed(
-                  CheckoutScreen.routeName,
-                );
-              },
-              icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('Checkout'),
+              onPressed: _isChecking ? null : _attemptCheckout,
+              icon: _isChecking
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.arrow_forward_rounded),
+              label: Text(
+                _isChecking ? 'Checking…' : 'Checkout',
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _attemptCheckout() async {
+    if (_isChecking) {
+      return;
+    }
+
+    setState(() => _isChecking = true);
+
+    final productsProvider = context.read<ProductsProvider>();
+    final cart = context.read<CartProvider>();
+
+    await productsProvider.fetchProducts();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (productsProvider.fetchProductsErrorMessage != null) {
+      setState(() => _isChecking = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Couldn’t verify product availability. Check your connection and try again.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final issues = _availabilityValidator.validate(
+      cartItems: cart.items,
+      products: productsProvider.products,
+    );
+
+    if (issues.isNotEmpty) {
+      setState(() => _isChecking = false);
+      await _showAvailabilityIssues(issues);
+      return;
+    }
+
+    setState(() => _isChecking = false);
+
+    if (!mounted) {
+      return;
+    }
+
+    await Navigator.of(context).pushNamed(
+      CheckoutScreen.routeName,
+    );
+  }
+
+  Future<void> _showAvailabilityIssues(
+    List<CartAvailabilityIssue> issues,
+  ) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    color: theme.colorScheme.error,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Update your cart',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Availability changed since these items were added.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...issues.map(
+                (issue) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(issue.message),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              FilledButton(
+                onPressed: () => Navigator.of(sheetContext).pop(),
+                child: const Text('Review cart'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -120,7 +258,6 @@ class _CheckoutBar extends StatelessWidget {
         : number.toStringAsFixed(2);
   }
 }
-
 class _EmptyCart extends StatelessWidget {
   const _EmptyCart();
 

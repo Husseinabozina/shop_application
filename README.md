@@ -10,7 +10,7 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Product catalog with categories, search, sorting, price/availability filters, stock availability, and product details
 - Search and per-user favorites
 - User-scoped seller product management
-- Cart with quantity controls
+- Cart with quantity controls and availability preflight before checkout
 - Full checkout flow
 - Saved delivery address book with default address
 - Standard / Express shipping with delivery estimates
@@ -105,10 +105,9 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - real card payment gateway adapter + secure server endpoint
 - backend/admin-driven order status updates
 - deploy and verify versioned Firebase security rules on the live project
-- advanced attribute filters / recently viewed
+- additional attribute filters as product metadata grows
 - product variants
 - ratings and reviews
-- recently viewed products
 - push notifications for order updates
 
 ## Tech stack
