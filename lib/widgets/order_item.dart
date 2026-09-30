@@ -98,7 +98,7 @@ class OrderItem extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '\${_formatPrice(currentOrder.amount ?? 0)}',
+                      '\$${_formatPrice(currentOrder.amount ?? 0)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
