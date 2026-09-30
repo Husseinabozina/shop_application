@@ -201,17 +201,22 @@ class _ProductDetailsView extends StatelessWidget {
       return;
     }
 
-    context.read<CartProvider>().addItem(
+    final added = context.read<CartProvider>().addItem(
           product.id!,
           product.price!,
           product.title!,
+          maxQuantity: product.stockQuantity?.toDouble(),
         );
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('${product.title!} added to cart'),
+          content: Text(
+            added
+                ? '${product.title!} added to cart'
+                : 'Maximum available stock is already in your cart',
+          ),
         ),
       );
   }
