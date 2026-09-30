@@ -173,7 +173,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      _visibleCount(productsProvider).toString() + ' items',
+                      '${_visibleCount(productsProvider)} items',
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
