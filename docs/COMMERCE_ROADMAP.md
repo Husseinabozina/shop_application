@@ -16,6 +16,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - search across products and categories
 - category discovery
 - price/name sorting
+- price-range and in-stock filters
+- per-user recently viewed products
 - product details with delivery information
 - per-user favorites
 - product ownership metadata
@@ -125,9 +127,8 @@ Next backend work:
 - keep backend/Admin SDK responsible for post-creation order status changes
 
 ### 4. Catalog depth
-- filter sheet for additional attributes
 - search history
-- recently viewed products
+- additional attribute filters as product metadata grows
 
 ### 5. Product detail depth
 - image gallery
