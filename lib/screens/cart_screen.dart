@@ -13,7 +13,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
-    final entries = cart.Items.entries.toList();
+    final entries = cart.items.entries.toList();
 
     return Scaffold(
       appBar: AppBar(
