@@ -2,6 +2,11 @@ name: Firebase Live Audit and Deploy
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .firebase-audit-trigger
   push:
     branches:
       - master
