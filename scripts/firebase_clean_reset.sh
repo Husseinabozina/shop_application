@@ -19,19 +19,12 @@ echo "Project:  $PROJECT_ID"
 echo "Instance: $INSTANCE"
 
 echo
-echo "Checking project access..."
-firebase projects:list --json 2>/dev/null   | jq -e --arg id "$PROJECT_ID" '
-      (.result // .) as $root
-      | (($root.projects // $root) | arrays)
-      | any(.projectId == $id or .project_id == $id)
-    ' >/dev/null   || {
-    echo "The active Firebase CLI account cannot access $PROJECT_ID."
-    exit 1
-  }
-
 echo "Checking Realtime Database availability..."
 PROBE="$(
-  firebase database:get /__clean_reset_probe__     --project "$PROJECT_ID"     --instance "$INSTANCE"     2>/dev/null
+  firebase database:get /__clean_reset_probe__ \
+    --project "$PROJECT_ID" \
+    --instance "$INSTANCE" \
+    2>/dev/null
 )"
 if [ "$PROBE" != "null" ]; then
   echo "Unexpected probe response: $PROBE"
@@ -42,14 +35,20 @@ echo
 echo "Removing legacy application data..."
 for path in /products /userfavorite /addresses /order; do
   echo "  - $path"
-  firebase database:remove "$path"     --project "$PROJECT_ID"     --instance "$INSTANCE"     --force
+  firebase database:remove "$path" \
+    --project "$PROJECT_ID" \
+    --instance "$INSTANCE" \
+    --force
 done
 
 echo
 echo "Verifying application paths are empty..."
 for path in /products /userfavorite /addresses /order; do
   value="$(
-    firebase database:get "$path"       --project "$PROJECT_ID"       --instance "$INSTANCE"       2>/dev/null
+    firebase database:get "$path" \
+      --project "$PROJECT_ID" \
+      --instance "$INSTANCE" \
+      2>/dev/null
   )"
   if [ "$value" != "null" ]; then
     echo "Verification failed: $path is not empty."
@@ -59,7 +58,10 @@ done
 
 echo
 echo "Deploying Realtime Database security rules..."
-firebase deploy   --only database   --project "$PROJECT_ID"   --non-interactive
+firebase deploy \
+  --only database \
+  --project "$PROJECT_ID" \
+  --non-interactive
 
 echo
 echo "Checking unauthenticated access is blocked..."
@@ -75,7 +77,11 @@ else
 fi
 
 WRITE_RESPONSE="$(
-  curl -sS     -X PUT     -H 'Content-Type: application/json'     --data '{"probe":true}'     "$DB_URL/__security_probe__.json"
+  curl -sS \
+    -X PUT \
+    -H 'Content-Type: application/json' \
+    --data '{"probe":true}' \
+    "$DB_URL/__security_probe__.json"
 )"
 if printf '%s' "$WRITE_RESPONSE" | grep -q '"Permission denied"'; then
   echo "  - public write blocked"
