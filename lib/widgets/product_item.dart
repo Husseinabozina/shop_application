@@ -169,7 +169,7 @@ class ProductItem extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(product.title! + ' added to cart'),
+          content: Text('${product.title!} added to cart'),
           action: SnackBarAction(
             label: 'Undo',
             onPressed: () {
