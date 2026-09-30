@@ -49,7 +49,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _categoryController.text = _product.category;
     _stockController.text = _product.stockQuantity?.toString() ?? '';
     _descriptionController.text = _product.description ?? '';
-    _imageUrlController.text = _product.imageUrl ?? '';
+    _imageUrlController.text = _product.imageUrls.isNotEmpty
+        ? _product.imageUrls.join('\n')
+        : (_product.imageUrl ?? '');
   }
 
   @override
@@ -66,6 +68,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final previewImages = _parseImageUrlsInput(_imageUrlController.text);
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +96,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ),
             const SizedBox(height: 22),
             _ProductImagePreview(
-              imageUrl: _imageUrlController.text.trim(),
+              imageUrl:
+                  previewImages.isEmpty ? '' : previewImages.first,
+              imageCount: previewImages.length,
             ),
             const SizedBox(height: 18),
             TextFormField(
@@ -195,29 +200,40 @@ class _EditProductScreenState extends State<EditProductScreen> {
             TextFormField(
               controller: _imageUrlController,
               keyboardType: TextInputType.url,
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.newline,
+              minLines: 3,
+              maxLines: 6,
               decoration: const InputDecoration(
-                labelText: 'Image URL',
-                prefixIcon: Icon(Icons.image_outlined),
+                labelText: 'Image URLs',
+                helperText: 'One URL per line, up to 6 images',
+                alignLabelWithHint: true,
+                prefixIcon: Icon(Icons.collections_outlined),
               ),
               onChanged: (_) {
                 setState(() {});
               },
               validator: (value) {
-                final text = (value ?? '').trim();
-                if (text.isEmpty) {
-                  return 'Image URL is required.';
+                final images = _parseImageUrlsInput(value ?? '');
+                if (images.isEmpty) {
+                  return 'At least one image URL is required.';
+                }
+                if (images.length > 6) {
+                  return 'Use no more than 6 images.';
                 }
 
-                final uri = Uri.tryParse(text);
-                final validScheme =
-                    uri?.scheme == 'http' || uri?.scheme == 'https';
-                if (uri == null || !validScheme || uri.host.isEmpty) {
-                  return 'Enter a valid http or https URL.';
+                for (final image in images) {
+                  final uri = Uri.tryParse(image);
+                  final validScheme =
+                      uri?.scheme == 'http' || uri?.scheme == 'https';
+                  if (uri == null ||
+                      !validScheme ||
+                      uri.host.isEmpty) {
+                    return 'Every image must be a valid http or https URL.';
+                  }
                 }
+
                 return null;
               },
-              onFieldSubmitted: (_) => _save(),
             ),
           ],
         ),
@@ -256,6 +272,16 @@ class _EditProductScreenState extends State<EditProductScreen> {
     };
   }
 
+  List<String> _parseImageUrlsInput(String raw) {
+    return raw
+        .split(RegExp(r'\r?\n'))
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
+        .toSet()
+        .take(7)
+        .toList();
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -267,6 +293,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
     final provider = context.read<ProductsProvider>();
     final stockText = _stockController.text.trim();
+    final imageUrls = _parseImageUrlsInput(_imageUrlController.text);
     final updatedProduct = _product.copyWith(
       title: _titleController.text.trim(),
       price: double.parse(_priceController.text.trim()),
@@ -274,7 +301,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
       stockQuantity: stockText.isEmpty ? null : int.parse(stockText),
       clearStock: stockText.isEmpty,
       description: _descriptionController.text.trim(),
-      imageUrl: _imageUrlController.text.trim(),
+      imageUrl: imageUrls.first,
+      imageUrls: imageUrls,
     );
 
     if (_isEditing) {
@@ -305,18 +333,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
 class _ProductImagePreview extends StatelessWidget {
   final String imageUrl;
+  final int imageCount;
 
   const _ProductImagePreview({
     required this.imageUrl,
+    required this.imageCount,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: ClipRRect(
+    return Stack(
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: ColoredBox(
           color: theme.colorScheme.surfaceContainerHighest,
@@ -343,6 +375,29 @@ class _ProductImagePreview extends StatelessWidget {
                 ),
         ),
       ),
+        ),
+        if (imageCount > 1)
+          Positioned(
+            right: 12,
+            bottom: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: Text(
+                '$imageCount images',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

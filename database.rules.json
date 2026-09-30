@@ -11,6 +11,12 @@
         ".validate": "!newData.exists() || (newData.hasChildren(['title', 'description', 'imageUrl', 'price', 'category', 'creatorId']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('description').isString() && newData.child('description').val().length > 0 && newData.child('imageUrl').isString() && newData.child('imageUrl').val().length > 0 && newData.child('price').isNumber() && newData.child('price').val() > 0 && newData.child('category').isString() && newData.child('category').val().length > 0 && newData.child('creatorId').val() === auth.uid)",
         "stockQuantity": {
           ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "imageUrls": {
+          ".validate": "newData.numChildren() <= 6",
+          "$index": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2048"
+          }
         }
       }
     },

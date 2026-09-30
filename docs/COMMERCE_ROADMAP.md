@@ -18,7 +18,7 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - price/name sorting
 - price-range and in-stock filters
 - per-user recently viewed products
-- product details with delivery information
+- product details with swipeable image gallery and delivery information
 - per-user favorites
 - product ownership metadata
 - optional stock tracking with sold-out/low-stock states
@@ -133,7 +133,6 @@ Next backend work:
 - additional attribute filters as product metadata grows
 
 ### 5. Product detail depth
-- image gallery
 - product variants such as size/color
 - delivery estimate
 - ratings summary

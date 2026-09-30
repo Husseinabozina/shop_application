@@ -7,6 +7,7 @@ class Product with ChangeNotifier {
   final String? productId;
   final String? id;
   final String? imageUrl;
+  final List<String> imageUrls;
   final String category;
   final String? creatorId;
   final int? stockQuantity;
@@ -21,40 +22,56 @@ class Product with ChangeNotifier {
     this.price,
     this.description,
     this.id,
-    this.imageUrl,
+    String? imageUrl,
+    List<String>? imageUrls,
     this.category = 'General',
     this.creatorId,
     this.stockQuantity,
     this.isFavorite = false,
     this.title,
-  });
+  })  : imageUrls = _normalizeImageUrls(
+          imageUrls,
+          imageUrl,
+        ),
+        imageUrl = _resolvePrimaryImage(
+          imageUrls,
+          imageUrl,
+        );
 
-  Product.fromJson(
+  factory Product.fromJson(
     Map<String, dynamic> json,
     String? firebaseProductId,
-  )   : title = json['title'] as String?,
-        description = json['description'] as String?,
-        id = (json['id'] as String?) ?? firebaseProductId,
-        productId = firebaseProductId,
-        imageUrl =
-            (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
-        category = _normalizedCategory(json['category']),
-        creatorId = json['creatorId'] as String?,
-        stockQuantity = _parseStockQuantity(json['stockQuantity']),
-        isFavorite = json['isFavorite'] as bool? ?? false,
-        price = json['price'] as num?;
+  ) {
+    final images = _parseImageUrls(json);
+
+    return Product(
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      id: (json['id'] as String?) ?? firebaseProductId,
+      productId: firebaseProductId,
+      imageUrl: images.isEmpty ? null : images.first,
+      imageUrls: images,
+      category: _normalizedCategory(json['category']),
+      creatorId: json['creatorId'] as String?,
+      stockQuantity: _parseStockQuantity(json['stockQuantity']),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      price: json['price'] as num?,
+    );
+  }
 
   factory Product.updateFromJson(
     Map<String, dynamic> json, {
     String? productId,
   }) {
+    final images = _parseImageUrls(json);
+
     return Product(
       productId: productId,
       id: (json['id'] as String?) ?? productId,
       title: json['title'] as String?,
       description: json['description'] as String?,
-      imageUrl:
-          (json['imageUrl'] as String?) ?? (json['imagurl'] as String?),
+      imageUrl: images.isEmpty ? null : images.first,
+      imageUrls: images,
       category: _normalizedCategory(json['category']),
       creatorId: json['creatorId'] as String?,
       stockQuantity: _parseStockQuantity(json['stockQuantity']),
@@ -90,6 +107,7 @@ class Product with ChangeNotifier {
       'description': description,
       'id': id,
       'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'category': category,
       'creatorId': creatorId,
       'stockQuantity': stockQuantity,
@@ -104,6 +122,7 @@ class Product with ChangeNotifier {
     String? productId,
     String? id,
     String? imageUrl,
+    List<String>? imageUrls,
     String? category,
     String? creatorId,
     int? stockQuantity,
@@ -111,13 +130,19 @@ class Product with ChangeNotifier {
     bool? isFavorite,
     num? price,
   }) {
+    final nextImages = imageUrls ??
+        (imageUrl != null ? <String>[imageUrl] : this.imageUrls);
+
     return Product(
       productsRepo: productsRepo,
       title: title ?? this.title,
       description: description ?? this.description,
       productId: productId ?? this.productId,
       id: id ?? this.id,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrl: nextImages.isEmpty
+          ? imageUrl ?? this.imageUrl
+          : nextImages.first,
+      imageUrls: nextImages,
       category: category ?? this.category,
       creatorId: creatorId ?? this.creatorId,
       stockQuantity: clearStock
@@ -185,5 +210,63 @@ class Product with ChangeNotifier {
     }
 
     return value < 0 ? 0 : value;
+  }
+
+  static List<String> _parseImageUrls(Map<String, dynamic> json) {
+    final primary =
+        (json['imageUrl'] as String?) ?? (json['imagurl'] as String?);
+    final raw = json['imageUrls'];
+
+    final images = <String>[];
+    if (primary != null && primary.trim().isNotEmpty) {
+      images.add(primary.trim());
+    }
+
+    if (raw is List) {
+      for (final value in raw) {
+        final image = value?.toString().trim();
+        if (image != null &&
+            image.isNotEmpty &&
+            !images.contains(image)) {
+          images.add(image);
+        }
+      }
+    }
+
+    return List.unmodifiable(images);
+  }
+
+  static List<String> _normalizeImageUrls(
+    List<String>? imageUrls,
+    String? imageUrl,
+  ) {
+    final images = <String>[];
+
+    final primary = imageUrl?.trim();
+    if (primary != null && primary.isNotEmpty) {
+      images.add(primary);
+    }
+
+    if (imageUrls != null) {
+      for (final value in imageUrls) {
+        final image = value.trim();
+        if (image.isNotEmpty && !images.contains(image)) {
+          images.add(image);
+        }
+      }
+    }
+
+    return List.unmodifiable(images);
+  }
+
+  static String? _resolvePrimaryImage(
+    List<String>? imageUrls,
+    String? imageUrl,
+  ) {
+    final normalized = _normalizeImageUrls(
+      imageUrls,
+      imageUrl,
+    );
+    return normalized.isEmpty ? null : normalized.first;
   }
 }

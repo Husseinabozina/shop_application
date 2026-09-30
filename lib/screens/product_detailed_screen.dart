@@ -67,7 +67,6 @@ class _ProductDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final product = context.watch<Product>();
-    final imageUrl = product.imageUrl?.trim() ?? '';
     final heroTag = product.id ?? product.productId ?? product.title ?? '';
 
     return Scaffold(
@@ -114,17 +113,11 @@ class _ProductDetailsView extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Hero(
                 tag: heroTag,
-                child: imageUrl.isEmpty
-                    ? _ImageFallback(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                      )
-                    : Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _ImageFallback(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
+                child: _ProductGallery(
+                  imageUrls: product.imageUrls,
+                  fallbackColor:
+                      theme.colorScheme.surfaceContainerHighest,
+                ),
               ),
             ),
           ),
@@ -267,6 +260,95 @@ class _ProductDetailsView extends StatelessWidget {
   }
 }
 
+
+
+class _ProductGallery extends StatefulWidget {
+  final List<String> imageUrls;
+  final Color fallbackColor;
+
+  const _ProductGallery({
+    required this.imageUrls,
+    required this.fallbackColor,
+  });
+
+  @override
+  State<_ProductGallery> createState() => _ProductGalleryState();
+}
+
+class _ProductGalleryState extends State<_ProductGallery> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrls.isEmpty) {
+      return _ImageFallback(
+        color: widget.fallbackColor,
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          itemCount: widget.imageUrls.length,
+          onPageChanged: (index) {
+            setState(() => _currentIndex = index);
+          },
+          itemBuilder: (_, index) {
+            return Image.network(
+              widget.imageUrls[index],
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _ImageFallback(
+                color: widget.fallbackColor,
+              ),
+            );
+          },
+        ),
+        if (widget.imageUrls.length > 1)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 18,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surface
+                      .withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    widget.imageUrls.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: index == _currentIndex ? 16 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: index == _currentIndex
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .outlineVariant,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 class _StockStatusChip extends StatelessWidget {
   final Product product;
