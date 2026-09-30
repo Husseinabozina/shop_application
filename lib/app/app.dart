@@ -48,8 +48,14 @@ class MyShopApp extends StatelessWidget {
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
         ),
-        ChangeNotifierProvider<RecentlyViewedController>(
-          create: (_) => getIt<RecentlyViewedController>()..load(),
+        ChangeNotifierProxyProvider<AuthProvider, RecentlyViewedController>(
+          create: (_) => RecentlyViewedController(
+            repository: getIt(),
+          )..load(),
+          update: (_, auth, __) => RecentlyViewedController(
+            repository: getIt(),
+            userId: auth.userId,
+          )..load(),
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrderController>(
           create: (_) => OrderController(
