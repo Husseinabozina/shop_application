@@ -6,9 +6,11 @@ class RecentlyViewedController with ChangeNotifier {
   static const int maxItems = 10;
 
   final RecentlyViewedRepository repository;
+  final String? userId;
 
   RecentlyViewedController({
     required this.repository,
+    this.userId,
   });
 
   List<String> _productIds = const [];
@@ -16,12 +18,14 @@ class RecentlyViewedController with ChangeNotifier {
   List<String> get productIds => List.unmodifiable(_productIds);
 
   void load() {
-    _productIds = repository.loadProductIds();
-    notifyListeners();
+    final scope = _scope;
+    _productIds =
+        scope == null ? const [] : repository.loadProductIds(scope);
   }
 
   Future<void> record(String productId) async {
-    if (productId.trim().isEmpty) {
+    final scope = _scope;
+    if (scope == null || productId.trim().isEmpty) {
       return;
     }
 
@@ -32,17 +36,21 @@ class RecentlyViewedController with ChangeNotifier {
 
     _productIds = updated.take(maxItems).toList();
     notifyListeners();
-    await repository.saveProductIds(_productIds);
+    await repository.saveProductIds(
+      scope,
+      _productIds,
+    );
   }
 
   Future<void> clear() async {
-    if (_productIds.isEmpty) {
+    final scope = _scope;
+    if (scope == null || _productIds.isEmpty) {
       return;
     }
 
     _productIds = const [];
     notifyListeners();
-    await repository.clear();
+    await repository.clear(scope);
   }
 
   List<Product> resolveProducts(List<Product> catalog) {
@@ -62,5 +70,10 @@ class RecentlyViewedController with ChangeNotifier {
         .map((id) => byId[id])
         .whereType<Product>()
         .toList();
+  }
+
+  String? get _scope {
+    final value = userId?.trim();
+    return value == null || value.isEmpty ? null : value;
   }
 }
