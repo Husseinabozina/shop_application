@@ -9,6 +9,7 @@ class UserProductItem extends StatelessWidget {
   final String? id;
   final String category;
   final num? price;
+  final int? stockQuantity;
 
   const UserProductItem({
     super.key,
@@ -17,6 +18,7 @@ class UserProductItem extends StatelessWidget {
     this.id,
     this.category = 'General',
     this.price,
+    this.stockQuantity,
   });
 
   @override
@@ -62,10 +64,20 @@ class UserProductItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '\$${_formatPrice(price)}',
+                    '\${_formatPrice(price)}',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _stockLabel,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: stockQuantity == 0
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -162,6 +174,16 @@ class UserProductItem extends StatelessWidget {
     }
   }
 
+  String get _stockLabel {
+    final stock = stockQuantity;
+    if (stock == null) {
+      return 'Stock not tracked';
+    }
+    if (stock == 0) {
+      return 'Sold out';
+    }
+    return '$stock in stock';
+  }
   String _formatPrice(num? value) {
     final number = value?.toDouble() ?? 0;
     return number == number.roundToDouble()
