@@ -77,6 +77,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - user-scoped single-order reads
 - privacy-safe debug networking logs
 - no request/response body logging
+- versioned Realtime Database ownership rules
+- creatorId index for seller product queries
 
 ### Payments foundation
 - PaymentGateway contract
@@ -114,11 +116,11 @@ Next backend work:
 - send customer notifications when status changes
 - optionally connect carrier tracking
 
-### 3. Firebase production hardening
-- verify and version Realtime Database security rules
-- validate customer ownership for addresses/orders/favorites
-- review product/admin write permissions
-- verify the creatorId index for seller product queries
+### 3. Firebase production deployment
+- deploy the versioned Realtime Database rules to the live Firebase project
+- verify live reads/writes with authenticated users
+- migrate trusted legacy products to a creatorId before relying on seller editing
+- keep backend/Admin SDK responsible for post-creation order status changes
 
 ### 4. Catalog depth
 - filter sheet for additional attributes
