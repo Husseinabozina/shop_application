@@ -31,3 +31,6 @@ jobs:
       - name: Test authenticated access and ownership rules
         working-directory: security-tests
         run: npm test
+      - name: Rehearse authenticated REST smoke test with temporary accounts
+        working-directory: security-tests
+        run: npm run test:smoke
