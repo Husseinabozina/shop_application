@@ -104,7 +104,7 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 ### Planned next
 - real card payment gateway adapter + secure server endpoint
 - backend/admin-driven order status updates
-- deploy and verify versioned Firebase security rules on the live project
+- verify authenticated Flutter flows against the deployed Firebase rules
 - additional attribute filters as product metadata grows
 - product variants
 - ratings and reviews
@@ -131,6 +131,11 @@ flutter analyze
 flutter test
 flutter run
 ```
+
+Realtime Database rules were deployed on 2026-09-30, and live unauthenticated
+read/write checks passed. Authenticated ownership regression tests run against
+the local Firebase emulator; see `security-tests/README.md` for the commands and
+scope. A live authenticated Flutter flow still needs verification.
 
 ## Design principle
 

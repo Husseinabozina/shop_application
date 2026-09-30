@@ -1,0 +1,33 @@
+name: Firebase Rules Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  database-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: security-tests/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install rule-test dependencies
+        working-directory: security-tests
+        run: npm ci
+      - name: Test authenticated access and ownership rules
+        working-directory: security-tests
+        run: npm test

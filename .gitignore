@@ -42,3 +42,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase rule-test dependencies and emulator output
+node_modules/
+firebase-debug.log*
+database-debug.log*
