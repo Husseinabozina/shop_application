@@ -115,7 +115,7 @@ class _ProductDetailsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '\${_formatPrice(product.price)}',
+                    '\$${_formatPrice(product.price)}',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
