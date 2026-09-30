@@ -204,7 +204,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '\${_formatPrice(order.amount ?? 0)}',
+                    '\$${_formatPrice(order.amount ?? 0)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
@@ -601,7 +601,7 @@ class _OrderProducts extends StatelessWidget {
                 ),
               ),
               Text(
-                '\${_formatPrice(total)}',
+                '\$${_formatPrice(total)}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
