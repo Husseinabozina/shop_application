@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop_application/data/models/cart/cart_model.dart';
 import 'package:shop_application/features/cart/domain/services/cart_availability_validator.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 void main() {
   const validator = CartAvailabilityValidator();

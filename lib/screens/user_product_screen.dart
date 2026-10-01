@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/presentation/screens/sample_catalog_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/widgets/user_product_item.dart';
@@ -37,7 +37,7 @@ class _UserProductScreenState extends State<UserProductScreen> {
       });
     }
 
-    await context.read<ProductsProvider>().fetchProducts(filterByUser: true);
+    await context.read<CatalogController>().fetchProducts(filterByUser: true);
 
     if (mounted) {
       setState(() {
@@ -67,7 +67,7 @@ class _UserProductScreenState extends State<UserProductScreen> {
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add product'),
       ),
-      body: Consumer<ProductsProvider>(
+      body: Consumer<CatalogController>(
         builder: (context, provider, _) {
           if (_isLoading && provider.managedProducts.isEmpty) {
             return const Center(child: CircularProgressIndicator());

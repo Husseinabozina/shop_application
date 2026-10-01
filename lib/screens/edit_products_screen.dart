@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const String routeName = '/editProduct';
@@ -40,7 +40,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
     final productId = ModalRoute.of(context)?.settings.arguments as String?;
     if (productId != null) {
-      _product = context.read<ProductsProvider>().findById(productId);
+      _product = context.read<CatalogController>().findById(productId);
     }
 
     _titleController.text = _product.title ?? '';
@@ -291,7 +291,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isSaving = true;
     });
 
-    final provider = context.read<ProductsProvider>();
+    final provider = context.read<CatalogController>();
     final stockText = _stockController.text.trim();
     final imageUrls = _parseImageUrlsInput(_imageUrlController.text);
     final updatedProduct = _product.copyWith(

@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/error_handler.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
+import 'package:shop_application/features/catalog/data/models/product_mapper.dart';
 
-abstract class ProductService {
+abstract class ProductRemoteDataSource {
   Future<Map<String, dynamic>> fetchProducts({
     bool? filterByUser,
     String? userId,
@@ -24,14 +25,14 @@ abstract class ProductService {
     required String productId,
     required String token,
     required String userId,
-    required bool? isFavorite,
+    required bool isFavorite,
   });
 }
 
-class ProductServiceImpl extends ProductService {
+class FirebaseProductRemoteDataSource extends ProductRemoteDataSource {
   final FirebaseRestClient database;
 
-  ProductServiceImpl({
+  FirebaseProductRemoteDataSource({
     required this.database,
   });
 
@@ -44,7 +45,7 @@ class ProductServiceImpl extends ProductService {
       final response = await database.post(
         path: 'products',
         authToken: token,
-        data: product.toJson(),
+        data: ProductMapper.toJson(product),
       );
       _ensureSuccess(response.statusCode, 'Could not add product.');
       return _decodeMap(response.body);
@@ -75,6 +76,10 @@ class ProductServiceImpl extends ProductService {
     String? userId,
     String? token,
   }) async {
+    if (filterByUser == true &&
+        (userId == null || userId.isEmpty || token == null || token.isEmpty)) {
+      throw APIException(message: 'Please sign in again to manage products.');
+    }
     final query = filterByUser == true
         ? <String, dynamic>{
             'orderBy': '"creatorId"',
@@ -92,19 +97,15 @@ class ProductServiceImpl extends ProductService {
 
       final products = _decodeMap(response.body);
 
-      if (products.isEmpty || userId == null || token == null) {
-        return products;
+      var favorites = <String, dynamic>{};
+      if (products.isNotEmpty && userId != null && token != null) {
+        final favoriteResponse = await database.get(
+          path: 'userfavorite/$userId',
+          authToken: token,
+        );
+        _ensureSuccess(favoriteResponse.statusCode, 'Could not load favorites.');
+        favorites = _decodeMap(favoriteResponse.body);
       }
-
-      final favoriteResponse = await database.get(
-        path: 'userfavorite/$userId',
-        authToken: token,
-      );
-      _ensureSuccess(
-        favoriteResponse.statusCode,
-        'Could not load favorites.',
-      );
-      final favorites = _decodeMap(favoriteResponse.body);
 
       for (final entry in products.entries) {
         final productData = entry.value;
@@ -133,7 +134,7 @@ class ProductServiceImpl extends ProductService {
       final response = await database.patch(
         path: 'products/$productId',
         authToken: token,
-        data: product.toJson(),
+        data: ProductMapper.toJson(product),
       );
       _ensureSuccess(response.statusCode, 'Could not update product.');
       return _decodeMap(response.body);
@@ -164,13 +165,13 @@ class ProductServiceImpl extends ProductService {
     required String productId,
     required String token,
     required String userId,
-    required bool? isFavorite,
+    required bool isFavorite,
   }) async {
     try {
       final response = await database.put(
         path: 'userfavorite/$userId/$productId',
         authToken: token,
-        data: isFavorite ?? false,
+        data: isFavorite,
       );
       _ensureSuccess(
         response.statusCode,
@@ -191,7 +192,12 @@ class ProductServiceImpl extends ProductService {
 
   void _ensureSuccess(int statusCode, String message) {
     if (statusCode < 200 || statusCode >= 300) {
-      throw Exception('$message Status $statusCode.');
+      throw APIException(
+        message: statusCode == 401 || statusCode == 403
+            ? 'Please sign in again, or check that you own this product.'
+            : message,
+        statusCode: statusCode,
+      );
     }
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
 class RecentlyViewedSection extends StatelessWidget {
@@ -10,7 +10,7 @@ class RecentlyViewedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final products = context.watch<ProductsProvider>().products;
+    final products = context.watch<CatalogController>().products;
     final controller = context.watch<RecentlyViewedController>();
     final recentProducts = controller.resolveProducts(products);
 

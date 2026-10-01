@@ -11,6 +11,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - sign out
 
 ### Catalog
+- feature-first catalog with immutable domain products and a replaceable ProductRepository
+- account-scoped optimistic favorites with duplicate-tap guards, failure rollback, and visible errors
 - explicit eight-product sample collection, resumable without overwriting existing listings
 - responsive product grid and cart checkout bar for compact screens and larger text
 - responsive layout
@@ -161,12 +163,9 @@ Next backend work:
 - carrier-calculated shipping rates
 
 ### Engineering
-- migrate remaining legacy folders into feature-first modules
+- migrate remaining auth/cart legacy folders into feature-first modules
 - central app router
-- typed environment configuration
-- repository contract tests
-- CI for analyze/test
-- Firebase security-rule review
+- extend repository contract tests to remaining features
 
 ## What we intentionally do not add now
 

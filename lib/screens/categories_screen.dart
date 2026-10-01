@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/features/catalog/presentation/widgets/catalog_filter_sheet.dart';
@@ -41,7 +41,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       setState(() => _isLoading = true);
     }
 
-    await context.read<ProductsProvider>().fetchProducts();
+    await context.read<CatalogController>().fetchProducts();
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -60,7 +60,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       bottomNavigationBar: const StoreBottomNavigation(
         selectedIndex: 1,
       ),
-      body: Consumer<ProductsProvider>(
+      body: Consumer<CatalogController>(
         builder: (context, provider, _) {
           if (_isLoading && provider.products.isEmpty) {
             return const Center(

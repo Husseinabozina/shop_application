@@ -21,11 +21,12 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Capability-driven card and wallet options that stay disabled until a real gateway is configured
 - Per-user order history and visual delivery tracking
 - Firebase Realtime Database with versioned ownership rules
-- Feature-first checkout architecture
-- Feature-first checkout, address-book, and orders architecture
+- Feature-first catalog, checkout, address-book, and orders architecture
+- Immutable catalog products and account-scoped favorite state
 - Repository and data-source boundaries
 - Centralized Firebase REST client and backend environment configuration
 - Redacted debug networking logs
+- Catalog contract, state-concurrency, and full shopping-journey tests
 - Focused checkout, address, and order-domain tests
 
 ## Architecture

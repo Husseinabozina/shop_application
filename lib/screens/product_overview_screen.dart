@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/features/catalog/presentation/widgets/catalog_filter_sheet.dart';
@@ -41,7 +41,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
       setState(() => _isLoading = true);
     }
 
-    await context.read<ProductsProvider>().fetchProducts();
+    await context.read<CatalogController>().fetchProducts();
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -58,7 +58,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         automaticallyImplyLeading: false,
       ),
       bottomNavigationBar: const StoreBottomNavigation(selectedIndex: 0),
-      body: Consumer<ProductsProvider>(
+      body: Consumer<CatalogController>(
         builder: (context, productsProvider, _) {
           if (_isLoading && productsProvider.products.isEmpty) {
             return const Center(child: CircularProgressIndicator());
@@ -233,8 +233,8 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
     );
   }
 
-  int _visibleCount(ProductsProvider provider) {
-    final source = _favoritesOnly ? provider.favitem : provider.products;
+  int _visibleCount(CatalogController provider) {
+    final source = _favoritesOnly ? provider.favoriteProducts : provider.products;
     final normalizedQuery = _query.trim().toLowerCase();
     final selectedCategory = _category?.trim().toLowerCase();
 

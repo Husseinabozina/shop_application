@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 class ProductDetailedScreen extends StatefulWidget {
   static const routeName = '/ProductDetailed';
@@ -18,7 +17,7 @@ class ProductDetailedScreen extends StatefulWidget {
 }
 
 class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
-  Product? _product;
+  String? _productId;
   bool _didInitialize = false;
 
   @override
@@ -31,8 +30,13 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
 
     _didInitialize = true;
     final productId = ModalRoute.of(context)!.settings.arguments as String;
-    final product = context.read<ProductsProvider>().findById(productId);
-    _product = product;
+    _productId = productId;
+    Product product;
+    try {
+      product = context.read<CatalogController>().findById(productId);
+    } on StateError {
+      return;
+    }
 
     final canonicalId = product.id ?? product.productId;
     if (canonicalId != null) {
@@ -48,8 +52,8 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final product = _product;
-    if (product == null) {
+    final productId = _productId;
+    if (productId == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -57,7 +61,17 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
       );
     }
 
-    return ChangeNotifierProvider<Product>.value(
+    final catalog = context.watch<CatalogController>();
+    Product product;
+    try {
+      product = catalog.findById(productId);
+    } on StateError {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('This product is no longer available.')),
+      );
+    }
+    return Provider<Product>.value(
       value: product,
       child: const _ProductDetailsView(),
     );
@@ -99,15 +113,17 @@ class _ProductDetailsView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: IconButton.filledTonal(
-                  tooltip: product.isFavorite == true
+                  tooltip: product.isFavorite
                       ? 'Remove from saved'
                       : 'Save product',
-                  onPressed: () => _toggleFavorite(context, product),
+                  onPressed: context.watch<CatalogController>().isFavoritePending(
+                    product.productId ?? product.id ?? '',
+                  ) ? null : () => _toggleFavorite(context, product),
                   icon: Icon(
-                    product.isFavorite == true
+                    product.isFavorite
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    color: product.isFavorite == true
+                    color: product.isFavorite
                         ? theme.colorScheme.error
                         : null,
                   ),
@@ -210,19 +226,15 @@ class _ProductDetailsView extends StatelessWidget {
     BuildContext context,
     Product product,
   ) async {
-    final auth = context.read<AuthProvider>();
-    if (product.id == null ||
-        auth.token == null ||
-        auth.userId == null ||
-        product.productsRepo == null) {
-      return;
+    final id = product.productId ?? product.id;
+    if (id == null) return;
+    final catalog = context.read<CatalogController>();
+    final saved = await catalog.toggleFavorite(id);
+    if (!context.mounted || saved) return;
+    final error = catalog.favoriteError(id);
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
     }
-
-    await product.toggleFavoriteStatus(
-      product.id!,
-      auth.token!,
-      auth.userId!,
-    );
   }
 
   void _addToCart(

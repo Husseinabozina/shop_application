@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 
 class UserProductItem extends StatelessWidget {
@@ -159,7 +159,7 @@ class UserProductItem extends StatelessWidget {
       return;
     }
 
-    final provider = context.read<ProductsProvider>();
+    final provider = context.read<CatalogController>();
     await provider.deleteProduct(productId);
 
     if (!context.mounted) {
