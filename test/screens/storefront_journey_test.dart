@@ -11,6 +11,7 @@ import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/features/catalog/domain/entities/sample_product.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/widgets/product_item.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
@@ -128,7 +129,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(api.favorites[sampleCatalog.first.id], isTrue);
         expect(find.byTooltip('Remove from saved'), findsOneWidget);
-        expect(api.products[sampleCatalog.first.id]['isFavorite'], isFalse);
+        expect(api.products[sampleCatalog.first.id].containsKey('isFavorite'), isFalse);
         await tapText(tester, 'Add to cart');
         await tester.tap(find.byTooltip('Back'));
         await tester.pumpAndSettle();
@@ -298,6 +299,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.products, isEmpty);
     expect(find.text('No products yet'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await getIt<AuthProvider>().logOut();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+
+  testWidgets('product details follow listing updates and handle deletion safely', (tester) async {
+    api.products['lamp'] = {
+      'title': 'Reading lamp', 'description': 'A reading lamp.',
+      'imageUrl': '', 'price': 25, 'category': 'Home', 'creatorId': 'owner',
+    };
+    await openApp(tester);
+    final card = find.byType(ProductItem);
+    await tester.scrollUntilVisible(card, 220,
+      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
+    await tester.tap(find.descendant(of: card, matching: find.byType(InkWell)).first);
+    await tester.pumpAndSettle();
+    final catalog = tester.element(find.byType(ProductDetailedScreen)).read<CatalogController>();
+    await catalog.updateProduct(catalog.findById('lamp').copyWith(title: 'Updated lamp', price: 35));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Updated lamp'), 180,
+      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
+    expect(find.text('Updated lamp'), findsOneWidget);
+    expect(find.text(r'$35'), findsOneWidget);
+    await catalog.deleteProduct('lamp');
+    await tester.pumpAndSettle();
+    expect(find.text('This product is no longer available.'), findsOneWidget);
+    expect(find.text('Add to cart'), findsNothing);
     expect(tester.takeException(), isNull);
     await getIt<AuthProvider>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());

@@ -50,7 +50,7 @@ class ProductItem extends StatelessWidget {
                       color: theme.colorScheme.surface.withValues(alpha: 0.9),
                       shape: const CircleBorder(),
                       child: IconButton(
-                        tooltip: product.isFavorite == true
+                        tooltip: product.isFavorite
                             ? 'Remove from saved'
                             : 'Save product',
                         visualDensity: VisualDensity.compact,
@@ -58,10 +58,10 @@ class ProductItem extends StatelessWidget {
                           product.productId ?? product.id ?? '',
                         ) ? null : () => _toggleFavorite(context, product),
                         icon: Icon(
-                          product.isFavorite == true
+                          product.isFavorite
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
-                          color: product.isFavorite == true
+                          color: product.isFavorite
                               ? theme.colorScheme.error
                               : theme.colorScheme.onSurface,
                         ),

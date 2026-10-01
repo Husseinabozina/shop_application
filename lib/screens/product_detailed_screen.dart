@@ -30,8 +30,13 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
 
     _didInitialize = true;
     final productId = ModalRoute.of(context)!.settings.arguments as String;
-    final product = context.read<CatalogController>().findById(productId);
     _productId = productId;
+    Product product;
+    try {
+      product = context.read<CatalogController>().findById(productId);
+    } on StateError {
+      return;
+    }
 
     final canonicalId = product.id ?? product.productId;
     if (canonicalId != null) {
@@ -108,17 +113,17 @@ class _ProductDetailsView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: IconButton.filledTonal(
-                  tooltip: product.isFavorite == true
+                  tooltip: product.isFavorite
                       ? 'Remove from saved'
                       : 'Save product',
                   onPressed: context.watch<CatalogController>().isFavoritePending(
                     product.productId ?? product.id ?? '',
                   ) ? null : () => _toggleFavorite(context, product),
                   icon: Icon(
-                    product.isFavorite == true
+                    product.isFavorite
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    color: product.isFavorite == true
+                    color: product.isFavorite
                         ? theme.colorScheme.error
                         : null,
                   ),
