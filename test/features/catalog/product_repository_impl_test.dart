@@ -33,6 +33,9 @@ void main() {
     expect(lamp.imageUrls, ['https://example.com/lamp.jpg']);
     expect(lamp.isFavorite, isFalse);
     expect(lamp.isInStock, isTrue);
+    final single = await repository.fetchSingleProduct('record-key', 'token');
+    expect(single.id, 'record-key');
+    expect(single.isFavorite, isFalse);
   });
 
   test('seller queries stay scoped and favorites come from the private collection', () async {

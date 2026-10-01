@@ -29,9 +29,12 @@ class ProductRepositoryImpl implements ProductRepository {
       userId: userId,
       token: token,
     );
-    return data.entries.map((entry) => ProductMapper.fromJson(
-      Map<String, dynamic>.from(entry.value as Map), entry.key,
-    )).toList();
+    return data.entries.map((entry) {
+      return ProductMapper.fromJson(
+        Map<String, dynamic>.from(entry.value as Map),
+        entry.key,
+      );
+    }).toList();
   });
 
   @override
@@ -39,7 +42,10 @@ class ProductRepositoryImpl implements ProductRepository {
     final response = await remoteDataSource.addProduct(product, token);
     final id = response['name'];
     if (id is! String || id.isEmpty) {
-      throw const CatalogException('Could not confirm the saved product. Refresh your products before trying again.');
+      throw const CatalogException(
+        'Could not confirm the saved product. '
+        'Refresh your products before trying again.',
+      );
     }
     return product.copyWith(id: id, productId: id);
   });
@@ -51,7 +57,9 @@ class ProductRepositoryImpl implements ProductRepository {
       throw const CatalogException('Product id is missing.');
     }
     final data = await remoteDataSource.updateProduct(product, token);
-    return ProductMapper.fromJson(data, id).copyWith(isFavorite: product.isFavorite);
+    return ProductMapper.fromJson(data, id).copyWith(
+      isFavorite: product.isFavorite,
+    );
   });
 
   @override
@@ -59,11 +67,15 @@ class ProductRepositoryImpl implements ProductRepository {
       _run(() => remoteDataSource.deleteProduct(productId, token));
 
   @override
-  Future<Product> fetchSingleProduct(String productId, String? token) => _run(() async {
-    final data = await remoteDataSource.fetchSingleProduct(productId, token);
-    if (data.isEmpty) throw const CatalogException('This product is no longer available.');
-    return ProductMapper.fromJson(data, productId);
-  });
+  Future<Product> fetchSingleProduct(String productId, String? token) =>
+      _run(() async {
+        final data = await remoteDataSource.fetchSingleProduct(productId, token);
+        if (data.isEmpty) {
+          throw const CatalogException('This product is no longer available.');
+        }
+        // A shared record cannot supply a user's private favorite state.
+        return ProductMapper.fromJson(data, productId).copyWith(isFavorite: false);
+      });
 
   @override
   Future<void> setFavorite({
@@ -71,10 +83,12 @@ class ProductRepositoryImpl implements ProductRepository {
     required String token,
     required String userId,
     required bool isFavorite,
-  }) => _run(() => remoteDataSource.toggleFavoriteStatusOnServer(
-    productId: productId,
-    token: token,
-    userId: userId,
-    isFavorite: isFavorite,
-  ));
+  }) => _run(
+    () => remoteDataSource.toggleFavoriteStatusOnServer(
+      productId: productId,
+      token: token,
+      userId: userId,
+      isFavorite: isFavorite,
+    ),
+  );
 }
