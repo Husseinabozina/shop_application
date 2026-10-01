@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/cart/domain/services/cart_availability_validator.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
 import 'package:shop_application/widgets/cart_item.dart';
@@ -143,7 +143,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
 
     setState(() => _isChecking = true);
 
-    final productsProvider = context.read<ProductsProvider>();
+    final productsProvider = context.read<CatalogController>();
     final cart = context.read<CartProvider>();
 
     await productsProvider.fetchProducts();

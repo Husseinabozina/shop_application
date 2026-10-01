@@ -2,22 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
-import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/features/catalog/domain/repositories/product_repository.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
-class _UnusedProductsRepo implements ProductsRepo {
+class _UnusedProductRepository implements ProductRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) =>
       throw UnsupportedError('No product requests are needed');
 }
 
-class _Products extends ProductsProvider {
-  _Products() : super(productsRepo: _UnusedProductsRepo());
+class _Products extends CatalogController {
+  _Products() : super(repository: _UnusedProductRepository());
 
   final product = Product(
     id: 'test-product',
@@ -62,13 +62,12 @@ void main() {
       )..load();
       final navigator = GlobalKey<NavigatorState>();
       addTearDown(products.dispose);
-      addTearDown(products.product.dispose);
       addTearDown(recent.dispose);
 
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider<ProductsProvider>.value(value: products),
+            ChangeNotifierProvider<CatalogController>.value(value: products),
             ChangeNotifierProvider<RecentlyViewedController>.value(
               value: recent,
             ),

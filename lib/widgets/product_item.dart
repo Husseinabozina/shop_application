@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
 class ProductItem extends StatelessWidget {
@@ -54,7 +54,9 @@ class ProductItem extends StatelessWidget {
                             ? 'Remove from saved'
                             : 'Save product',
                         visualDensity: VisualDensity.compact,
-                        onPressed: () => _toggleFavorite(context, product),
+                        onPressed: context.watch<CatalogController>().isFavoritePending(
+                          product.productId ?? product.id ?? '',
+                        ) ? null : () => _toggleFavorite(context, product),
                         icon: Icon(
                           product.isFavorite == true
                               ? Icons.favorite_rounded
@@ -138,15 +140,15 @@ class ProductItem extends StatelessWidget {
   }
 
   Future<void> _toggleFavorite(BuildContext context, Product product) async {
-    final auth = context.read<AuthProvider>();
-    if (product.id == null ||
-        auth.token == null ||
-        auth.userId == null ||
-        product.productsRepo == null) {
-      return;
+    final id = product.productId ?? product.id;
+    if (id == null) return;
+    final catalog = context.read<CatalogController>();
+    final saved = await catalog.toggleFavorite(id);
+    if (!context.mounted || saved) return;
+    final error = catalog.favoriteError(id);
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
     }
-
-    await product.toggleFavoriteStatus(product.id!, auth.token!, auth.userId!);
   }
 
   void _addToCart(BuildContext context, Product product) {

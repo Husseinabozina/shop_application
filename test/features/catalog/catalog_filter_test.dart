@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 void main() {
   test('empty filter matches every product', () {

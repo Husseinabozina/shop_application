@@ -3,9 +3,10 @@ import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/data/repos/auth_repo.dart';
-import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/features/catalog/domain/repositories/product_repository.dart';
+import 'package:shop_application/features/catalog/data/repositories/product_repository_impl.dart';
 import 'package:shop_application/data/services/auth_services.dart';
-import 'package:shop_application/data/services/product_service.dart';
+import 'package:shop_application/features/catalog/data/datasources/product_remote_data_source.dart';
 import 'package:shop_application/features/address_book/data/datasources/address_book_remote_data_source.dart';
 import 'package:shop_application/features/address_book/data/repositories/address_book_repository_impl.dart';
 import 'package:shop_application/features/address_book/domain/repositories/address_book_repository.dart';
@@ -47,11 +48,11 @@ void setup() {
     () => AuthProvider(authRepo: getIt<AuthRepo>()),
   );
 
-  getIt.registerLazySingleton<ProductService>(
-    () => ProductServiceImpl(database: getIt<FirebaseRestClient>()),
+  getIt.registerLazySingleton<ProductRemoteDataSource>(
+    () => FirebaseProductRemoteDataSource(database: getIt<FirebaseRestClient>()),
   );
-  getIt.registerLazySingleton<ProductsRepo>(
-    () => ProductsRepoImpl(getIt<ProductService>()),
+  getIt.registerLazySingleton<ProductRepository>(
+    () => ProductRepositoryImpl(getIt<ProductRemoteDataSource>()),
   );
 
   getIt.registerLazySingleton<RecentlyViewedRepository>(

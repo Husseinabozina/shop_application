@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 import 'package:shop_application/widgets/product_item.dart';
 
 class ProductsGrid extends StatelessWidget {
@@ -24,9 +24,9 @@ class ProductsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productsProvider = context.watch<ProductsProvider>();
+    final productsProvider = context.watch<CatalogController>();
     final source = favoritesOnly
-        ? productsProvider.favitem
+        ? productsProvider.favoriteProducts
         : productsProvider.products;
 
     final normalizedQuery = query.trim().toLowerCase();
@@ -116,7 +116,7 @@ class ProductsGrid extends StatelessWidget {
           ),
           itemCount: products.length,
           itemBuilder: (context, index) {
-            return ChangeNotifierProvider<Product>.value(
+            return Provider<Product>.value(
               value: products[index],
               child: const ProductItem(),
             );

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 class _FakeRecentlyViewedRepository
     implements RecentlyViewedRepository {

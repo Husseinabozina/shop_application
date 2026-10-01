@@ -35,6 +35,7 @@ lib/
       presentation/
 
     catalog/
+      data/
       domain/
       presentation/
 
@@ -274,3 +275,26 @@ owners, including concurrent setup attempts. The sample collection is shared;
 only the account that creates a listing can manage that listing under the
 existing rules. The screen refreshes storefront and managed-product state after
 an attempt so successfully saved products are usable immediately.
+
+
+## Catalog boundaries
+
+The catalog now follows `CatalogController → ProductRepository →
+ProductRepositoryImpl → ProductRemoteDataSource → FirebaseRestClient`.
+`Product` is an immutable Dart entity; it has no Flutter notifier, JSON parsing,
+repository reference, or network actions. `ProductMapper` owns legacy record
+compatibility in the data layer and treats the database record key as the
+canonical ID. Repository create/update methods return domain products, so the
+controller never sees Firebase push-response DTOs.
+
+Favorite state belongs to the account's private collection and is never written
+into shared listings by product create/update. `CatalogController` owns
+optimistic favorites, per-product pending guards, rollback and actionable errors.
+Both storefront and managed lists receive the same favorite updates; refreshes
+started before an action cannot overwrite its result. Product details render the
+current catalog snapshot. Disposed controllers ignore late request completions.
+
+Architectural checks keep the catalog domain free of Flutter, Firebase, HTTP,
+and data/presentation imports, and prevent catalog controllers from importing
+network implementations. Auth and cart presentation still use their legacy
+folders and can migrate independently.

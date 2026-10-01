@@ -1,9 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
+import 'package:shop_application/features/catalog/data/models/product_mapper.dart';
 
 void main() {
+  test('product snapshots and image collections stay immutable', () {
+    final images = ['https://example.com/image.jpg'];
+    final original = Product(imageUrls: images, isFavorite: false);
+    images.add('https://example.com/added-later.jpg');
+    final saved = original.copyWith(isFavorite: true);
+    expect(original.isFavorite, isFalse);
+    expect(saved.isFavorite, isTrue);
+    expect(original.imageUrls, hasLength(1));
+    expect(() => original.imageUrls.clear(), throwsUnsupportedError);
+    expect(ProductMapper.toJson(saved).containsKey('isFavorite'), isFalse);
+  });
+
   test('legacy products fall back to the General category', () {
-    final product = Product.fromJson(
+    final product = ProductMapper.fromJson(
       {
         'title': 'Legacy product',
         'price': 10,
@@ -17,7 +30,7 @@ void main() {
 
 
   test('legacy single image becomes a one-image gallery', () {
-    final product = Product.fromJson(
+    final product = ProductMapper.fromJson(
       {
         'title': 'Legacy product',
         'imageUrl': 'https://example.com/legacy.jpg',
@@ -60,7 +73,7 @@ void main() {
       ],
     );
 
-    final json = product.toJson();
+    final json = ProductMapper.toJson(product);
 
     expect(json['imageUrl'], 'https://example.com/main.jpg');
     expect(
@@ -73,7 +86,7 @@ void main() {
   });
 
   test('legacy products remain purchasable when stock is not tracked', () {
-    final product = Product.fromJson(
+    final product = ProductMapper.fromJson(
       {
         'title': 'Legacy product',
         'price': 10,
@@ -88,7 +101,7 @@ void main() {
   });
 
   test('zero tracked stock is sold out', () {
-    final product = Product.fromJson(
+    final product = ProductMapper.fromJson(
       {
         'title': 'Sold out product',
         'price': 10,
@@ -103,7 +116,7 @@ void main() {
   });
 
   test('small tracked quantities expose a low-stock state', () {
-    final product = Product.fromJson(
+    final product = ProductMapper.fromJson(
       {
         'title': 'Low stock product',
         'price': 10,
@@ -130,7 +143,7 @@ void main() {
       stockQuantity: 12,
     );
 
-    final json = product.toJson();
+    final json = ProductMapper.toJson(product);
 
     expect(json['category'], 'Electronics');
     expect(json['creatorId'], 'user-1');

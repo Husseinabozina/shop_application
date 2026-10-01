@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
-import 'package:shop_application/provider/product.dart';
+import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 class RecentlyViewedController with ChangeNotifier {
   static const int maxItems = 10;

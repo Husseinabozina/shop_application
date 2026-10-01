@@ -10,6 +10,9 @@ class MemoryShopApi implements Api {
   final orders = <String, dynamic>{};
   int sampleWrites = 0;
   int orderWrites = 0;
+  int productWrites = 0;
+  int favoriteWrites = 0;
+  bool failFavoriteWrites = false;
   int? failSampleAt;
   String? orderUser;
   Map<String, dynamic>? placedOrder;
@@ -81,6 +84,8 @@ class MemoryShopApi implements Api {
       return _response(data);
     }
     if (path.startsWith('userfavorite/')) {
+      favoriteWrites++;
+      if (failFavoriteWrites) return _response({'error': 'Unavailable'}, 503);
       favorites[path.split('/').last] = data;
       return _response(data);
     }
@@ -95,6 +100,11 @@ class MemoryShopApi implements Api {
     String? token,
   }) async {
     final path = _path(url);
+    if (path == 'products') {
+      final id = 'created-product-${++productWrites}';
+      products[id] = data;
+      return _response({'name': id});
+    }
     if (path.startsWith('order/')) {
       orderWrites++;
       orderUser = path.split('/')[1];
@@ -103,6 +113,38 @@ class MemoryShopApi implements Api {
       return _response({'name': 'demo-order'});
     }
     throw StateError('Unexpected POST $path');
+  }
+
+  @override
+  Future<http.Response> patch({
+    required String url,
+    Map<String, dynamic>? query,
+    required Map<String, dynamic> data,
+    String? token,
+  }) async {
+    final path = _path(url);
+    if (path.startsWith('products/')) {
+      final id = path.split('/').last;
+      final existing = products[id];
+      products[id] = {if (existing is Map) ...Map<String, dynamic>.from(existing), ...data};
+      return _response(products[id]);
+    }
+    throw StateError('Unexpected PATCH $path');
+  }
+
+  @override
+  Future<http.Response> delete({
+    required String url,
+    Map<String, dynamic>? query,
+    Map<String, dynamic>? data,
+    String? token,
+  }) async {
+    final path = _path(url);
+    if (path.startsWith('products/')) {
+      products.remove(path.split('/').last);
+      return _response(null);
+    }
+    throw StateError('Unexpected DELETE $path');
   }
 
   @override

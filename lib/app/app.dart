@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
 import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
-import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
-import 'package:shop_application/data/repos/products_repo.dart';
+import 'package:shop_application/features/catalog/domain/repositories/product_repository.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
@@ -38,10 +38,10 @@ class MyShopApp extends StatelessWidget {
         ChangeNotifierProvider<AuthProvider>.value(
           value: getIt<AuthProvider>(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
-          create: (_) => ProductsProvider(productsRepo: getIt<ProductsRepo>()),
-          update: (_, auth, __) => ProductsProvider(
-            productsRepo: getIt<ProductsRepo>(),
+        ChangeNotifierProxyProvider<AuthProvider, CatalogController>(
+          create: (_) => CatalogController(repository: getIt<ProductRepository>()),
+          update: (_, auth, __) => CatalogController(
+            repository: getIt<ProductRepository>(),
             token: auth.token,
             userId: auth.userId,
           ),
