@@ -111,7 +111,7 @@ class OrderItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Flexible(
+                    Expanded(
                       child: Text(
                         '\$${_formatPrice(currentOrder.amount ?? 0)}',
                         textAlign: TextAlign.end,
