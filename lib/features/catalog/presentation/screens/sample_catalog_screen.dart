@@ -105,44 +105,54 @@ class _SampleCatalogScreenState extends State<SampleCatalogScreen> {
               ),
             ),
           ),
-          if (controller.message != null) ...[
-            const SizedBox(height: 16),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                controller.message!,
-                key: const ValueKey('sample-catalog-message'),
-                style: TextStyle(
-                  color: controller.hasError
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
-          if (controller.message != null && !controller.hasError && !busy) ...[
-            const SizedBox(height: 16),
-            FilledButton.tonalIcon(
-              onPressed: () =>
-                  Navigator.of(context).popUntil((route) => route.isFirst),
-              icon: const Icon(Icons.storefront_outlined),
-              label: const Text('Browse collection'),
-            ),
-          ],
         ],
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(18, 8, 18, 14),
-        child: FilledButton.icon(
-          onPressed: busy ? null : _addCollection,
-          icon: busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.add_rounded),
-          label: Text(busy ? 'Adding collection…' : 'Add sample collection'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (controller.message != null) ...[
+              const SizedBox(height: 16),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  controller.message!,
+                  key: const ValueKey('sample-catalog-message'),
+                  style: TextStyle(
+                    color: controller.hasError
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+            if (controller.message != null &&
+                !controller.hasError &&
+                !busy) ...[
+              const SizedBox(height: 16),
+              FilledButton.tonalIcon(
+                onPressed: () =>
+                    Navigator.of(context).popUntil((route) => route.isFirst),
+                icon: const Icon(Icons.storefront_outlined),
+                label: const Text('Browse collection'),
+              ),
+            ],
+            FilledButton.icon(
+              onPressed: busy ? null : _addCollection,
+              icon: busy
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.add_rounded),
+              label: Text(
+                busy ? 'Adding collection…' : 'Add sample collection',
+              ),
+            ),
+          ],
         ),
       ),
     );

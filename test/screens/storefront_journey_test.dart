@@ -62,7 +62,16 @@ void main() {
   }
 
   Future<void> tapText(WidgetTester tester, String text) async {
-    final finder = find.text(text).last;
+    final target = find.text(text);
+    if (target.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        target,
+        220,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+    }
+    final finder = target.last;
     await tester.ensureVisible(finder);
     await tester.tap(finder);
     await tester.pumpAndSettle();
@@ -166,7 +175,12 @@ void main() {
       'creatorId': 'owner',
     };
     await openApp(tester, width: 320, scale: 1.6);
-    await tester.ensureVisible(find.byType(ProductItem));
+    await tester.scrollUntilVisible(
+      find.byType(ProductItem),
+      220,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 30,
+    );
     final button = tester.widget<IconButton>(find.byTooltip('Sold out'));
     expect(button.onPressed, isNull);
     expect(tester.takeException(), isNull);
