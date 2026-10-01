@@ -18,10 +18,9 @@ class ProductItem extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(
-            ProductDetailedScreen.routeName,
-            arguments: product.id,
-          );
+          Navigator.of(
+            context,
+          ).pushNamed(ProductDetailedScreen.routeName, arguments: product.id);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,10 +38,8 @@ class ProductItem extends StatelessWidget {
                         : Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _ProductImageFallback(
-                              color:
-                                  theme.colorScheme.surfaceContainerHighest,
+                            errorBuilder: (_, __, ___) => _ProductImageFallback(
+                              color: theme.colorScheme.surfaceContainerHighest,
                             ),
                           ),
                   ),
@@ -80,55 +77,56 @@ class ProductItem extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 13, 10, 11),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.category.toUpperCase(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.7,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          product.title ?? 'Untitled product',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
+                  Text(
+                    product.category.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    product.title ?? 'Untitled product',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
                           '\$${_formatPrice(product.price)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    tooltip: product.isInStock ? 'Add to cart' : 'Sold out',
-                    onPressed: product.isInStock
-                        ? () => _addToCart(context, product)
-                        : null,
-                    icon: Icon(
-                      product.isInStock
-                          ? Icons.add_shopping_cart_rounded
-                          : Icons.block_rounded,
-                      size: 20,
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        tooltip: product.isInStock ? 'Add to cart' : 'Sold out',
+                        onPressed: product.isInStock
+                            ? () => _addToCart(context, product)
+                            : null,
+                        icon: Icon(
+                          product.isInStock
+                              ? Icons.add_shopping_cart_rounded
+                              : Icons.block_rounded,
+                          size: 20,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -139,10 +137,7 @@ class ProductItem extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleFavorite(
-    BuildContext context,
-    Product product,
-  ) async {
+  Future<void> _toggleFavorite(BuildContext context, Product product) async {
     final auth = context.read<AuthProvider>();
     if (product.id == null ||
         auth.token == null ||
@@ -151,17 +146,10 @@ class ProductItem extends StatelessWidget {
       return;
     }
 
-    await product.toggleFavoriteStatus(
-      product.id!,
-      auth.token!,
-      auth.userId!,
-    );
+    await product.toggleFavoriteStatus(product.id!, auth.token!, auth.userId!);
   }
 
-  void _addToCart(
-    BuildContext context,
-    Product product,
-  ) {
+  void _addToCart(BuildContext context, Product product) {
     if (!product.isInStock ||
         product.id == null ||
         product.price == null ||
@@ -170,11 +158,11 @@ class ProductItem extends StatelessWidget {
     }
 
     final added = context.read<CartProvider>().addItem(
-          product.id!,
-          product.price!,
-          product.title!,
-          maxQuantity: product.stockQuantity?.toDouble(),
-        );
+      product.id!,
+      product.price!,
+      product.title!,
+      maxQuantity: product.stockQuantity?.toDouble(),
+    );
 
     final messenger = ScaffoldMessenger.of(context);
     messenger
@@ -190,9 +178,7 @@ class ProductItem extends StatelessWidget {
               ? SnackBarAction(
                   label: 'Undo',
                   onPressed: () {
-                    context
-                        .read<CartProvider>()
-                        .removeSingleItem(product.id!);
+                    context.read<CartProvider>().removeSingleItem(product.id!);
                   },
                 )
               : null,
@@ -208,13 +194,10 @@ class ProductItem extends StatelessWidget {
   }
 }
 
-
 class _StockBadge extends StatelessWidget {
   final Product product;
 
-  const _StockBadge({
-    required this.product,
-  });
+  const _StockBadge({required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -223,19 +206,16 @@ class _StockBadge extends StatelessWidget {
     final background = isOut
         ? theme.colorScheme.errorContainer
         : product.isLowStock
-            ? theme.colorScheme.tertiaryContainer
-            : theme.colorScheme.surface.withValues(alpha: 0.92);
+        ? theme.colorScheme.tertiaryContainer
+        : theme.colorScheme.surface.withValues(alpha: 0.92);
     final foreground = isOut
         ? theme.colorScheme.onErrorContainer
         : product.isLowStock
-            ? theme.colorScheme.onTertiaryContainer
-            : theme.colorScheme.onSurface;
+        ? theme.colorScheme.onTertiaryContainer
+        : theme.colorScheme.onSurface;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(99),

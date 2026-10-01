@@ -9,6 +9,7 @@ class _RecordingApi implements Api {
   String? lastUrl;
   Map<String, dynamic>? lastQuery;
   Object? lastData;
+  Map<String, String>? lastHeaders;
 
   http.Response _record({
     required String method,
@@ -30,12 +31,7 @@ class _RecordingApi implements Api {
     Map<String, dynamic>? data,
     String? token,
   }) async {
-    return _record(
-      method: 'GET',
-      url: url,
-      query: query,
-      data: data,
-    );
+    return _record(method: 'GET', url: url, query: query, data: data);
   }
 
   @override
@@ -45,12 +41,7 @@ class _RecordingApi implements Api {
     Map<String, dynamic>? data,
     String? token,
   }) async {
-    return _record(
-      method: 'POST',
-      url: url,
-      query: query,
-      data: data,
-    );
+    return _record(method: 'POST', url: url, query: query, data: data);
   }
 
   @override
@@ -60,13 +51,10 @@ class _RecordingApi implements Api {
     required Object data,
     String lang = 'ar',
     String? token,
+    Map<String, String>? headers,
   }) async {
-    return _record(
-      method: 'PUT',
-      url: url,
-      query: query,
-      data: data,
-    );
+    lastHeaders = headers;
+    return _record(method: 'PUT', url: url, query: query, data: data);
   }
 
   @override
@@ -76,12 +64,7 @@ class _RecordingApi implements Api {
     Map<String, dynamic>? data,
     String? token,
   }) async {
-    return _record(
-      method: 'DELETE',
-      url: url,
-      query: query,
-      data: data,
-    );
+    return _record(method: 'DELETE', url: url, query: query, data: data);
   }
 
   @override
@@ -91,12 +74,7 @@ class _RecordingApi implements Api {
     required Map<String, dynamic> data,
     String? token,
   }) async {
-    return _record(
-      method: 'PATCH',
-      url: url,
-      query: query,
-      data: data,
-    );
+    return _record(method: 'PATCH', url: url, query: query, data: data);
   }
 }
 
@@ -113,9 +91,7 @@ void main() {
     await client.get(
       path: '/order/user-1/',
       authToken: 'test-token',
-      query: const {
-        'orderBy': '"datetime"',
-      },
+      query: const {'orderBy': '"datetime"'},
     );
 
     expect(api.lastMethod, 'GET');
@@ -131,9 +107,7 @@ void main() {
     await client.post(
       path: 'addresses/user-1',
       authToken: 'test-token',
-      data: const {
-        'label': 'Home',
-      },
+      data: const {'label': 'Home'},
     );
 
     expect(api.lastMethod, 'POST');
@@ -142,5 +116,17 @@ void main() {
       '${AppEnvironment.normalizedFirebaseDatabaseUrl}/addresses/user-1.json',
     );
     expect(api.lastData, const {'label': 'Home'});
+  });
+
+  test('conditional creates keep the Firebase precondition header', () async {
+    await client.put(
+      path: 'products/sample-v1-chair',
+      authToken: 'test-token',
+      data: const {'title': 'Chair'},
+      ifMatch: 'null_etag',
+    );
+    expect(api.lastMethod, 'PUT');
+    expect(api.lastHeaders, {'if-match': 'null_etag'});
+    expect(api.lastQuery?['auth'], 'test-token');
   });
 }

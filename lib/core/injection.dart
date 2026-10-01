@@ -11,6 +11,10 @@ import 'package:shop_application/features/address_book/data/repositories/address
 import 'package:shop_application/features/address_book/domain/repositories/address_book_repository.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/catalog/data/repositories/recently_viewed_repository_impl.dart';
+import 'package:shop_application/features/catalog/data/repositories/sample_catalog_repository_impl.dart';
+import 'package:shop_application/features/catalog/domain/repositories/sample_catalog_repository.dart';
+import 'package:shop_application/features/catalog/domain/usecases/add_sample_catalog.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/sample_catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/features/checkout/data/datasources/checkout_remote_data_source.dart';
@@ -35,9 +39,7 @@ void setup() {
     () => FirebaseRestClientImpl(api: getIt<Api>()),
   );
 
-  getIt.registerLazySingleton<AuthService>(
-    () => AuthServiceImpl(getIt<Api>()),
-  );
+  getIt.registerLazySingleton<AuthService>(() => AuthServiceImpl(getIt<Api>()));
   getIt.registerLazySingleton<AuthRepo>(
     () => AuthRepoImpl(authService: getIt<AuthService>()),
   );
@@ -55,21 +57,25 @@ void setup() {
   getIt.registerLazySingleton<RecentlyViewedRepository>(
     () => RecentlyViewedRepositoryImpl(),
   );
+  getIt.registerLazySingleton<SampleCatalogRepository>(
+    () => SampleCatalogRepositoryImpl(database: getIt<FirebaseRestClient>()),
+  );
+  getIt.registerLazySingleton<AddSampleCatalog>(
+    () => AddSampleCatalog(getIt<SampleCatalogRepository>()),
+  );
+  getIt.registerFactory<SampleCatalogController>(
+    () => SampleCatalogController(addSampleCatalog: getIt<AddSampleCatalog>()),
+  );
   getIt.registerFactory<RecentlyViewedController>(
-    () => RecentlyViewedController(
-      repository: getIt<RecentlyViewedRepository>(),
-    ),
+    () =>
+        RecentlyViewedController(repository: getIt<RecentlyViewedRepository>()),
   );
 
   getIt.registerLazySingleton<OrderRemoteDataSource>(
-    () => FirebaseOrderRemoteDataSource(
-      database: getIt<FirebaseRestClient>(),
-    ),
+    () => FirebaseOrderRemoteDataSource(database: getIt<FirebaseRestClient>()),
   );
   getIt.registerLazySingleton<OrderRepository>(
-    () => OrderRepositoryImpl(
-      remoteDataSource: getIt<OrderRemoteDataSource>(),
-    ),
+    () => OrderRepositoryImpl(remoteDataSource: getIt<OrderRemoteDataSource>()),
   );
 
   getIt.registerLazySingleton<AddressBookRemoteDataSource>(
@@ -83,9 +89,7 @@ void setup() {
     ),
   );
   getIt.registerFactory<AddressBookController>(
-    () => AddressBookController(
-      repository: getIt<AddressBookRepository>(),
-    ),
+    () => AddressBookController(repository: getIt<AddressBookRepository>()),
   );
 
   getIt.registerLazySingleton<PaymentGateway>(
@@ -93,9 +97,8 @@ void setup() {
   );
 
   getIt.registerLazySingleton<CheckoutRemoteDataSource>(
-    () => FirebaseCheckoutRemoteDataSource(
-      database: getIt<FirebaseRestClient>(),
-    ),
+    () =>
+        FirebaseCheckoutRemoteDataSource(database: getIt<FirebaseRestClient>()),
   );
   getIt.registerLazySingleton<CheckoutRepository>(
     () => CheckoutRepositoryImpl(
@@ -104,8 +107,6 @@ void setup() {
     ),
   );
   getIt.registerFactory<CheckoutController>(
-    () => CheckoutController(
-      repository: getIt<CheckoutRepository>(),
-    ),
+    () => CheckoutController(repository: getIt<CheckoutRepository>()),
   );
 }
