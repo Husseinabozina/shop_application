@@ -12,6 +12,7 @@ import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/features/catalog/domain/entities/sample_product.dart';
 import 'package:shop_application/widgets/product_item.dart';
+import 'package:shop_application/screens/product_detailed_screen.dart';
 
 import '../support/memory_shop_api.dart';
 
@@ -101,9 +102,28 @@ void main() {
         expect(api.sampleWrites, 8);
         expect(api.products[sampleCatalog.first.id]['price'], 155.0);
         await tapText(tester, 'Browse collection');
+        await tester.scrollUntilVisible(
+          find.byType(TextField),
+          220,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 30,
+        );
         await tester.enterText(find.byType(TextField).first, 'Studio stool');
         await tester.pumpAndSettle();
-        await tapText(tester, 'Studio stool');
+        final productCard = find.byType(ProductItem);
+        await tester.scrollUntilVisible(
+          productCard,
+          220,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 30,
+        );
+        await tester.tap(
+          find
+              .descendant(of: productCard, matching: find.byType(InkWell))
+              .first,
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(ProductDetailedScreen), findsOneWidget);
         await tester.tap(find.byTooltip('Save product'));
         await tester.pumpAndSettle();
         expect(api.favorites[sampleCatalog.first.id], isTrue);
@@ -115,6 +135,12 @@ void main() {
         expect(tester.takeException(), isNull);
         await tapText(tester, 'Checkout');
         expect(find.text('Demo Shopper'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('Cash on delivery'),
+          220,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 30,
+        );
         expect(find.text('Cash on delivery'), findsOneWidget);
         final place = find.widgetWithText(FilledButton, 'Place order • \$180');
         await tester.tap(place);
@@ -134,6 +160,7 @@ void main() {
         expect(find.text('Your orders'), findsOneWidget);
         expect(find.text('Order #MO-ORDER'), findsWidgets);
         expect(tester.takeException(), isNull);
+        await getIt<AuthProvider>().logOut();
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
@@ -156,6 +183,7 @@ void main() {
       expect(api.products.length, 8);
       expect(api.sampleWrites, 8);
       expect(tester.takeException(), isNull);
+      await getIt<AuthProvider>().logOut();
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
@@ -181,9 +209,14 @@ void main() {
       scrollable: find.byType(Scrollable).first,
       maxScrolls: 30,
     );
-    final button = tester.widget<IconButton>(find.byTooltip('Sold out'));
+    final button = tester.widget<IconButton>(
+      find.byWidgetPredicate(
+        (widget) => widget is IconButton && widget.tooltip == 'Sold out',
+      ),
+    );
     expect(button.onPressed, isNull);
     expect(tester.takeException(), isNull);
+    await getIt<AuthProvider>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

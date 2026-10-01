@@ -138,6 +138,7 @@ class _SampleCatalogScreenState extends State<SampleCatalogScreen> {
                 icon: const Icon(Icons.storefront_outlined),
                 label: const Text('Browse collection'),
               ),
+              const SizedBox(height: 8),
             ],
             FilledButton.icon(
               onPressed: busy ? null : _addCollection,
