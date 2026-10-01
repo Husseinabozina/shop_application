@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,6 +22,8 @@ Future<void> preparePortfolioCapture() async {
 
 Future<void> capturePortfolio(WidgetTester tester, String name) async {
   if (!exportPortfolio) return;
+  ScaffoldMessenger.of(tester.element(find.byType(Scaffold).last)).removeCurrentSnackBar();
+  await tester.pumpAndSettle();
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 120)));
   await tester.pumpAndSettle();
   final boundary = tester.renderObject<RenderRepaintBoundary>(

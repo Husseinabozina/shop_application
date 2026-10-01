@@ -135,7 +135,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: const TextStyle(
+          textStyle: base.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w900,
           ),
         ),
