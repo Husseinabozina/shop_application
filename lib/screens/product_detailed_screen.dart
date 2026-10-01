@@ -37,7 +37,11 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
     final canonicalId = product.id ?? product.productId;
     if (canonicalId != null) {
       unawaited(
-        context.read<RecentlyViewedController>().record(canonicalId),
+        Future<void>.microtask(() {
+          if (mounted) {
+            return context.read<RecentlyViewedController>().record(canonicalId);
+          }
+        }),
       );
     }
   }

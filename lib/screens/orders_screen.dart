@@ -28,7 +28,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
-    _ordersFuture = context.read<OrderController>().fetchOrders();
+    // Loading notifies shared listeners; start after the mounting build finishes.
+    _ordersFuture = Future<void>.microtask(() {
+      if (mounted) {
+        return context.read<OrderController>().fetchOrders();
+      }
+    });
   }
 
   @override
