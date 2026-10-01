@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/address_book/domain/entities/saved_address.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
@@ -309,7 +309,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     BuildContext context,
     CheckoutController checkout,
   ) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
@@ -343,267 +343,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     BuildContext context,
     CheckoutController checkout,
   ) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
     if (token == null || userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please sign in again before placing the order.'),
-        ),
-      );
-      return;
-    }
-
-    final success = await checkout.placeOrder(
-      userId: userId,
-      accessToken: token,
-    );
-
-    if (!context.mounted || !success) {
-      return;
-    }
-
-    context.read<CartProvider>().clear();
-
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.check_circle_outline_rounded),
-        title: const Text('Order placed'),
-        content: Text(
-          'Order #${checkout.completedOrderId ?? ''} has been created successfully.',
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
-    );
-
-    if (context.mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-  final Widget? trailing;
-
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-    this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 21,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-                if (trailing != null) trailing!,
-              ],
-            ),
-            const SizedBox(height: 16),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptySection extends StatelessWidget {
-  final String text;
-
-  const _EmptySection({
-    required this.text,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-    );
-  }
-}
-
-class _AddressPreview extends StatelessWidget {
-  final CheckoutAddress address;
-
-  const _AddressPreview({
-    required this.address,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final secondLine = address.addressLine2?.trim();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          address.fullName,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(address.phone),
-        const SizedBox(height: 5),
-        Text(address.addressLine1),
-        if (secondLine != null && secondLine.isNotEmpty) Text(secondLine),
-        Text('${address.city}, ${address.country}'),
-      ],
-    );
-  }
-}
-
-class _ShippingOptions extends StatelessWidget {
-  final CheckoutController controller;
-
-  const _ShippingOptions({
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (controller.shippingMethods.isEmpty) {
-      return const _EmptySection(
-        text: 'No shipping methods are available for this address.',
-      );
-    }
-
-    return RadioGroup<String>(
-      groupValue: controller.selectedShippingMethod?.id,
-      onChanged: (methodId) {
-        if (methodId == null) {
-          return;
-        }
-
-        final method = controller.shippingMethods.firstWhere(
-          (item) => item.id == methodId,
-        );
-        controller.selectShippingMethod(method);
-      },
-      child: Column(
-        children: controller.shippingMethods.map((method) {
-          final selected =
-              controller.selectedShippingMethod?.id == method.id;
-
-          return RadioListTile<String>(
-            contentPadding: EdgeInsets.zero,
-            value: method.id,
-            title: Text(
-              method.title,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            subtitle: Text(
-              '${method.description} • ${method.deliveryEstimate}',
-            ),
-            secondary: Text(
-              method.price == 0
-                  ? 'FREE'
-                  : '\$${_formatPrice(method.price)}',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
-}
-
-class _PaymentOptions extends StatelessWidget {
-  final CheckoutController controller;
-
-  const _PaymentOptions({
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (controller.paymentMethods.isEmpty) {
-      return const _EmptySection(
-        text: 'Payment methods are unavailable.',
-      );
-    }
-
-    return RadioGroup<String>(
-      groupValue: controller.selectedPaymentMethod?.id,
-      onChanged: (methodId) {
-        if (methodId == null) {
-          return;
-        }
-
-        final method = controller.paymentMethods.firstWhere(
-          (item) => item.id == methodId,
-        );
-
-        if (method.isEnabled) {
-          controller.selectPaymentMethod(method);
-        }
-      },
-      child: Column(
-        children: controller.paymentMethods.map((method) {
-          final selected =
-              controller.selectedPaymentMethod?.id == method.id;
-
-          return Opacity(
+      ScaffoldMessenger.of(…1677 tokens truncated…turn Opacity(
             opacity: method.isEnabled ? 1 : 0.55,
             child: RadioListTile<String>(
               contentPadding: EdgeInsets.zero,

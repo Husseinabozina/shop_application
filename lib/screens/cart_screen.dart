@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/cart/domain/services/cart_availability_validator.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
@@ -14,7 +14,7 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = context.watch<CartProvider>();
+    final cart = context.watch<CartController>();
     final entries = cart.items.entries.toList();
 
     return Scaffold(
@@ -43,6 +43,12 @@ class CartScreen extends StatelessWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (cart.persistenceError != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(cart.persistenceError!, textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
           if (entries.isNotEmpty) _CheckoutBar(total: cart.totalPrice),
           const StoreBottomNavigation(selectedIndex: 2),
         ],
@@ -144,7 +150,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
     setState(() => _isChecking = true);
 
     final productsProvider = context.read<CatalogController>();
-    final cart = context.read<CartProvider>();
+    final cart = context.read<CartController>();
 
     await productsProvider.fetchProducts();
 

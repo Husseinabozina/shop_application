@@ -1,11 +1,11 @@
-import 'package:shop_application/data/models/cart/cart_model.dart';
+import 'package:shop_application/features/cart/domain/entities/cart_item.dart';
 import 'package:shop_application/features/orders/domain/entities/order_status.dart';
 
 class Order {
   final String? id;
   final DateTime? datetime;
   final double? amount;
-  final List<CartModel>? products;
+  final List<CartItem>? products;
   final OrderStatus status;
   final String? paymentStatus;
   final String? paymentMethodTitle;
@@ -43,7 +43,10 @@ class Order {
       'id': id,
       'datetime': datetime?.toIso8601String(),
       'amount': amount,
-      'products': products?.map((product) => product.toJson()).toList(),
+      'products': products?.map((product) => {
+        'id': product.id, 'title': product.title,
+        'quantity': product.quantity, 'price': product.price,
+      }).toList(),
       'status': status.value,
       'paymentStatus': paymentStatus,
     };
@@ -92,7 +95,7 @@ class Order {
     );
   }
 
-  static List<CartModel>? _parseProducts(Object? raw) {
+  static List<CartItem>? _parseProducts(Object? raw) {
     if (raw is! List) {
       return null;
     }
@@ -100,8 +103,11 @@ class Order {
     return raw
         .whereType<Map>()
         .map(
-          (product) => CartModel.fromJson(
-            Map<String, dynamic>.from(product),
+          (product) => CartItem(
+            id: product['id'] as String?,
+            title: product['title'] as String?,
+            quantity: ((product['quantity'] ?? product['quantitiy']) as num?)?.toDouble(),
+            price: product['price'] as num?,
           ),
         )
         .toList();

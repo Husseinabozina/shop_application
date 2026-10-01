@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/screens/orders_screen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
@@ -137,7 +137,7 @@ class AccountScreen extends StatelessWidget {
   }
 
   Future<void> _signOut(BuildContext context) async {
-    await context.read<AuthProvider>().logOut();
+    await context.read<AuthController>().logOut();
   }
 }
 

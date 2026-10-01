@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 
 class StoreBottomNavigation extends StatelessWidget {
   final int selectedIndex;
@@ -20,7 +20,7 @@ class StoreBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cartCount = context.watch<CartProvider>().cartLength;
+    final cartCount = context.watch<CartController>().cartLength;
 
     return NavigationBar(
       selectedIndex: selectedIndex,

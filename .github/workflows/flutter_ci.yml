@@ -37,8 +37,19 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
+      - name: Cache public portfolio photos
+        run: python scripts/prepare_portfolio_images.py
+
       - name: Test
-        run: flutter test
+        run: flutter test --dart-define=EXPORT_PORTFOLIO_SHOTS=true
+
+      - name: Save portfolio screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: myshop-portfolio-screenshots
+          path: build/portfolio-screenshots/*.png
+          if-no-files-found: error
+          retention-days: 30
 
   ios-simulator-build:
     runs-on: macos-latest
@@ -59,3 +70,38 @@ jobs:
 
       - name: Build iOS simulator app
         run: flutter build ios --simulator --debug
+
+      - name: Build unsigned iOS release
+        run: flutter build ios --release --no-codesign
+
+      - name: Save unsigned iOS release
+        uses: actions/upload-artifact@v4
+        with:
+          name: myshop-ios-unsigned-release
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 30
+
+
+  android-demo-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build installable demo APK
+        run: flutter build apk --release --target-platform android-arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: myshop-android-demo-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30

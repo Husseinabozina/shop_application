@@ -1,10 +1,44 @@
 import 'package:flutter/foundation.dart';
-import 'package:shop_application/data/models/cart/cart_model.dart';
+import 'package:shop_application/features/cart/domain/entities/cart_item.dart';
+import 'package:shop_application/features/cart/domain/repositories/cart_repository.dart';
 
-class CartProvider with ChangeNotifier {
-  final Map<String, CartModel> _items = {};
+class CartController with ChangeNotifier {
+  final CartRepository? repository;
+  final String? userId;
+  final Map<String, CartItem> _items = {};
+  Future<void> _pending = Future.value();
+  bool _disposed = false;
+  String? persistenceError;
 
-  Map<String, CartModel> get items => Map.unmodifiable(_items);
+  CartController({this.repository, this.userId}) {
+    if (repository != null && userId != null) {
+      _items.addAll(repository!.load(userId!));
+    }
+  }
+
+  Future<void> flush() => _pending;
+
+  void _changed() {
+    if (_disposed) return;
+    persistenceError = null;
+    notifyListeners();
+    final store = repository;
+    final scope = userId;
+    if (store == null || scope == null) return;
+    _pending = store.save(scope, Map.of(_items)).catchError((Object error) {
+      if (_disposed) return;
+      persistenceError = 'Your cart could not be saved on this device. Try again.';
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  Map<String, CartItem> get items => Map.unmodifiable(_items);
 
   int get cartLength => _items.length;
 
@@ -34,14 +68,14 @@ class CartProvider with ChangeNotifier {
         return false;
       }
 
-      _items[productId] = CartModel(
+      _items[productId] = CartItem(
         id: existing.id,
         title: existing.title,
         price: existing.price,
         quantity: currentQuantity + 1,
       );
     } else {
-      _items[productId] = CartModel(
+      _items[productId] = CartItem(
         id: DateTime.now().toIso8601String(),
         title: title,
         price: price,
@@ -49,13 +83,13 @@ class CartProvider with ChangeNotifier {
       );
     }
 
-    notifyListeners();
+    _changed();
     return true;
   }
 
   void removeItem(String productId) {
     if (_items.remove(productId) != null) {
-      notifyListeners();
+      _changed();
     }
   }
 
@@ -69,7 +103,7 @@ class CartProvider with ChangeNotifier {
     if (quantity <= 1) {
       _items.remove(productId);
     } else {
-      _items[productId] = CartModel(
+      _items[productId] = CartItem(
         id: existing.id,
         title: existing.title,
         price: existing.price,
@@ -77,7 +111,7 @@ class CartProvider with ChangeNotifier {
       );
     }
 
-    notifyListeners();
+    _changed();
   }
 
   void clear() {
@@ -86,6 +120,6 @@ class CartProvider with ChangeNotifier {
     }
 
     _items.clear();
-    notifyListeners();
+    _changed();
   }
 }

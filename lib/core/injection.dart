@@ -1,11 +1,16 @@
 import 'package:get_it/get_it.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:shop_application/core/firebase/firebase_rest_client.dart';
 import 'package:shop_application/core/network/api.dart';
-import 'package:shop_application/data/repos/auth_repo.dart';
+import 'package:shop_application/features/auth/domain/repositories/auth_repository.dart';
+import 'package:shop_application/features/auth/domain/repositories/session_store.dart';
+import 'package:shop_application/features/auth/data/datasources/local_session_store.dart';
+import 'package:shop_application/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:shop_application/features/cart/domain/repositories/cart_repository.dart';
+import 'package:shop_application/features/cart/data/repositories/local_cart_repository.dart';
 import 'package:shop_application/features/catalog/domain/repositories/product_repository.dart';
 import 'package:shop_application/features/catalog/data/repositories/product_repository_impl.dart';
-import 'package:shop_application/data/services/auth_services.dart';
+import 'package:shop_application/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:shop_application/features/catalog/data/datasources/product_remote_data_source.dart';
 import 'package:shop_application/features/address_book/data/datasources/address_book_remote_data_source.dart';
 import 'package:shop_application/features/address_book/data/repositories/address_book_repository_impl.dart';
@@ -40,12 +45,15 @@ void setup() {
     () => FirebaseRestClientImpl(api: getIt<Api>()),
   );
 
-  getIt.registerLazySingleton<AuthService>(() => AuthServiceImpl(getIt<Api>()));
-  getIt.registerLazySingleton<AuthRepo>(
-    () => AuthRepoImpl(authService: getIt<AuthService>()),
+  getIt.registerLazySingleton<AuthRemoteDataSource>(() => FirebaseAuthRemoteDataSource(getIt<Api>()));
+  getIt.registerLazySingleton<SessionStore>(() => LocalSessionStore());
+  getIt.registerLazySingleton<CartRepository>(() => LocalCartRepository());
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(remote: getIt<AuthRemoteDataSource>(), sessionStore: getIt<SessionStore>()),
   );
-  getIt.registerLazySingleton<AuthProvider>(
-    () => AuthProvider(authRepo: getIt<AuthRepo>()),
+  getIt.registerLazySingleton<AuthController>(
+    () => AuthController(repository: getIt<AuthRepository>()),
+    dispose: (controller) => controller.dispose(),
   );
 
   getIt.registerLazySingleton<ProductRemoteDataSource>(

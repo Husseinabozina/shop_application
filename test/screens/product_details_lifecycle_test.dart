@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/features/catalog/domain/repositories/product_repository.dart';
@@ -71,7 +71,7 @@ void main() {
             ChangeNotifierProvider<RecentlyViewedController>.value(
               value: recent,
             ),
-            ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
+            ChangeNotifierProvider<CartController>(create: (_) => CartController()),
           ],
           child: MaterialApp(
             navigatorKey: navigator,

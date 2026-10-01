@@ -3,25 +3,23 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:shop_application/core/config/app_environment.dart';
-import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/network/api.dart';
 import 'package:shop_application/core/network/error_handler.dart';
 
-abstract class AuthService {
-  Future<dynamic> authenticate(
+abstract class AuthRemoteDataSource {
+  Future<Map<String, dynamic>> authenticate(
     String email,
     String password,
     String urlSegment,
   );
 
-  Future<Map<String, dynamic>> getUserData();
-  Future<void> logout();
+
 }
 
-class AuthServiceImpl implements AuthService {
+class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
   final Api api;
 
-  AuthServiceImpl(this.api);
+  FirebaseAuthRemoteDataSource(this.api);
 
   @override
   Future<Map<String, dynamic>> authenticate(
@@ -49,39 +47,10 @@ class AuthServiceImpl implements AuthService {
 
       final responseData = json.decode(response.body) as Map<String, dynamic>;
 
-      final expiresInSeconds =
-          int.tryParse(responseData['expiresIn']?.toString() ?? '') ?? 3600;
-      final expiryDate = DateTime.now().add(
-        Duration(seconds: expiresInSeconds),
-      );
-
-      await CacheHelper.saveUserData(
-        responseData['idToken'] as String,
-        responseData['localId'] as String,
-        expiryDate,
-      );
-
       return responseData;
     } catch (e) {
       throw ExceptionHandler.handle(e);
     }
   }
 
-  @override
-  Future<void> logout() async {
-    try {
-      await CacheHelper.clearUserData();
-    } catch (e) {
-      throw ExceptionHandler.handle(e);
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> getUserData() async {
-    try {
-      return await CacheHelper.getUserData();
-    } catch (e) {
-      throw ExceptionHandler.handle(e);
-    }
-  }
 }

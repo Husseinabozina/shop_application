@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/product.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
@@ -164,7 +164,7 @@ class ProductItem extends StatelessWidget {
       return;
     }
 
-    final added = context.read<CartProvider>().addItem(
+    final added = context.read<CartController>().addItem(
       product.id!,
       product.price!,
       product.title!,
@@ -185,7 +185,7 @@ class ProductItem extends StatelessWidget {
               ? SnackBarAction(
                   label: 'Undo',
                   onPressed: () {
-                    context.read<CartProvider>().removeSingleItem(product.id!);
+                    context.read<CartController>().removeSingleItem(product.id!);
                   },
                 )
               : null,

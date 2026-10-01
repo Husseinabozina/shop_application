@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop_application/app/app.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/network/api.dart';
@@ -17,9 +17,13 @@ import 'package:shop_application/widgets/product_item.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
 
 import '../support/memory_shop_api.dart';
+import '../support/portfolio_capture.dart';
+import 'package:shop_application/features/cart/data/repositories/local_cart_repository.dart';
 
 void main() {
   late MemoryShopApi api;
+
+  setUpAll(preparePortfolioCapture);
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({
@@ -40,7 +44,7 @@ void main() {
   });
 
   tearDown(() async {
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await getIt.reset();
   });
 
@@ -58,7 +62,9 @@ void main() {
         data: MediaQueryData.fromView(
           tester.view,
         ).copyWith(textScaler: TextScaler.linear(scale)),
-        child: const MyShopApp(),
+        child: const RepaintBoundary(
+          key: ValueKey('portfolio-capture'), child: MyShopApp(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -104,6 +110,7 @@ void main() {
         expect(api.sampleWrites, 8);
         expect(api.products[sampleCatalog.first.id]['price'], 155.0);
         await tapText(tester, 'Browse collection');
+        if (size.$1 == 390) await capturePortfolio(tester, '01-home');
         await tester.scrollUntilVisible(
           find.byType(TextField),
           220,
@@ -126,6 +133,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.byType(ProductDetailedScreen), findsOneWidget);
+        if (size.$1 == 390) await capturePortfolio(tester, '02-product');
         await tester.tap(find.byTooltip('Save product'));
         await tester.pumpAndSettle();
         expect(api.favorites[sampleCatalog.first.id], isTrue);
@@ -136,9 +144,11 @@ void main() {
         await tester.pumpAndSettle();
         await tapText(tester, 'Cart');
         expect(find.text('Studio stool'), findsOneWidget);
+        if (size.$1 == 390) await capturePortfolio(tester, '03-cart');
         expect(tester.takeException(), isNull);
         await tapText(tester, 'Checkout');
         expect(find.text('Demo Shopper'), findsOneWidget);
+        if (size.$1 == 390) await capturePortfolio(tester, '04-checkout');
         await tester.scrollUntilVisible(
           find.text('Cash on delivery'),
           220,
@@ -157,14 +167,17 @@ void main() {
         expect(api.placedOrder?['paymentStatus'], 'cash_on_delivery');
         final cart = tester
             .element(find.text('Order placed'))
-            .read<CartProvider>();
+            .read<CartController>();
         expect(cart.items, isEmpty);
+        await cart.flush();
+        expect(LocalCartRepository().load('owner'), isEmpty);
         await tapText(tester, 'Continue');
         await tapText(tester, 'Orders');
         expect(find.text('Your orders'), findsOneWidget);
         expect(find.text('Order #MO-ORDER'), findsWidgets);
+        if (size.$1 == 390) await capturePortfolio(tester, '05-orders');
         expect(tester.takeException(), isNull);
-        await getIt<AuthProvider>().logOut();
+        await getIt<AuthController>().logOut();
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
@@ -187,7 +200,7 @@ void main() {
       expect(api.products.length, 8);
       expect(api.sampleWrites, 8);
       expect(tester.takeException(), isNull);
-      await getIt<AuthProvider>().logOut();
+      await getIt<AuthController>().logOut();
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
@@ -220,7 +233,7 @@ void main() {
     );
     expect(button.onPressed, isNull);
     expect(tester.takeException(), isNull);
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -251,7 +264,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byTooltip('Remove from saved'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -301,7 +314,7 @@ void main() {
     expect(api.products, isEmpty);
     expect(find.text('No products yet'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -329,7 +342,7 @@ void main() {
     expect(find.text('This product is no longer available.'), findsOneWidget);
     expect(find.text('Add to cart'), findsNothing);
     expect(tester.takeException(), isNull);
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -359,7 +372,7 @@ void main() {
     expect(find.text('Could not update favorite status.'), findsOneWidget);
     expect(api.favorites['lamp'], isTrue);
     expect(tester.takeException(), isNull);
-    await getIt<AuthProvider>().logOut();
+    await getIt<AuthController>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

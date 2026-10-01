@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/sample_product.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/sample_catalog_controller.dart';
@@ -22,7 +22,7 @@ class _SampleCatalogScreenState extends State<SampleCatalogScreen> {
     if (controller.isAdding || _isRefreshing) {
       return;
     }
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final products = context.read<CatalogController>();
     await controller.add(
       userId: auth.userId ?? '',

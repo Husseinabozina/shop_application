@@ -10,7 +10,7 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Product catalog with categories, search, sorting, price/availability filters, stock availability, and swipeable product galleries
 - Search and per-user favorites
 - User-scoped seller product management
-- Cart with quantity controls and availability preflight before checkout
+- Persistent account-scoped cart with quantity controls and availability preflight before checkout
 - Full checkout flow
 - Saved delivery address book with default address
 - Standard / Express shipping with delivery estimates
@@ -21,7 +21,7 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Capability-driven card and wallet options that stay disabled until a real gateway is configured
 - Per-user order history and visual delivery tracking
 - Firebase Realtime Database with versioned ownership rules
-- Feature-first catalog, checkout, address-book, and orders architecture
+- Feature-first auth, catalog, cart, checkout, address-book, and orders architecture
 - Immutable catalog products and account-scoped favorite state
 - Repository and data-source boundaries
 - Centralized Firebase REST client and backend environment configuration
@@ -121,6 +121,12 @@ Card and wallet methods are intentionally not faked. They remain disabled until 
 - SharedPreferences
 - HTTP
 - Freezed API result model
+
+## Demo files and device handoff
+
+See [DEMO_RELEASE.md](docs/DEMO_RELEASE.md) for the installable Android demo APK,
+unsigned iOS release, portfolio screenshots, and the short live-device check.
+These are produced by Flutter CI in GitHub Actions.
 
 ## Run locally
 

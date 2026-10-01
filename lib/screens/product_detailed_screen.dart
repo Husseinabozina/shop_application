@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/product.dart';
@@ -248,7 +248,7 @@ class _ProductDetailsView extends StatelessWidget {
       return;
     }
 
-    final added = context.read<CartProvider>().addItem(
+    final added = context.read<CartController>().addItem(
           product.id!,
           product.price!,
           product.title!,
@@ -435,72 +435,105 @@ class _InfoCard extends StatelessWidget {
   final String description;
 
   const _InfoCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
+    require…901 tokens truncated…                   ),
+                        ),
+                        Text(
+                          'Your storefront',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const Divider(),
+            _DrawerTile(
+              icon: Icons.storefront_outlined,
+              label: 'Shop',
+              onTap: () {
+                Navigator.of(context).pushReplacementNamed('/');
+              },
+            ),
+            _DrawerTile(
+              icon: Icons.receipt_long_outlined,
+              label: 'Orders',
+              onTap: () {
+                Navigator.of(context)
+                    .pushReplacementNamed(OrdersScreen.routeName);
+              },
+            ),
+            _DrawerTile(
+              icon: Icons.location_on_outlined,
+              label: 'Saved addresses',
+              onTap: () {
+                Navigator.of(context)
+                    .pushReplacementNamed(AddressBookScreen.routeName);
+              },
+            ),
+            _DrawerTile(
+              icon: Icons.inventory_2_outlined,
+              label: 'Manage products',
+              onTap: () {
+                Navigator.of(context)
+                    .pushReplacementNamed(UserProductScreen.routeName);
+              },
+            ),
+            const Spacer(),
+            const Divider(),
+            _DrawerTile(
+              icon: Icons.logout_rounded,
+              label: 'Sign out',
+              danger: true,
+              onTap: () async {
+                Navigator.of(context).pop();
+                await context.read<AuthController>().logOut();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
 }
 
+class _DrawerTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool danger;
 
-class _ImageFallback extends StatelessWidget {
-  final Color color;
-
-  const _ImageFallback({required this.color});
+  const _DrawerTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.danger = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: color,
-      child: Center(
-        child: Icon(
-          Icons.inventory_2_outlined,
-          size: 64,
-          color: Theme.of(context).colorScheme.outline,
+    final theme = Theme.of(context);
+    final foreground =
+        danger ? theme.colorScheme.error : theme.colorScheme.onSurface;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+        leading: Icon(icon, color: foreground),
+        title: Text(
+          label,
+          style: TextStyle(
+            color: foreground,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        onTap: onTap,
       ),
     );
   }

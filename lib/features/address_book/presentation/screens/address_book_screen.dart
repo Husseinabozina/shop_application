@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:shop_application/features/address_book/domain/entities/saved_address.dart';
 import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
 import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
@@ -177,7 +177,7 @@ class AddressBookScreen extends StatelessWidget {
   }
 
   Future<void> _reload(BuildContext context) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
@@ -195,7 +195,7 @@ class AddressBookScreen extends StatelessWidget {
     BuildContext context, {
     SavedAddress? initialAddress,
   }) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
@@ -227,7 +227,7 @@ class AddressBookScreen extends StatelessWidget {
     BuildContext context,
     SavedAddress address,
   ) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
@@ -270,7 +270,7 @@ class AddressBookScreen extends StatelessWidget {
       return;
     }
 
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 

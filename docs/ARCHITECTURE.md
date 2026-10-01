@@ -296,5 +296,26 @@ current catalog snapshot. Disposed controllers ignore late request completions.
 
 Architectural checks keep the catalog domain free of Flutter, Firebase, HTTP,
 and data/presentation imports, and prevent catalog controllers from importing
-network implementations. Auth and cart presentation still use their legacy
-folders and can migrate independently.
+network implementations. Auth and cart now follow the same feature-first dependency direction.
+
+
+## Auth and cart
+
+`AuthController → AuthRepository → AuthRepositoryImpl` composes an authenticated
+remote data source with the `SessionStore` contract. `AuthSession` is a pure Dart
+entity. Existing `UserData` cache records remain compatible; expired/malformed
+sessions are cleared and require sign-in, preserving the current expiry behavior.
+Firebase REST error mapping stays in the data layer. Controller disposal cancels
+its session timer. Changing accounts resets secondary navigation routes.
+
+`CartController → CartRepository → LocalCartRepository` stores immutable `CartItem`
+snapshots locally under a key for each user. Writes retain their account scope,
+are serialized, and include an immediate in-memory snapshot so switching accounts
+cannot expose another cart or restore an older queued version. Checkout clearing
+also saves an empty cart. Corrupt local entries are skipped individually, and
+storage failures are visible in the cart. Catalog stock is still rechecked before
+checkout; local cart data is not an inventory reservation.
+
+The app composition root supplies persistent cart storage. Isolated cart tests
+can use an ephemeral controller without storage; no backend is needed for cart
+persistence. Existing Firebase paths and security rules are unchanged.
