@@ -247,7 +247,10 @@ void main() {
     final card = find.byType(ProductItem);
     await tester.scrollUntilVisible(card, 220,
       scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    await tester.tap(find.descendant(of: card, matching: find.byType(InkWell)).first);
+    final openProduct = find.descendant(of: card, matching: find.byType(InkWell)).first;
+    await tester.ensureVisible(openProduct);
+    await tester.pumpAndSettle();
+    await tester.tap(openProduct);
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Save product'));
     await tester.pumpAndSettle();
@@ -328,7 +331,10 @@ void main() {
     final card = find.byType(ProductItem);
     await tester.scrollUntilVisible(card, 220,
       scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    await tester.tap(find.descendant(of: card, matching: find.byType(InkWell)).first);
+    final openProduct = find.descendant(of: card, matching: find.byType(InkWell)).first;
+    await tester.ensureVisible(openProduct);
+    await tester.pumpAndSettle();
+    await tester.tap(openProduct);
     await tester.pumpAndSettle();
     final catalog = tester.element(find.byType(ProductDetailedScreen)).read<CatalogController>();
     await catalog.updateProduct(catalog.findById('lamp').copyWith(title: 'Updated lamp', price: 35));

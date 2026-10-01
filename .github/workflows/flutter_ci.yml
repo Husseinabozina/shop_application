@@ -72,13 +72,15 @@ jobs:
         run: flutter build ios --simulator --debug
 
       - name: Build unsigned iOS release
-        run: flutter build ios --release --no-codesign
+        run: |
+          flutter build ios --release --no-codesign
+          ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/MyShop-iOS-Unsigned-Release.zip
 
       - name: Save unsigned iOS release
         uses: actions/upload-artifact@v4
         with:
           name: myshop-ios-unsigned-release
-          path: build/ios/iphoneos/Runner.app
+          path: build/ios/MyShop-iOS-Unsigned-Release.zip
           retention-days: 30
 
 
