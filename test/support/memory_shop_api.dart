@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ class MemoryShopApi implements Api {
   int productWrites = 0;
   int favoriteWrites = 0;
   bool failFavoriteWrites = false;
+  Completer<void>? favoriteWriteGate;
   int? failSampleAt;
   String? orderUser;
   Map<String, dynamic>? placedOrder;
@@ -85,6 +87,7 @@ class MemoryShopApi implements Api {
     }
     if (path.startsWith('userfavorite/')) {
       favoriteWrites++;
+      if (favoriteWriteGate != null) await favoriteWriteGate!.future;
       if (failFavoriteWrites) return _response({'error': 'Unavailable'}, 503);
       favorites[path.split('/').last] = data;
       return _response(data);

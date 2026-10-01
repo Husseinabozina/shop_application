@@ -143,11 +143,16 @@ class ProductItem extends StatelessWidget {
     final id = product.productId ?? product.id;
     if (id == null) return;
     final catalog = context.read<CatalogController>();
+    final messenger = ScaffoldMessenger.of(context);
+    final route = ModalRoute.of(context);
     final saved = await catalog.toggleFavorite(id);
-    if (!context.mounted || saved) return;
+    // Saved-only filtering can remove this card while the request is pending.
+    if (saved || !messenger.mounted || route?.isCurrent == false) return;
     final error = catalog.favoriteError(id);
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error)));
     }
   }
 

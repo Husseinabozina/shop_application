@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -327,6 +328,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('This product is no longer available.'), findsOneWidget);
     expect(find.text('Add to cart'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await getIt<AuthProvider>().logOut();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+
+  testWidgets('failed removal under Saved restores the card and keeps the error visible', (tester) async {
+    api.products['lamp'] = {
+      'title': 'Reading lamp', 'description': 'A reading lamp.',
+      'imageUrl': '', 'price': 25, 'category': 'Home', 'creatorId': 'owner',
+    };
+    api.favorites['lamp'] = true;
+    api.failFavoriteWrites = true;
+    api.favoriteWriteGate = Completer<void>();
+    await openApp(tester);
+    await tester.scrollUntilVisible(find.text('Saved'), 220,
+      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
+    await tapText(tester, 'Saved');
+    await tester.scrollUntilVisible(find.byType(ProductItem), 180,
+      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
+    await tester.tap(find.byTooltip('Remove from saved'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductItem), findsNothing);
+    expect(find.text('No saved products here'), findsOneWidget);
+    expect(api.favoriteWrites, 1);
+    api.favoriteWriteGate!.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductItem), findsOneWidget);
+    expect(find.text('Could not update favorite status.'), findsOneWidget);
+    expect(api.favorites['lamp'], isTrue);
     expect(tester.takeException(), isNull);
     await getIt<AuthProvider>().logOut();
     await tester.pumpWidget(const SizedBox.shrink());
