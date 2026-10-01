@@ -19,6 +19,7 @@ abstract class FirebaseRestClient {
     required String path,
     required Object data,
     String? authToken,
+    String? ifMatch,
   });
 
   Future<http.Response> patch({
@@ -27,18 +28,13 @@ abstract class FirebaseRestClient {
     String? authToken,
   });
 
-  Future<http.Response> delete({
-    required String path,
-    String? authToken,
-  });
+  Future<http.Response> delete({required String path, String? authToken});
 }
 
 class FirebaseRestClientImpl implements FirebaseRestClient {
   final Api api;
 
-  FirebaseRestClientImpl({
-    required this.api,
-  });
+  FirebaseRestClientImpl({required this.api});
 
   @override
   Future<http.Response> get({
@@ -48,10 +44,7 @@ class FirebaseRestClientImpl implements FirebaseRestClient {
   }) {
     return api.get(
       url: _url(path),
-      query: _query(
-        authToken: authToken,
-        query: query,
-      ),
+      query: _query(authToken: authToken, query: query),
     );
   }
 
@@ -73,11 +66,13 @@ class FirebaseRestClientImpl implements FirebaseRestClient {
     required String path,
     required Object data,
     String? authToken,
+    String? ifMatch,
   }) {
     return api.put(
       url: _url(path),
       query: _query(authToken: authToken),
       data: data,
+      headers: ifMatch == null ? null : {'if-match': ifMatch},
     );
   }
 
@@ -95,10 +90,7 @@ class FirebaseRestClientImpl implements FirebaseRestClient {
   }
 
   @override
-  Future<http.Response> delete({
-    required String path,
-    String? authToken,
-  }) {
+  Future<http.Response> delete({required String path, String? authToken}) {
     return api.delete(
       url: _url(path),
       query: _query(authToken: authToken),

@@ -7,10 +7,7 @@ import 'package:shop_application/features/orders/presentation/screens/order_deta
 class OrderItem extends StatelessWidget {
   final Order? order;
 
-  const OrderItem({
-    super.key,
-    this.order,
-  });
+  const OrderItem({super.key, this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +32,7 @@ class OrderItem extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => OrderDetailsScreen(
-                  order: currentOrder,
-                ),
+                builder: (_) => OrderDetailsScreen(order: currentOrder),
               ),
             );
           },
@@ -46,61 +41,83 @@ class OrderItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Icon(
-                        Icons.inventory_2_outlined,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final details = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _orderNumber(currentOrder.id),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formattedDate,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    );
+                    final compact =
+                        constraints.maxWidth < 360 ||
+                        MediaQuery.textScalerOf(context).scale(14) > 18;
+                    if (compact) {
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _orderNumber(currentOrder.id),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            formattedDate,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
+                          details,
+                          const SizedBox(height: 12),
+                          _StatusChip(status: currentOrder.status),
                         ],
-                      ),
-                    ),
-                    _StatusChip(status: currentOrder.status),
-                  ],
+                      );
+                    }
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.inventory_2_outlined,
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: details),
+                        const SizedBox(width: 12),
+                        _StatusChip(status: currentOrder.status),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 18),
                 Row(
                   children: [
-                    Text(
-                      products.length == 1
-                          ? '1 item'
-                          : '${products.length} items',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    Expanded(
+                      child: Text(
+                        products.length == 1
+                            ? '1 item'
+                            : '${products.length} items',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    Text(
-                      '\$${_formatPrice(currentOrder.amount ?? 0)}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '\$${_formatPrice(currentOrder.amount ?? 0)}',
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],
@@ -116,11 +133,13 @@ class OrderItem extends StatelessWidget {
                         color: theme.colorScheme.primary,
                       ),
                       const SizedBox(width: 7),
-                      Text(
-                        'Estimated ${DateFormat('MMM d').format(currentOrder.estimatedDeliveryEnd!)}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w800,
+                      Expanded(
+                        child: Text(
+                          'Estimated ${DateFormat('MMM d').format(currentOrder.estimatedDeliveryEnd!)}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ],
@@ -129,12 +148,14 @@ class OrderItem extends StatelessWidget {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    const Spacer(),
-                    Text(
-                      'Track order',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w900,
+                    Expanded(
+                      child: Text(
+                        'Track order',
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -173,9 +194,7 @@ class OrderItem extends StatelessWidget {
 class _StatusChip extends StatelessWidget {
   final OrderStatus status;
 
-  const _StatusChip({
-    required this.status,
-  });
+  const _StatusChip({required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -184,16 +203,13 @@ class _StatusChip extends StatelessWidget {
     final delivered = status == OrderStatus.delivered;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: cancelled
             ? theme.colorScheme.errorContainer
             : delivered
-                ? theme.colorScheme.tertiaryContainer
-                : theme.colorScheme.secondaryContainer,
+            ? theme.colorScheme.tertiaryContainer
+            : theme.colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
@@ -202,8 +218,8 @@ class _StatusChip extends StatelessWidget {
           color: cancelled
               ? theme.colorScheme.onErrorContainer
               : delivered
-                  ? theme.colorScheme.onTertiaryContainer
-                  : theme.colorScheme.onSecondaryContainer,
+              ? theme.colorScheme.onTertiaryContainer
+              : theme.colorScheme.onSecondaryContainer,
           fontWeight: FontWeight.w900,
         ),
       ),

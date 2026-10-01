@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/controllers/products_provider/products_provider.dart';
+import 'package:shop_application/features/catalog/presentation/screens/sample_catalog_screen.dart';
 import 'package:shop_application/screens/edit_products_screen.dart';
 import 'package:shop_application/widgets/user_product_item.dart';
 
@@ -36,9 +37,7 @@ class _UserProductScreenState extends State<UserProductScreen> {
       });
     }
 
-    await context.read<ProductsProvider>().fetchProducts(
-          filterByUser: true,
-        );
+    await context.read<ProductsProvider>().fetchProducts(filterByUser: true);
 
     if (mounted) {
       setState(() {
@@ -52,6 +51,14 @@ class _UserProductScreenState extends State<UserProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage products'),
+        actions: [
+          IconButton(
+            tooltip: 'Sample collection',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(SampleCatalogScreen.routeName),
+            icon: const Icon(Icons.auto_awesome_outlined),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -63,9 +70,7 @@ class _UserProductScreenState extends State<UserProductScreen> {
       body: Consumer<ProductsProvider>(
         builder: (context, provider, _) {
           if (_isLoading && provider.managedProducts.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (provider.fetchProductsErrorMessage != null &&
@@ -151,10 +156,7 @@ class _ManageProductsError extends StatelessWidget {
   final String message;
   final Future<void> Function() onRetry;
 
-  const _ManageProductsError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ManageProductsError({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -164,15 +166,9 @@ class _ManageProductsError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-            ),
+            const Icon(Icons.error_outline_rounded, size: 48),
             const SizedBox(height: 14),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             FilledButton.tonal(
               onPressed: () async {

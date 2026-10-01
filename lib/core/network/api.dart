@@ -24,6 +24,7 @@ abstract class Api {
     required Object data,
     String lang = 'ar',
     String? token,
+    Map<String, String>? headers,
   });
 
   Future<http.Response> delete({
@@ -90,11 +91,13 @@ class ApiImpl extends Api {
     required Object data,
     String lang = 'ar',
     String? token,
+    Map<String, String>? headers,
   }) async {
     final uri = Uri.parse(url).replace(queryParameters: query);
     final response = await client.put(
       uri,
       headers: {
+        if (headers != null) ...headers,
         'Accept-Language': lang,
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
@@ -184,5 +187,4 @@ class ApiImpl extends Api {
         return false;
     }
   }
-
 }

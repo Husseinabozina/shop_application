@@ -5,6 +5,7 @@ import 'package:shop_application/features/catalog/domain/entities/catalog_filter
 import 'package:shop_application/features/catalog/domain/entities/product_sort_option.dart';
 import 'package:shop_application/features/catalog/presentation/widgets/catalog_filter_sheet.dart';
 import 'package:shop_application/features/catalog/presentation/widgets/recently_viewed_section.dart';
+import 'package:shop_application/features/catalog/presentation/screens/sample_catalog_screen.dart';
 import 'package:shop_application/widgets/product_grid.dart';
 import 'package:shop_application/widgets/store_bottom_navigation.dart';
 
@@ -56,15 +57,11 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         title: const Text('MyShop'),
         automaticallyImplyLeading: false,
       ),
-      bottomNavigationBar: const StoreBottomNavigation(
-        selectedIndex: 0,
-      ),
+      bottomNavigationBar: const StoreBottomNavigation(selectedIndex: 0),
       body: Consumer<ProductsProvider>(
         builder: (context, productsProvider, _) {
           if (_isLoading && productsProvider.products.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (productsProvider.fetchProductsErrorMessage != null &&
@@ -72,6 +69,44 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             return _ErrorState(
               message: productsProvider.fetchProductsErrorMessage!,
               onRetry: _loadProducts,
+            );
+          }
+
+          if (productsProvider.products.isEmpty) {
+            return RefreshIndicator(
+              onRefresh: _loadProducts,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(28),
+                children: [
+                  const SizedBox(height: 48),
+                  Icon(
+                    Icons.storefront_outlined,
+                    size: 64,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Your storefront starts here',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Explore a sample collection with photos, prices, and stock, '
+                    'or add your own products from Account.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pushNamed(SampleCatalogScreen.routeName),
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                    label: const Text('Explore sample collection'),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -90,7 +125,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Browse by category, sort the collection, save favorites, and build your cart.',
+                  'Thoughtful picks for your home and your everyday.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.35,
@@ -147,10 +182,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                       },
                     ),
                     ActionChip(
-                      avatar: const Icon(
-                        Icons.tune_rounded,
-                        size: 18,
-                      ),
+                      avatar: const Icon(Icons.tune_rounded, size: 18),
                       label: Text(
                         _filter.activeCount == 0
                             ? 'Filters'
@@ -172,10 +204,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                         }).toList();
                       },
                       child: Chip(
-                        avatar: const Icon(
-                          Icons.swap_vert_rounded,
-                          size: 18,
-                        ),
+                        avatar: const Icon(Icons.swap_vert_rounded, size: 18),
                         label: Text(_sort.label),
                       ),
                     ),
@@ -233,14 +262,13 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           category.contains(normalizedQuery);
     }).length;
   }
+
   Future<void> _openFilters() async {
     final result = await showModalBottomSheet<CatalogFilter>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => CatalogFilterSheet(
-        initialFilter: _filter,
-      ),
+      builder: (_) => CatalogFilterSheet(initialFilter: _filter),
     );
 
     if (result == null || !mounted) {
@@ -249,16 +277,12 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
     setState(() => _filter = result);
   }
-
 }
-
 
 class _StorefrontHero extends StatelessWidget {
   final VoidCallback onBrowse;
 
-  const _StorefrontHero({
-    required this.onBrowse,
-  });
+  const _StorefrontHero({required this.onBrowse});
 
   @override
   Widget build(BuildContext context) {
@@ -271,10 +295,7 @@ class _StorefrontHero extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            scheme.primary,
-            scheme.primary.withValues(alpha: 0.78),
-          ],
+          colors: [scheme.primary, scheme.primary.withValues(alpha: 0.78)],
         ),
         borderRadius: BorderRadius.circular(28),
       ),
@@ -322,20 +343,22 @@ class _StorefrontHero extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 14),
-          Container(
-            width: 82,
-            height: 82,
-            decoration: BoxDecoration(
-              color: scheme.onPrimary.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+          if (MediaQuery.sizeOf(context).width >= 500) ...[
+            const SizedBox(width: 14),
+            Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                color: scheme.onPrimary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.local_shipping_rounded,
+                size: 42,
+                color: scheme.onPrimary,
+              ),
             ),
-            child: Icon(
-              Icons.local_shipping_rounded,
-              size: 42,
-              color: scheme.onPrimary,
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -356,7 +379,7 @@ class _CategoryRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 42,
+      height: MediaQuery.textScalerOf(context).scale(16) + 32,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -388,10 +411,7 @@ class _ErrorState extends StatelessWidget {
   final String message;
   final Future<void> Function() onRetry;
 
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {

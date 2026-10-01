@@ -43,11 +43,8 @@ class CartScreen extends StatelessWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (entries.isNotEmpty)
-            _CheckoutBar(total: cart.totalPrice),
-          const StoreBottomNavigation(
-            selectedIndex: 2,
-          ),
+          if (entries.isNotEmpty) _CheckoutBar(total: cart.totalPrice),
+          const StoreBottomNavigation(selectedIndex: 2),
         ],
       ),
     );
@@ -57,9 +54,7 @@ class CartScreen extends StatelessWidget {
 class _CheckoutBar extends StatefulWidget {
   final double total;
 
-  const _CheckoutBar({
-    required this.total,
-  });
+  const _CheckoutBar({required this.total});
 
   @override
   State<_CheckoutBar> createState() => _CheckoutBarState();
@@ -81,50 +76,61 @@ class _CheckoutBarState extends State<_CheckoutBar> {
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant,
-          ),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Subtotal',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact =
+                constraints.maxWidth < 340 ||
+                MediaQuery.textScalerOf(context).scale(14) > 18;
+            final subtotal = Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Subtotal',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '\$${_formatPrice(widget.total)}',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '\$${_formatPrice(widget.total)}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            FilledButton.icon(
+                ),
+              ],
+            );
+            final checkoutButton = FilledButton.icon(
               onPressed: _isChecking ? null : _attemptCheckout,
               icon: _isChecking
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.arrow_forward_rounded),
-              label: Text(
-                _isChecking ? 'Checking…' : 'Checkout',
-              ),
-            ),
-          ],
+              label: Text(_isChecking ? 'Checking…' : 'Checkout'),
+            );
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  subtotal,
+                  const SizedBox(height: 12),
+                  checkoutButton,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: subtotal),
+                const SizedBox(width: 16),
+                checkoutButton,
+              ],
+            );
+          },
         ),
       ),
     );
@@ -175,14 +181,10 @@ class _CheckoutBarState extends State<_CheckoutBar> {
       return;
     }
 
-    await Navigator.of(context).pushNamed(
-      CheckoutScreen.routeName,
-    );
+    await Navigator.of(context).pushNamed(CheckoutScreen.routeName);
   }
 
-  Future<void> _showAvailabilityIssues(
-    List<CartAvailabilityIssue> issues,
-  ) {
+  Future<void> _showAvailabilityIssues(List<CartAvailabilityIssue> issues) {
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -227,14 +229,9 @@ class _CheckoutBarState extends State<_CheckoutBar> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 20,
-                      ),
+                      const Icon(Icons.error_outline_rounded, size: 20),
                       const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(issue.message),
-                      ),
+                      Expanded(child: Text(issue.message)),
                     ],
                   ),
                 ),
@@ -258,6 +255,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
         : number.toStringAsFixed(2);
   }
 }
+
 class _EmptyCart extends StatelessWidget {
   const _EmptyCart();
 

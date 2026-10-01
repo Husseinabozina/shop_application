@@ -11,7 +11,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - sign out
 
 ### Catalog
-- product grid
+- explicit eight-product sample collection, resumable without overwriting existing listings
+- responsive product grid and cart checkout bar for compact screens and larger text
 - responsive layout
 - search across products and categories
 - category discovery
@@ -126,7 +127,9 @@ Next backend work:
 - Rules deployed on 2026-09-30; live unauthenticated read/write probes passed.
 - Authorized cleanup removed legacy app data, so no ownership migration is pending.
 - Emulator-based authenticated ownership tests are run through GitHub Actions.
-- Remaining: verify live authenticated reads/writes and the Flutter checkout flow.
+- Live authenticated REST verification passed all 18 checks on 2026-09-30.
+- Full-app widget journeys cover sample setup, favorites, cart, COD checkout, and order history with a fake HTTP boundary.
+- Remaining: verify the customer checkout journey on the user’s device against live Firebase.
 - keep backend/Admin SDK responsible for post-creation order status changes
 
 ### 4. Catalog depth

@@ -75,9 +75,9 @@ class ProductsGrid extends StatelessWidget {
               favoritesOnly && normalizedQuery.isEmpty
                   ? 'No saved products here'
                   : 'No products found',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Text(
@@ -86,8 +86,8 @@ class ProductsGrid extends StatelessWidget {
                   : 'Try another search, category, filter, or sort option.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -97,11 +97,12 @@ class ProductsGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final crossAxisCount = width >= 1000
-            ? 4
-            : width >= 680
-                ? 3
-                : 2;
+        final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+        final minimumCardWidth = textScale > 1.3 ? 230.0 : 160.0;
+        final crossAxisCount = ((width + 14) / (minimumCardWidth + 14))
+            .floor()
+            .clamp(1, 4);
+        final cardWidth = (width - 14 * (crossAxisCount - 1)) / crossAxisCount;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -109,7 +110,7 @@ class ProductsGrid extends StatelessWidget {
           padding: EdgeInsets.zero,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: 0.64,
+            mainAxisExtent: cardWidth * 1.08 + 136 * textScale.clamp(1.0, 3.0),
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
           ),
@@ -130,20 +131,16 @@ class ProductsGrid extends StatelessWidget {
       case ProductSortOption.featured:
         return;
       case ProductSortOption.priceLowToHigh:
-        products.sort(
-          (a, b) => (a.price ?? 0).compareTo(b.price ?? 0),
-        );
+        products.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
         return;
       case ProductSortOption.priceHighToLow:
-        products.sort(
-          (a, b) => (b.price ?? 0).compareTo(a.price ?? 0),
-        );
+        products.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
         return;
       case ProductSortOption.nameAZ:
         products.sort(
-          (a, b) => (a.title ?? '')
-              .toLowerCase()
-              .compareTo((b.title ?? '').toLowerCase()),
+          (a, b) => (a.title ?? '').toLowerCase().compareTo(
+            (b.title ?? '').toLowerCase(),
+          ),
         );
         return;
     }

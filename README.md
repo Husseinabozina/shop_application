@@ -151,3 +151,21 @@ The goal is to demonstrate:
 - enough testability to support future growth
 
 without adding infrastructure only for the sake of complexity.
+
+## Try the sample storefront
+
+After signing in, an empty Home screen offers **Explore sample collection**.
+Open it and tap **Add sample collection** to save eight demo listings in the
+configured database under the current account. This action is also available
+from the sparkle button in Account → Manage products.
+
+The collection covers Home, Accessories, Footwear, and Audio, including low-stock
+and sold-out examples. Product photos are remote Unsplash images; prices and
+listings are demonstration data. Setup uses stable product IDs and conditional
+creates, so retrying adds missing items without replacing existing products,
+stock, edits, or ownership. No administrator credentials or custom server are
+required, and no data is inserted automatically on app launch.
+
+To try the customer journey, browse a product, save it, add it to the cart, choose
+a delivery address, and place a Cash on Delivery order. The order should appear
+in Orders. Online payments remain unavailable until a real gateway is configured.

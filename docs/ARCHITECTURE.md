@@ -259,3 +259,18 @@ Priority:
 4. legacy folders are removed only after their replacement is working
 
 This avoids a risky big-bang rewrite while keeping the final direction consistent.
+
+## Sample catalog setup
+
+The explicit sample-collection action follows:
+
+`SampleCatalogScreen → SampleCatalogController → AddSampleCatalog → SampleCatalogRepository`.
+
+The domain fixtures and use case are independent of Flutter and Firebase. The
+Firebase repository implements authenticated shallow ID reads and conditional
+creates (`if-match: null_etag`) through the central REST client. Stable IDs let
+setup resume after a partial failure while preserving existing listings and
+owners, including concurrent setup attempts. The sample collection is shared;
+only the account that creates a listing can manage that listing under the
+existing rules. The screen refreshes storefront and managed-product state after
+an attempt so successfully saved products are usable immediately.

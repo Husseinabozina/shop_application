@@ -10,6 +10,8 @@ import 'package:shop_application/features/address_book/presentation/controllers/
 import 'package:shop_application/features/address_book/presentation/screens/address_book_screen.dart';
 import 'package:shop_application/features/catalog/domain/repositories/recently_viewed_repository.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
+import 'package:shop_application/features/catalog/presentation/controllers/sample_catalog_controller.dart';
+import 'package:shop_application/features/catalog/presentation/screens/sample_catalog_screen.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
@@ -88,6 +90,10 @@ class MyShopApp extends StatelessWidget {
       OrdersScreen.routeName: (_) => const OrdersScreen(),
       UserProductScreen.routeName: (_) => const UserProductScreen(),
       EditProductScreen.routeName: (_) => const EditProductScreen(),
+      SampleCatalogScreen.routeName: (_) => ChangeNotifierProvider(
+        create: (_) => getIt<SampleCatalogController>(),
+        child: const SampleCatalogScreen(),
+      ),
       AddressBookScreen.routeName: _buildAddressBookRoute,
       CheckoutScreen.routeName: _buildCheckoutRoute,
     };

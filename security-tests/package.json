@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "firebase emulators:exec --config ../firebase.json --only database --project demo-myshop-security \"node --test --test-concurrency=1 --test-timeout=30000 database.rules.test.mjs\"",
-    "test:smoke": "firebase emulators:exec --config ../firebase.json --only auth,database --project demo-myshop-security \"node ../scripts/firebase_live_smoke.mjs --emulator\""
+    "test:smoke": "firebase emulators:exec --config ../firebase.json --only auth,database --project demo-myshop-security \"node ../scripts/firebase_live_smoke.mjs --emulator && node sample_catalog.rest.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.2",
