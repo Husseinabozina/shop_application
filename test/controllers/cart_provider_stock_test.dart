@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 
 void main() {
   test('cart refuses quantities above tracked stock', () {
-    final cart = CartProvider();
+    final cart = CartController();
 
     expect(
       cart.addItem(
@@ -37,7 +37,7 @@ void main() {
   });
 
   test('cart keeps legacy untracked products unrestricted', () {
-    final cart = CartProvider();
+    final cart = CartController();
 
     for (var index = 0; index < 8; index++) {
       expect(
@@ -54,7 +54,7 @@ void main() {
   });
 
   test('zero stock cannot be added', () {
-    final cart = CartProvider();
+    final cart = CartController();
 
     expect(
       cart.addItem(

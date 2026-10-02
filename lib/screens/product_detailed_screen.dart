@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/recently_viewed_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/product.dart';
@@ -248,7 +248,7 @@ class _ProductDetailsView extends StatelessWidget {
       return;
     }
 
-    final added = context.read<CartProvider>().addItem(
+    final added = context.read<CartController>().addItem(
           product.id!,
           product.price!,
           product.title!,

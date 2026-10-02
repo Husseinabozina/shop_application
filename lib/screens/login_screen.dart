@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 
 enum AuthMode { login, signup }
 
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
 
     if (_isLogin) {
       await auth.login(_emailController.text.trim(), _passwordController.text);

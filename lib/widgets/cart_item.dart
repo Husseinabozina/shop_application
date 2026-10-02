@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 
 class CartItem extends StatelessWidget {
@@ -22,7 +22,7 @@ class CartItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cart = context.read<CartProvider>();
+    final cart = context.read<CartController>();
     final products = context.watch<CatalogController>().products;
     final matches = products.where((product) => product.id == productId);
     final matchedProduct = matches.isEmpty ? null : matches.first;

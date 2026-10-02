@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
 import 'package:shop_application/features/orders/domain/entities/order.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
@@ -47,7 +47,7 @@ Widget _app(OrderController controller, GlobalKey<NavigatorState> navigator) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<OrderController>.value(value: controller),
-      ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
+      ChangeNotifierProvider<CartController>(create: (_) => CartController()),
     ],
     child: MaterialApp(
       navigatorKey: navigator,

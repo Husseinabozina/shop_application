@@ -5,6 +5,9 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 ## Implemented
 
 ### Account and session
+- feature-first AuthRepository and SessionStore boundaries
+- existing-session compatibility and session-expiry handling
+- account changes reset secondary navigation
 - email sign in
 - account creation
 - persistent authenticated session
@@ -30,6 +33,8 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - pull to refresh
 
 ### Cart
+- feature-first immutable cart entities and CartRepository
+- persistent cart scoped to each account, including checkout clear
 - add to cart
 - quantity increase/decrease
 - remove item
@@ -163,7 +168,6 @@ Next backend work:
 - carrier-calculated shipping rates
 
 ### Engineering
-- migrate remaining auth/cart legacy folders into feature-first modules
 - central app router
 - extend repository contract tests to remaining features
 

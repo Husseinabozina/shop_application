@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_application/controllers/auth_provider/auth_provider.dart';
-import 'package:shop_application/controllers/cart_provider/cart_provider.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
+import 'package:shop_application/features/cart/domain/repositories/cart_repository.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/core/injection.dart';
 import 'package:shop_application/core/theme/app_theme.dart';
@@ -35,39 +36,50 @@ class MyShopApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>.value(
-          value: getIt<AuthProvider>(),
+        ChangeNotifierProvider<AuthController>.value(
+          value: getIt<AuthController>(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, CatalogController>(
+        ChangeNotifierProxyProvider<AuthController, CatalogController>(
           create: (_) => CatalogController(repository: getIt<ProductRepository>()),
-          update: (_, auth, __) => CatalogController(
+          update: (_, auth, previous) =>
+              previous?.userId == auth.userId && previous?.token == auth.token
+              ? previous! : CatalogController(
             repository: getIt<ProductRepository>(),
             token: auth.token,
             userId: auth.userId,
           ),
         ),
-        ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, RecentlyViewedController>(
+        ChangeNotifierProxyProvider<AuthController, CartController>(
+          create: (_) => CartController(repository: getIt<CartRepository>()),
+          update: (_, auth, previous) => previous?.userId == auth.userId
+              ? previous!
+              : CartController(repository: getIt<CartRepository>(), userId: auth.userId),
+        ),
+        ChangeNotifierProxyProvider<AuthController, RecentlyViewedController>(
           create: (_) => RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
           )..load(),
-          update: (_, auth, __) => RecentlyViewedController(
+          update: (_, auth, previous) => previous?.userId == auth.userId
+              ? previous! : RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
             userId: auth.userId,
           )..load(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, OrderController>(
+        ChangeNotifierProxyProvider<AuthController, OrderController>(
           create: (_) => OrderController(repository: getIt<OrderRepository>()),
-          update: (_, auth, __) => OrderController(
+          update: (_, auth, previous) =>
+              previous?.userId == auth.userId && previous?.token == auth.token
+              ? previous! : OrderController(
             repository: getIt<OrderRepository>(),
             token: auth.token,
             userId: auth.userId,
           ),
         ),
       ],
-      child: Consumer<AuthProvider>(
+      child: Consumer<AuthController>(
         builder: (context, auth, _) {
           return MaterialApp(
+            key: ValueKey(auth.userId ?? 'signed-out'),
             debugShowCheckedModeBanner: false,
             title: 'MyShop',
             theme: AppTheme.light(),
@@ -100,7 +112,7 @@ class MyShopApp extends StatelessWidget {
   }
 
   Widget _buildAddressBookRoute(BuildContext context) {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthController>();
     final token = auth.token;
     final userId = auth.userId;
 
@@ -117,8 +129,8 @@ class MyShopApp extends StatelessWidget {
   }
 
   Widget _buildCheckoutRoute(BuildContext context) {
-    final cart = context.read<CartProvider>();
-    final auth = context.read<AuthProvider>();
+    final cart = context.read<CartController>();
+    final auth = context.read<AuthController>();
 
     final items = cart.items.entries.map((entry) {
       final item = entry.value;
@@ -167,12 +179,13 @@ class _AuthGateState extends State<_AuthGate> {
   @override
   void initState() {
     super.initState();
-    _restoredSession = context.read<AuthProvider>().tryAutoLogin();
+    final auth = context.read<AuthController>();
+    _restoredSession = auth.isAuth ? Future.value(true) : auth.tryAutoLogin();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (context.watch<AuthProvider>().isAuth) {
+    if (context.watch<AuthController>().isAuth) {
       return const ProductOverviewScreen();
     }
 

@@ -6,20 +6,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop_application/core/config/app_environment.dart';
 import 'package:shop_application/core/helpers/cache_helpers.dart';
 import 'package:shop_application/core/network/error_handler.dart';
-import 'package:shop_application/data/repos/auth_repo.dart';
-import 'package:shop_application/data/services/auth_services.dart';
+import 'package:shop_application/features/auth/domain/repositories/auth_repository.dart';
+import 'package:shop_application/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:shop_application/features/auth/data/datasources/local_session_store.dart';
+import 'package:shop_application/features/auth/data/datasources/auth_remote_data_source.dart';
 
 import '../support/auth_test_api.dart';
 
 void main() {
   late AuthTestApi api;
-  late AuthRepo repo;
+  late AuthRepository repo;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     await CacheHelper.init();
     api = AuthTestApi(http.Response('{}', 400));
-    repo = AuthRepoImpl(authService: AuthServiceImpl(api));
+    repo = AuthRepositoryImpl(remote: FirebaseAuthRemoteDataSource(api), sessionStore: LocalSessionStore());
   });
 
   test('handling an APIException preserves its code and message', () {
@@ -52,16 +54,11 @@ void main() {
           400,
         );
 
-        final result = await repo.signup('owner@example.com', 'test-password');
-        result.when(
-          success: (_) => fail('The rejected request must not authenticate'),
-          failure: (error) {
-            expect(error.message, entry.value);
-            expect(error.errorCode, entry.key.split(':').first.trim());
-            expect(error.statusCode, 400);
-            expect(error.details, isNull);
-          },
-        );
+        await expectLater(repo.signup('owner@example.com', 'test-password'),
+          throwsA(isA<AuthException>()
+            .having((e) => e.message, 'message', entry.value)
+            .having((e) => e.errorCode, 'code', entry.key.split(':').first.trim())
+            .having((e) => e.statusCode, 'status', 400)));
         expect(CacheHelper.isLoggedIn(), isFalse);
       },
     );
@@ -75,17 +72,13 @@ void main() {
   ]) {
     test('unexpected auth response uses a safe fallback: $body', () async {
       api.response = http.Response(body, 400);
-      final result = await repo.login('owner@example.com', 'test-password');
-      result.when(
-        success: (_) => fail('The rejected request must not authenticate'),
-        failure: (error) {
-          expect(error.errorCode, 'AUTH_REQUEST_FAILED');
-          expect(error.statusCode, 400);
-          expect(error.message, isNot(contains('owner@example.com')));
-          expect(error.message, isNot(contains('test-password')));
-          expect(error.details, isNull);
-        },
-      );
+      await expectLater(repo.login('owner@example.com', 'test-password'),
+        throwsA(isA<AuthException>()
+          .having((e) => e.errorCode, 'code', 'AUTH_REQUEST_FAILED')
+          .having((e) => e.message, 'safe email', isNot(contains('owner@example.com')))
+          .having((e) => e.message, 'safe password', isNot(contains('test-password')))
+          .having((e) => e.statusCode, 'status', 400)));
+
     });
   }
 
@@ -104,22 +97,10 @@ void main() {
           200,
         );
 
-        if (signUp) {
-          final result = await repo.signup(
-            'owner@example.com',
-            'test-password',
-          );
-          result.when(
-            success: (account) => expect(account.localId, 'owner-uid'),
-            failure: (error) => fail(error.message),
-          );
-        } else {
-          final result = await repo.login('owner@example.com', 'test-password');
-          result.when(
-            success: (account) => expect(account.localId, 'owner-uid'),
-            failure: (error) => fail(error.message),
-          );
-        }
+        final account = signUp
+            ? await repo.signup('owner@example.com', 'test-password')
+            : await repo.login('owner@example.com', 'test-password');
+        expect(account.userId, 'owner-uid');
         expect(
           api.lastUrl,
           endsWith(signUp ? 'accounts:signUp' : 'accounts:signInWithPassword'),

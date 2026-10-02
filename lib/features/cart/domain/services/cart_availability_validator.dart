@@ -1,4 +1,4 @@
-import 'package:shop_application/data/models/cart/cart_model.dart';
+import 'package:shop_application/features/cart/domain/entities/cart_item.dart';
 import 'package:shop_application/features/catalog/domain/entities/product.dart';
 
 enum CartAvailabilityIssueType {
@@ -38,7 +38,7 @@ class CartAvailabilityValidator {
   const CartAvailabilityValidator();
 
   List<CartAvailabilityIssue> validate({
-    required Map<String, CartModel> cartItems,
+    required Map<String, CartItem> cartItems,
     required List<Product> products,
   }) {
     if (cartItems.isEmpty) {
