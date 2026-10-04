@@ -7,6 +7,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
+      backgroundColor: Color(0xFFFFF7EE),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -15,18 +16,14 @@ class SplashScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                BrandMark(size: 96),
+                BrandMark(size: 128),
                 SizedBox(height: 18),
                 Text(
                   'MyShop',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
-                ),
-                SizedBox(height: 22),
-                CircularProgressIndicator(),
-                SizedBox(height: 8),
-                Text(
-                  'Getting your shop ready…',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF32180A)),
                 ),
               ],
             ),

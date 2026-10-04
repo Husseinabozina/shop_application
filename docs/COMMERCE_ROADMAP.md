@@ -104,6 +104,9 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - deterministic invoice-based order ID, create-only writes, and safe save retries
 - no customer address/contact or card data sent to the shared merchant
 - custom logo, launcher icons, branded sign-in and startup
+- native iOS launch storyboard with the logo and cream background
+- three first-use welcome pages with persistent completion/skip
+- one startup/session restore per app launch, preceding onboarding and sign-in
 
 ## Optional future work — outside this portfolio scope
 

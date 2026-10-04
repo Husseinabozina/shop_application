@@ -15,7 +15,7 @@ void main() {
   late AuthTestApi api;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'myshop_onboarding_complete_v1': true});
     await CacheHelper.init();
     await getIt.reset();
     setup();
@@ -37,6 +37,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const MyShopApp());
+    await tester.pump(const Duration(milliseconds: 1300));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byType(TextFormField).at(0),
@@ -82,6 +83,7 @@ void main() {
             child: const MyShopApp(),
           ),
         );
+        await tester.pump(const Duration(milliseconds: 1300));
         await tester.pumpAndSettle();
         await tester.ensureVisible(
           find.widgetWithText(TextButton, 'Create account'),

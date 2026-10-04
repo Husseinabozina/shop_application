@@ -31,9 +31,29 @@ import 'package:shop_application/screens/product_detailed_screen.dart';
 import 'package:shop_application/screens/product_overview_screen.dart';
 import 'package:shop_application/screens/splash_screen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
+import 'package:shop_application/screens/onboarding_screen.dart';
+import 'package:shop_application/core/helpers/cache_helpers.dart';
 
-class MyShopApp extends StatelessWidget {
+class MyShopApp extends StatefulWidget {
   const MyShopApp({super.key});
+
+  @override
+  State<MyShopApp> createState() => _MyShopAppState();
+}
+
+class _MyShopAppState extends State<MyShopApp> {
+  late final Future<void> _startup;
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = getIt<AuthController>();
+    // Restore once per app launch, including when auth rebuilds the navigator.
+    _startup = Future.wait([
+      if (!auth.isAuth) auth.tryAutoLogin(),
+      Future<void>.delayed(const Duration(milliseconds: 1200)),
+    ]).then((_) {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +67,12 @@ class MyShopApp extends StatelessWidget {
               CatalogController(repository: getIt<ProductRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous!
-              : CatalogController(
-                  repository: getIt<ProductRepository>(),
-                  token: auth.token,
-                  userId: auth.userId,
-                ),
+                  ? previous!
+                  : CatalogController(
+                      repository: getIt<ProductRepository>(),
+                      token: auth.token,
+                      userId: auth.userId,
+                    ),
         ),
         ChangeNotifierProxyProvider<AuthController, CartController>(
           create: (_) => CartController(repository: getIt<CartRepository>()),
@@ -67,14 +87,13 @@ class MyShopApp extends StatelessWidget {
           create: (_) => RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
           )..load(),
-          update: (_, auth, previous) =>
-              previous?.userId == auth.userId
-                    ? previous!
-                    : RecentlyViewedController(
-                        repository: getIt<RecentlyViewedRepository>(),
-                        userId: auth.userId,
-                      )
-                ..load(),
+          update: (_, auth, previous) => previous?.userId == auth.userId
+              ? previous!
+              : RecentlyViewedController(
+                  repository: getIt<RecentlyViewedRepository>(),
+                  userId: auth.userId,
+                )
+            ..load(),
         ),
         ChangeNotifierProxyProvider<AuthController, SandboxPaymentController>(
           create: (_) => SandboxPaymentController(
@@ -85,8 +104,7 @@ class MyShopApp extends StatelessWidget {
           ),
           update: (context, auth, previous) {
             if (previous?.userId == auth.userId &&
-                previous?.accessToken == auth.token)
-              return previous!;
+                previous?.accessToken == auth.token) return previous!;
             return SandboxPaymentController(
               repository: getIt<SandboxCheckoutRepository>(),
               userId: auth.userId,
@@ -104,8 +122,7 @@ class MyShopApp extends StatelessWidget {
                       return current != null &&
                           current.quantity == item['quantity'] &&
                           current.price == item['price'];
-                    }))
-                  cart.clear();
+                    })) cart.clear();
               },
             )..restore();
           },
@@ -114,12 +131,12 @@ class MyShopApp extends StatelessWidget {
           create: (_) => OrderController(repository: getIt<OrderRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous!
-              : OrderController(
-                  repository: getIt<OrderRepository>(),
-                  token: auth.token,
-                  userId: auth.userId,
-                ),
+                  ? previous!
+                  : OrderController(
+                      repository: getIt<OrderRepository>(),
+                      token: auth.token,
+                      userId: auth.userId,
+                    ),
         ),
       ],
       child: Consumer<AuthController>(
@@ -133,7 +150,7 @@ class MyShopApp extends StatelessWidget {
             themeMode: ThemeMode.system,
             builder: (_, child) =>
                 SandboxPaymentHost(child: child ?? const SizedBox.shrink()),
-            home: const _AuthGate(),
+            home: _AuthGate(startup: _startup),
             routes: _routes(),
           );
         },
@@ -151,9 +168,9 @@ class MyShopApp extends StatelessWidget {
       UserProductScreen.routeName: (_) => const UserProductScreen(),
       EditProductScreen.routeName: (_) => const EditProductScreen(),
       SampleCatalogScreen.routeName: (_) => ChangeNotifierProvider(
-        create: (_) => getIt<SampleCatalogController>(),
-        child: const SampleCatalogScreen(),
-      ),
+            create: (_) => getIt<SampleCatalogController>(),
+            child: const SampleCatalogScreen(),
+          ),
       AddressBookScreen.routeName: _buildAddressBookRoute,
       CheckoutScreen.routeName: _buildCheckoutRoute,
     };
@@ -213,37 +230,44 @@ class MyShopApp extends StatelessWidget {
   }
 }
 
-/// Restore once so a failed sign-in does not replace and clear the form.
+/// Startup precedes the first-use welcome flow and authentication.
 class _AuthGate extends StatefulWidget {
-  const _AuthGate();
+  const _AuthGate({required this.startup});
+  final Future<void> startup;
 
   @override
   State<_AuthGate> createState() => _AuthGateState();
 }
 
 class _AuthGateState extends State<_AuthGate> {
-  late final Future<bool> _restoredSession;
+  late bool _onboardingComplete;
 
   @override
   void initState() {
     super.initState();
-    final auth = context.read<AuthController>();
-    _restoredSession = auth.isAuth ? Future.value(true) : auth.tryAutoLogin();
+    _onboardingComplete = CacheHelper.hasCompletedOnboarding;
+  }
+
+  Future<void> _completeOnboarding() async {
+    await CacheHelper.completeOnboarding();
+    if (mounted) setState(() => _onboardingComplete = true);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (context.watch<AuthController>().isAuth) {
-      return const ProductOverviewScreen();
-    }
-
-    return FutureBuilder<bool>(
-      future: _restoredSession,
+    final auth = context.watch<AuthController>();
+    return FutureBuilder<void>(
+      future: widget.startup,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SplashScreen();
         }
-        return const LoginScreen();
+        if (!_onboardingComplete) {
+          return OnboardingScreen(onCompleted: _completeOnboarding);
+        }
+        return auth.isAuth
+            ? const ProductOverviewScreen()
+            : const LoginScreen();
       },
     );
   }

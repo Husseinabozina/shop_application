@@ -28,6 +28,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({
+      'myshop_onboarding_complete_v1': true,
       'UserData': jsonEncode({
         'token': 'test-token',
         'userId': 'owner',
@@ -68,6 +69,7 @@ void main() {
         ),
       ),
     );
+    await tester.pump(const Duration(milliseconds: 1300));
     await tester.pumpAndSettle();
   }
 

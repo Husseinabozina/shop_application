@@ -20,6 +20,19 @@ Home is empty. Setup adds eight demo listings without overwriting existing ones.
 On a populated storefront, setup is available in **Account → Manage products →
 Sample collection**. Listings are shared; only their creator can manage them.
 
+## Startup and first use
+
+iOS launches with the MyShop bag mark on cream, followed by the matching Flutter
+splash for at least 1.2 seconds while restoring the session. First use shows
+three welcome pages: discovery, basket/checkout, and order history. Continue,
+swipe, or Skip; Get started and Skip both persist completion on this installation.
+Later launches show the splash and then sign-in or the existing account's Home.
+Signing out preserves the welcome preference. Storage failures keep the welcome
+screen available for retry.
+
+Use a full rebuild/relaunch for native icon and launch-screen changes; hot reload
+only refreshes Flutter content. The release version is now `1.0.1+2`.
+
 ## Short live-device check
 
 Use a test account and a test delivery address:

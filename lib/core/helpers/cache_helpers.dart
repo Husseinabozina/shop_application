@@ -10,6 +10,16 @@ class CacheHelper {
   static const String _tokenKey = 'token';
   static const String _userIdKey = 'userId';
   static const String _expiryDateKey = 'expiryDate';
+  static const String _onboardingKey = 'myshop_onboarding_complete_v1';
+
+  static bool get hasCompletedOnboarding =>
+      _prefs.getBool(_onboardingKey) ?? false;
+
+  static Future<void> completeOnboarding() async {
+    if (!await _prefs.setBool(_onboardingKey, true)) {
+      throw StateError('Could not save your welcome preferences.');
+    }
+  }
 
   // Initialize SharedPreferences
   static Future<void> init() async {
