@@ -270,8 +270,9 @@ void main() {
       status = 'Paid';
       await payment.check();
       await tester.pumpAndSettle();
-      expect(find.byType(CheckoutScreen), findsNothing);
+      expect(payment.completedOrderId, 'sandbox_myfatoorah_123', reason: payment.message);
       expect(database.writes, 1);
+      expect(find.byType(CheckoutScreen), findsNothing);
       expect(creates, 1);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
