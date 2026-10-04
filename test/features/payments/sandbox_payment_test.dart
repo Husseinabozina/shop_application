@@ -17,6 +17,15 @@ import 'package:shop_application/features/payments/domain/entities/sandbox_payme
 
 import '../../support/portfolio_capture.dart';
 
+import 'package:shop_application/core/helpers/cache_helpers.dart';
+import 'package:shop_application/core/injection.dart';
+import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:shop_application/features/address_book/presentation/controllers/address_book_controller.dart';
+import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
+import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
+import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
+import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
+
 const _order = <String, dynamic>{
   'amount': 180,
   'currency': 'EGP',
@@ -159,6 +168,115 @@ void main() {
     );
   });
   tearDown(() => gateway.close());
+
+  testWidgets(
+    'checkout card button opens hosted payment, address editing stays separate, and Paid exits checkout',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'UserData': jsonEncode({
+          'userId': 'owner',
+          'token': 'token',
+          'expiryDate': DateTime.now()
+              .add(const Duration(hours: 1))
+              .toIso8601String(),
+        }),
+      });
+      await CacheHelper.init();
+      await getIt.reset();
+      setup();
+      addTearDown(() => getIt.reset());
+      final auth = getIt<AuthController>();
+      expect(await auth.tryAutoLogin(), isTrue);
+      final checkout = getIt<CheckoutController>();
+      final addressBook = getIt<AddressBookController>();
+      addTearDown(checkout.dispose);
+      addTearDown(addressBook.dispose);
+      await checkout.initialize(
+        items: const [
+          CheckoutLineItem(
+            productId: 'p1',
+            title: 'Product',
+            quantity: 1,
+            unitPrice: 155,
+          ),
+        ],
+      );
+      await checkout.setAddress(
+        const CheckoutAddress(
+          fullName: 'Private name',
+          phone: 'Private phone',
+          addressLine1: 'Test street',
+          city: 'Cairo',
+          country: 'Egypt',
+        ),
+      );
+      checkout.selectPaymentMethod(
+        checkout.paymentMethods.singleWhere(
+          (method) => method.type == PaymentMethodType.card,
+        ),
+      );
+      final opened = <Uri>[];
+      final payment = SandboxPaymentController(
+        repository: repository(),
+        userId: 'owner',
+        accessToken: 'token',
+        onCompleted: (_) {},
+        openUrl: (uri) async {
+          opened.add(uri);
+          return true;
+        },
+      );
+      addTearDown(payment.dispose);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: auth),
+            ChangeNotifierProvider.value(value: checkout),
+            ChangeNotifierProvider.value(value: addressBook),
+            ChangeNotifierProvider.value(value: payment),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light(),
+            builder: (_, child) => SandboxPaymentHost(child: child!),
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CheckoutScreen(),
+                    ),
+                  ),
+                  child: const Text('Open checkout'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open checkout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Change'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AddressFormSheet), findsOneWidget);
+      expect(creates, 0);
+      Navigator.of(tester.element(find.byType(AddressFormSheet))).pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue to test payment • 1 KWD'));
+      await tester.pumpAndSettle();
+      expect(opened, hasLength(1));
+      expect(creates, 1);
+      expect(database.writes, 0);
+      expect(payment.attempt?.orderTotal, 180);
+      status = 'Paid';
+      await payment.check();
+      await tester.pumpAndSettle();
+      expect(find.byType(CheckoutScreen), findsNothing);
+      expect(database.writes, 1);
+      expect(creates, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets(
     'compact large-text recovery banner reopens the same link and saves only after manual Paid verification',

@@ -22,6 +22,7 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _promoController = TextEditingController();
   bool _didAutoApplyAddress = false;
+  String? _handledSandboxOrderId;
 
   @override
   void dispose() {
@@ -33,6 +34,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sandbox = context.watch<SandboxPaymentController>();
+    final completed = sandbox.completedOrderId;
+    if (completed != null && completed != _handledSandboxOrderId) {
+      _handledSandboxOrderId = completed;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
@@ -188,7 +196,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               onPressed:
                   checkout.canPlaceOrder &&
                       !sandbox.isBusy &&
-                      sandbox.attempt == null
+                      sandbox.attempt == null &&
+                      completed == null
                   ? () => _placeOrder(context, checkout)
                   : null,
               child: checkout.isPlacingOrder
@@ -314,13 +323,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    if (checkout.selectedPaymentMethod?.type == PaymentMethodType.card) {
-      final draft = checkout.orderDraft;
-      if (draft != null)
-        await context.read<SandboxPaymentController>().start(draft.toJson());
-      return;
-    }
-
     final address = await showModalBottomSheet<SavedAddress>(
       context: context,
       isScrollControlled: true,
@@ -357,6 +359,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           content: Text('Please sign in again before placing the order.'),
         ),
       );
+      return;
+    }
+
+    if (checkout.selectedPaymentMethod?.type == PaymentMethodType.card) {
+      final draft = checkout.orderDraft;
+      if (draft != null) {
+        await context.read<SandboxPaymentController>().start(draft.toJson());
+      }
       return;
     }
 
