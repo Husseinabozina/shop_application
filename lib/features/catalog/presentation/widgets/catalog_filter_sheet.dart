@@ -4,10 +4,7 @@ import 'package:shop_application/features/catalog/domain/entities/catalog_filter
 class CatalogFilterSheet extends StatefulWidget {
   final CatalogFilter initialFilter;
 
-  const CatalogFilterSheet({
-    super.key,
-    required this.initialFilter,
-  });
+  const CatalogFilterSheet({super.key, required this.initialFilter});
 
   @override
   State<CatalogFilterSheet> createState() => _CatalogFilterSheetState();
@@ -43,12 +40,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        18,
-        18,
-        18,
-        18 + bottomInset,
-      ),
+      padding: EdgeInsets.fromLTRB(18, 18, 18, 18 + bottomInset),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -63,10 +55,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: _clear,
-                  child: const Text('Clear'),
-                ),
+                TextButton(onPressed: _clear, child: const Text('Clear')),
               ],
             ),
             const SizedBox(height: 18),
@@ -80,7 +69,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
                     ),
                     decoration: const InputDecoration(
                       labelText: 'Min price',
-                      prefixText: '\$ ',
+                      prefixText: 'EGP ',
                     ),
                   ),
                 ),
@@ -93,7 +82,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
                     ),
                     decoration: const InputDecoration(
                       labelText: 'Max price',
-                      prefixText: '\$ ',
+                      prefixText: 'EGP ',
                     ),
                   ),
                 ),
@@ -112,10 +101,7 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
               ),
             ),
             const SizedBox(height: 14),
-            FilledButton(
-              onPressed: _apply,
-              child: const Text('Apply filters'),
-            ),
+            FilledButton(onPressed: _apply, child: const Text('Apply filters')),
           ],
         ),
       ),
@@ -139,16 +125,12 @@ class _CatalogFilterSheetState extends State<CatalogFilterSheet> {
     if ((minRaw.isNotEmpty && minPrice == null) ||
         (maxRaw.isNotEmpty && maxPrice == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enter valid non-negative prices.'),
-        ),
+        const SnackBar(content: Text('Enter valid non-negative prices.')),
       );
       return;
     }
 
-    if (minPrice != null &&
-        maxPrice != null &&
-        minPrice > maxPrice) {
+    if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Minimum price cannot be greater than maximum price.'),

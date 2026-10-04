@@ -1,3 +1,5 @@
+import 'package:shop_application/core/formatters/money.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -54,11 +56,7 @@ class _ProductDetailedScreenState extends State<ProductDetailedScreen> {
   Widget build(BuildContext context) {
     final productId = _productId;
     if (productId == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final catalog = context.watch<CatalogController>();
@@ -99,9 +97,7 @@ class _ProductDetailsView extends StatelessWidget {
                 ? Icons.shopping_bag_outlined
                 : Icons.block_rounded,
           ),
-          label: Text(
-            product.isInStock ? 'Add to cart' : 'Sold out',
-          ),
+          label: Text(product.isInStock ? 'Add to cart' : 'Sold out'),
         ),
       ),
       body: CustomScrollView(
@@ -116,16 +112,17 @@ class _ProductDetailsView extends StatelessWidget {
                   tooltip: product.isFavorite
                       ? 'Remove from saved'
                       : 'Save product',
-                  onPressed: context.watch<CatalogController>().isFavoritePending(
-                    product.productId ?? product.id ?? '',
-                  ) ? null : () => _toggleFavorite(context, product),
+                  onPressed:
+                      context.watch<CatalogController>().isFavoritePending(
+                        product.productId ?? product.id ?? '',
+                      )
+                      ? null
+                      : () => _toggleFavorite(context, product),
                   icon: Icon(
                     product.isFavorite
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    color: product.isFavorite
-                        ? theme.colorScheme.error
-                        : null,
+                    color: product.isFavorite ? theme.colorScheme.error : null,
                   ),
                 ),
               ),
@@ -135,8 +132,7 @@ class _ProductDetailsView extends StatelessWidget {
                 tag: heroTag,
                 child: _ProductGallery(
                   imageUrls: product.imageUrls,
-                  fallbackColor:
-                      theme.colorScheme.surfaceContainerHighest,
+                  fallbackColor: theme.colorScheme.surfaceContainerHighest,
                 ),
               ),
             ),
@@ -176,7 +172,7 @@ class _ProductDetailsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '\$${_formatPrice(product.price)}',
+                    '${Money.format(product.price)}',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
@@ -203,15 +199,13 @@ class _ProductDetailsView extends StatelessWidget {
                   const _InfoCard(
                     icon: Icons.local_shipping_outlined,
                     title: 'Delivery options',
-                    description:
-                        'Standard delivery in 3–5 business days, or Express in 1–2 days at checkout.',
+                    description: 'Standard delivery in 3–5 business days, or Express in 1–2 days at checkout.',
                   ),
                   const SizedBox(height: 12),
                   const _InfoCard(
                     icon: Icons.verified_user_outlined,
                     title: 'Secure shopping',
-                    description:
-                        'Your saved items, cart, delivery details, and order history stay tied to your account.',
+                    description: 'Your saved items, cart, delivery details, and order history stay tied to your account.',
                   ),
                 ],
               ),
@@ -222,10 +216,7 @@ class _ProductDetailsView extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleFavorite(
-    BuildContext context,
-    Product product,
-  ) async {
+  Future<void> _toggleFavorite(BuildContext context, Product product) async {
     final id = product.productId ?? product.id;
     if (id == null) return;
     final catalog = context.read<CatalogController>();
@@ -233,14 +224,12 @@ class _ProductDetailsView extends StatelessWidget {
     if (!context.mounted || saved) return;
     final error = catalog.favoriteError(id);
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
-  void _addToCart(
-    BuildContext context,
-    Product product,
-  ) {
+  void _addToCart(BuildContext context, Product product) {
     if (!product.isInStock ||
         product.id == null ||
         product.price == null ||
@@ -249,11 +238,11 @@ class _ProductDetailsView extends StatelessWidget {
     }
 
     final added = context.read<CartController>().addItem(
-          product.id!,
-          product.price!,
-          product.title!,
-          maxQuantity: product.stockQuantity?.toDouble(),
-        );
+      product.id!,
+      product.price!,
+      product.title!,
+      maxQuantity: product.stockQuantity?.toDouble(),
+    );
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -267,25 +256,13 @@ class _ProductDetailsView extends StatelessWidget {
         ),
       );
   }
-
-  String _formatPrice(num? price) {
-    final value = price?.toDouble() ?? 0;
-    return value == value.roundToDouble()
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(2);
-  }
 }
-
-
 
 class _ProductGallery extends StatefulWidget {
   final List<String> imageUrls;
   final Color fallbackColor;
 
-  const _ProductGallery({
-    required this.imageUrls,
-    required this.fallbackColor,
-  });
+  const _ProductGallery({required this.imageUrls, required this.fallbackColor});
 
   @override
   State<_ProductGallery> createState() => _ProductGalleryState();
@@ -297,9 +274,7 @@ class _ProductGalleryState extends State<_ProductGallery> {
   @override
   Widget build(BuildContext context) {
     if (widget.imageUrls.isEmpty) {
-      return _ImageFallback(
-        color: widget.fallbackColor,
-      );
+      return _ImageFallback(color: widget.fallbackColor);
     }
 
     return Stack(
@@ -314,9 +289,8 @@ class _ProductGalleryState extends State<_ProductGallery> {
             return Image.network(
               widget.imageUrls[index],
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _ImageFallback(
-                color: widget.fallbackColor,
-              ),
+              errorBuilder: (_, __, ___) =>
+                  _ImageFallback(color: widget.fallbackColor),
             );
           },
         ),
@@ -332,9 +306,7 @@ class _ProductGalleryState extends State<_ProductGallery> {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surface
+                  color: Theme.of(context).colorScheme.surface
                       .withValues(alpha: 0.88),
                   borderRadius: BorderRadius.circular(99),
                 ),
@@ -350,9 +322,7 @@ class _ProductGalleryState extends State<_ProductGallery> {
                       decoration: BoxDecoration(
                         color: index == _currentIndex
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context)
-                                .colorScheme
-                                .outlineVariant,
+                            : Theme.of(context).colorScheme.outlineVariant,
                         borderRadius: BorderRadius.circular(99),
                       ),
                     ),
@@ -369,9 +339,7 @@ class _ProductGalleryState extends State<_ProductGallery> {
 class _StockStatusChip extends StatelessWidget {
   final Product product;
 
-  const _StockStatusChip({
-    required this.product,
-  });
+  const _StockStatusChip({required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -382,22 +350,19 @@ class _StockStatusChip extends StatelessWidget {
     final background = isOut
         ? theme.colorScheme.errorContainer
         : isLow
-            ? theme.colorScheme.tertiaryContainer
-            : theme.colorScheme.surfaceContainerHigh;
+        ? theme.colorScheme.tertiaryContainer
+        : theme.colorScheme.surfaceContainerHigh;
 
     final foreground = isOut
         ? theme.colorScheme.onErrorContainer
         : isLow
-            ? theme.colorScheme.onTertiaryContainer
-            : theme.colorScheme.onSurfaceVariant;
+        ? theme.colorScheme.onTertiaryContainer
+        : theme.colorScheme.onSurfaceVariant;
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(99),
@@ -409,8 +374,8 @@ class _StockStatusChip extends StatelessWidget {
               isOut
                   ? Icons.block_rounded
                   : isLow
-                      ? Icons.warning_amber_rounded
-                      : Icons.check_circle_outline_rounded,
+                  ? Icons.warning_amber_rounded
+                  : Icons.check_circle_outline_rounded,
               size: 16,
               color: foreground,
             ),
@@ -453,10 +418,7 @@ class _InfoCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(icon, color: theme.colorScheme.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -484,7 +446,6 @@ class _InfoCard extends StatelessWidget {
     );
   }
 }
-
 
 class _ImageFallback extends StatelessWidget {
   final Color color;

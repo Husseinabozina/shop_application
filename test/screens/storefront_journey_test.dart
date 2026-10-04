@@ -18,6 +18,7 @@ import 'package:shop_application/screens/product_detailed_screen.dart';
 
 import '../support/memory_shop_api.dart';
 import '../support/portfolio_capture.dart';
+
 import 'package:shop_application/features/cart/data/repositories/local_cart_repository.dart';
 
 void main() {
@@ -59,11 +60,11 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MediaQuery(
-        data: MediaQueryData.fromView(
-          tester.view,
-        ).copyWith(textScaler: TextScaler.linear(scale)),
+        data: MediaQueryData.fromView(tester.view)
+            .copyWith(textScaler: TextScaler.linear(scale)),
         child: const RepaintBoundary(
-          key: ValueKey('portfolio-capture'), child: MyShopApp(),
+          key: ValueKey('portfolio-capture'),
+          child: MyShopApp(),
         ),
       ),
     );
@@ -138,7 +139,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(api.favorites[sampleCatalog.first.id], isTrue);
         expect(find.byTooltip('Remove from saved'), findsOneWidget);
-        expect(api.products[sampleCatalog.first.id].containsKey('isFavorite'), isFalse);
+        expect(
+          api.products[sampleCatalog.first.id].containsKey('isFavorite'),
+          isFalse,
+        );
         await tapText(tester, 'Add to cart');
         await tester.tap(find.byTooltip('Back'));
         await tester.pumpAndSettle();
@@ -156,7 +160,10 @@ void main() {
           maxScrolls: 30,
         );
         expect(find.text('Cash on delivery'), findsOneWidget);
-        final place = find.widgetWithText(FilledButton, 'Place order • \$180');
+        final place = find.widgetWithText(
+          FilledButton,
+          'Place order • 180 EGP',
+        );
         await tester.tap(place);
         await tester.pumpAndSettle();
         expect(find.text('Order placed'), findsOneWidget);
@@ -237,149 +244,205 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('failed favorite save explains the error and the detail screen can retry', (tester) async {
-    api.products['lamp'] = {
-      'title': 'Reading lamp', 'description': 'A reading lamp.',
-      'imageUrl': '', 'price': 25, 'category': 'Home', 'creatorId': 'owner',
-    };
-    api.failFavoriteWrites = true;
-    await openApp(tester);
-    final card = find.byType(ProductItem);
-    await tester.scrollUntilVisible(card, 220,
-      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    final openProduct = find.descendant(of: card, matching: find.byType(InkWell)).first;
-    await tester.ensureVisible(openProduct);
-    await tester.pumpAndSettle();
-    await tester.tap(openProduct);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Save product'));
-    await tester.pumpAndSettle();
-    expect(find.text('Could not update favorite status.'), findsOneWidget);
-    expect(find.byTooltip('Save product'), findsOneWidget);
-    expect(api.favorites, isEmpty);
-    api.failFavoriteWrites = false;
-    await tester.tap(find.byTooltip('Save product'));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('Remove from saved'), findsOneWidget);
-    expect(api.favorites['lamp'], isTrue);
-    expect(api.favoriteWrites, 2);
-    await tester.tap(find.byTooltip('Back'));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('Remove from saved'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await getIt<AuthController>().logOut();
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
-
-  testWidgets('seller can create, edit, and delete a listing through the catalog contract', (tester) async {
-    await openApp(tester);
-    await tapText(tester, 'Account');
-    await tapText(tester, 'Manage products');
-    await tapText(tester, 'Add product');
-
-    Future<void> fill(String label, String value) async {
-      final field = find.widgetWithText(TextFormField, label);
-      await tester.scrollUntilVisible(field, 180,
-        scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-      await tester.enterText(field, value);
+  testWidgets(
+    'failed favorite save explains the error and the detail screen can retry',
+    (tester) async {
+      api.products['lamp'] = {
+        'title': 'Reading lamp',
+        'description': 'A reading lamp.',
+        'imageUrl': '',
+        'price': 25,
+        'category': 'Home',
+        'creatorId': 'owner',
+      };
+      api.failFavoriteWrites = true;
+      await openApp(tester);
+      final card = find.byType(ProductItem);
+      await tester.scrollUntilVisible(
+        card,
+        220,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      final openProduct = find
+          .descendant(of: card, matching: find.byType(InkWell))
+          .first;
+      await tester.ensureVisible(openProduct);
       await tester.pumpAndSettle();
-    }
-    await fill('Product title', 'Seller mug');
-    await fill('Price', '24');
-    await fill('Category', 'Home');
-    await fill('Stock quantity (optional)', '5');
-    await fill('Description', 'A useful ceramic mug for your home.');
-    await fill('Image URLs', 'https://example.com/mug.jpg');
-    tester.testTextInput.hide();
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Add product'));
-    await tester.pumpAndSettle();
-    expect(find.text('Seller mug'), findsOneWidget);
-    expect(api.products['created-product-1']['creatorId'], 'owner');
-    expect(api.products['created-product-1']['price'], 24);
-    expect(api.products['created-product-1'].containsKey('isFavorite'), isFalse);
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
-    await tapText(tester, 'Edit');
-    await fill('Price', '30');
-    tester.testTextInput.hide();
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
-    await tester.pumpAndSettle();
-    expect(api.products['created-product-1']['price'], 30);
-    expect(find.text(r'$30'), findsOneWidget);
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
-    await tapText(tester, 'Delete');
-    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
-    await tester.pumpAndSettle();
-    expect(api.products, isEmpty);
-    expect(find.text('No products yet'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await getIt<AuthController>().logOut();
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      await tester.tap(openProduct);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Save product'));
+      await tester.pumpAndSettle();
+      expect(find.text('Could not update favorite status.'), findsOneWidget);
+      expect(find.byTooltip('Save product'), findsOneWidget);
+      expect(api.favorites, isEmpty);
+      api.failFavoriteWrites = false;
+      await tester.tap(find.byTooltip('Save product'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Remove from saved'), findsOneWidget);
+      expect(api.favorites['lamp'], isTrue);
+      expect(api.favoriteWrites, 2);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Remove from saved'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await getIt<AuthController>().logOut();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
+  testWidgets(
+    'seller can create, edit, and delete a listing through the catalog contract',
+    (tester) async {
+      await openApp(tester);
+      await tapText(tester, 'Account');
+      await tapText(tester, 'Manage products');
+      await tapText(tester, 'Add product');
 
-  testWidgets('product details follow listing updates and handle deletion safely', (tester) async {
-    api.products['lamp'] = {
-      'title': 'Reading lamp', 'description': 'A reading lamp.',
-      'imageUrl': '', 'price': 25, 'category': 'Home', 'creatorId': 'owner',
-    };
-    await openApp(tester);
-    final card = find.byType(ProductItem);
-    await tester.scrollUntilVisible(card, 220,
-      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    final openProduct = find.descendant(of: card, matching: find.byType(InkWell)).first;
-    await tester.ensureVisible(openProduct);
-    await tester.pumpAndSettle();
-    await tester.tap(openProduct);
-    await tester.pumpAndSettle();
-    final catalog = tester.element(find.byType(ProductDetailedScreen)).read<CatalogController>();
-    await catalog.updateProduct(catalog.findById('lamp').copyWith(title: 'Updated lamp', price: 35));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Updated lamp'), 180,
-      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    expect(find.text('Updated lamp'), findsOneWidget);
-    expect(find.text(r'$35'), findsOneWidget);
-    await catalog.deleteProduct('lamp');
-    await tester.pumpAndSettle();
-    expect(find.text('This product is no longer available.'), findsOneWidget);
-    expect(find.text('Add to cart'), findsNothing);
-    expect(tester.takeException(), isNull);
-    await getIt<AuthController>().logOut();
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      Future<void> fill(String label, String value) async {
+        final field = find.widgetWithText(TextFormField, label);
+        await tester.scrollUntilVisible(
+          field,
+          180,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 30,
+        );
+        await tester.enterText(field, value);
+        await tester.pumpAndSettle();
+      }
 
+      await fill('Product title', 'Seller mug');
+      await fill('Price', '24');
+      await fill('Category', 'Home');
+      await fill('Stock quantity (optional)', '5');
+      await fill('Description', 'A useful ceramic mug for your home.');
+      await fill('Image URLs', 'https://example.com/mug.jpg');
+      tester.testTextInput.hide();
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Add product'));
+      await tester.pumpAndSettle();
+      expect(find.text('Seller mug'), findsOneWidget);
+      expect(api.products['created-product-1']['creatorId'], 'owner');
+      expect(api.products['created-product-1']['price'], 24);
+      expect(
+        api.products['created-product-1'].containsKey('isFavorite'),
+        isFalse,
+      );
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Edit');
+      await fill('Price', '30');
+      tester.testTextInput.hide();
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+      await tester.pumpAndSettle();
+      expect(api.products['created-product-1']['price'], 30);
+      expect(find.text(r'$30'), findsOneWidget);
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Delete');
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+      expect(api.products, isEmpty);
+      expect(find.text('No products yet'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await getIt<AuthController>().logOut();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
-  testWidgets('failed removal under Saved restores the card and keeps the error visible', (tester) async {
-    api.products['lamp'] = {
-      'title': 'Reading lamp', 'description': 'A reading lamp.',
-      'imageUrl': '', 'price': 25, 'category': 'Home', 'creatorId': 'owner',
-    };
-    api.favorites['lamp'] = true;
-    api.failFavoriteWrites = true;
-    api.favoriteWriteGate = Completer<void>();
-    await openApp(tester);
-    await tester.scrollUntilVisible(find.text('Saved'), 220,
-      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    await tapText(tester, 'Saved');
-    await tester.scrollUntilVisible(find.byType(ProductItem), 180,
-      scrollable: find.byType(Scrollable).first, maxScrolls: 30);
-    await tester.tap(find.byTooltip('Remove from saved'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ProductItem), findsNothing);
-    expect(find.text('No saved products here'), findsOneWidget);
-    expect(api.favoriteWrites, 1);
-    api.favoriteWriteGate!.complete();
-    await tester.pumpAndSettle();
-    expect(find.byType(ProductItem), findsOneWidget);
-    expect(find.text('Could not update favorite status.'), findsOneWidget);
-    expect(api.favorites['lamp'], isTrue);
-    expect(tester.takeException(), isNull);
-    await getIt<AuthController>().logOut();
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+  testWidgets(
+    'product details follow listing updates and handle deletion safely',
+    (tester) async {
+      api.products['lamp'] = {
+        'title': 'Reading lamp',
+        'description': 'A reading lamp.',
+        'imageUrl': '',
+        'price': 25,
+        'category': 'Home',
+        'creatorId': 'owner',
+      };
+      await openApp(tester);
+      final card = find.byType(ProductItem);
+      await tester.scrollUntilVisible(
+        card,
+        220,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      final openProduct = find
+          .descendant(of: card, matching: find.byType(InkWell))
+          .first;
+      await tester.ensureVisible(openProduct);
+      await tester.pumpAndSettle();
+      await tester.tap(openProduct);
+      await tester.pumpAndSettle();
+      final catalog = tester
+          .element(find.byType(ProductDetailedScreen))
+          .read<CatalogController>();
+      await catalog.updateProduct(
+        catalog.findById('lamp').copyWith(title: 'Updated lamp', price: 35),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Updated lamp'),
+        180,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      expect(find.text('Updated lamp'), findsOneWidget);
+      expect(find.text(r'$35'), findsOneWidget);
+      await catalog.deleteProduct('lamp');
+      await tester.pumpAndSettle();
+      expect(find.text('This product is no longer available.'), findsOneWidget);
+      expect(find.text('Add to cart'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await getIt<AuthController>().logOut();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
+  testWidgets(
+    'failed removal under Saved restores the card and keeps the error visible',
+    (tester) async {
+      api.products['lamp'] = {
+        'title': 'Reading lamp',
+        'description': 'A reading lamp.',
+        'imageUrl': '',
+        'price': 25,
+        'category': 'Home',
+        'creatorId': 'owner',
+      };
+      api.favorites['lamp'] = true;
+      api.failFavoriteWrites = true;
+      api.favoriteWriteGate = Completer<void>();
+      await openApp(tester);
+      await tester.scrollUntilVisible(
+        find.text('Saved'),
+        220,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      await tapText(tester, 'Saved');
+      await tester.scrollUntilVisible(
+        find.byType(ProductItem),
+        180,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      await tester.tap(find.byTooltip('Remove from saved'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProductItem), findsNothing);
+      expect(find.text('No saved products here'), findsOneWidget);
+      expect(api.favoriteWrites, 1);
+      api.favoriteWriteGate!.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(ProductItem), findsOneWidget);
+      expect(find.text('Could not update favorite status.'), findsOneWidget);
+      expect(api.favorites['lamp'], isTrue);
+      expect(tester.takeException(), isNull);
+      await getIt<AuthController>().logOut();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 }

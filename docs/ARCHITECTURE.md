@@ -319,3 +319,9 @@ checkout; local cart data is not an inventory reservation.
 The app composition root supplies persistent cart storage. Isolated cart tests
 can use an ephemeral controller without storage; no backend is needed for cart
 persistence. Existing Firebase paths and security rules are unchanged.
+
+## Hosted Sandbox payments
+
+`SandboxPaymentController` depends on `SandboxCheckoutRepository` and observes no native SDK. `SandboxPaymentHost` handles app resume and offers recovery on every route. The data implementation composes the public MyFatoorah V2 REST gateway, an account-scoped local attempt store, and Firebase's existing create-only customer order path. Browser opening stays in presentation; no card fields are collected by Flutter.
+
+Only matching Paid invoices produce `sandbox_paid` demo orders. Pending/offline/declined attempts keep the basket and link. Invoice-based IDs plus conditional writes and existing-order checks make save retries idempotent. The original EGP checkout snapshot is saved; a newer basket is retained. Customer addresses remain local/Firebase and are never sent to the public sandbox merchant. See `sandbox-payments.md` for the exact flow and limitations.

@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,10 +9,7 @@ import 'package:shop_application/features/orders/domain/entities/order_status.da
 class OrderDetailsScreen extends StatefulWidget {
   final Order order;
 
-  const OrderDetailsScreen({
-    super.key,
-    required this.order,
-  });
+  const OrderDetailsScreen({super.key, required this.order});
 
   @override
   State<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
@@ -39,9 +37,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.refresh_rounded),
           ),
@@ -105,16 +101,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                       ? 'Delivered'
                                       : 'Estimated delivery',
                                   style: theme.textTheme.labelLarge?.copyWith(
-                                    color:
-                                        theme.colorScheme.onPrimaryContainer,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   _deliveryEstimate(order),
                                   style: theme.textTheme.titleMedium?.copyWith(
-                                    color:
-                                        theme.colorScheme.onPrimaryContainer,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -171,7 +165,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   const SizedBox(height: 12),
                   _InfoRow(
                     label: 'Payment',
-                    value: order.paymentMethodTitle ??
+                    value:
+                        order.paymentMethodTitle ??
                         _paymentStatusLabel(order.paymentStatus),
                   ),
                   if (order.paymentStatus != null) ...[
@@ -179,6 +174,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     _InfoRow(
                       label: 'Payment status',
                       value: _paymentStatusLabel(order.paymentStatus),
+                    ),
+                  ],
+                  if (order.sandboxInvoiceId != null) ...[
+                    const SizedBox(height: 12),
+                    _InfoRow(
+                      label: 'Test invoice',
+                      value: '#${order.sandboxInvoiceId}',
                     ),
                   ],
                 ],
@@ -204,7 +206,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '\$${_formatPrice(order.amount ?? 0)}',
+                    '${Money.format(order.amount ?? 0, currency: order.currency)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
@@ -256,11 +258,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     });
 
     if (updated == null && provider.fetchOrderErrorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.fetchOrderErrorMessage!),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(provider.fetchOrderErrorMessage!)));
     }
   }
 
@@ -307,6 +307,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         return 'Cash on delivery';
       case 'paid':
         return 'Paid';
+      case 'sandbox_paid':
+        return 'Sandbox confirmed • 1 KWD test';
       case 'failed':
         return 'Payment failed';
       case 'refunded':
@@ -319,19 +321,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 }
 
-String _formatPrice(num value) {
-  final number = value.toDouble();
-  return number == number.roundToDouble()
-      ? number.toStringAsFixed(0)
-      : number.toStringAsFixed(2);
-}
-
 class _TrackingTimeline extends StatelessWidget {
   final Order order;
 
-  const _TrackingTimeline({
-    required this.order,
-  });
+  const _TrackingTimeline({required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -404,17 +397,17 @@ class _TrackingStep extends StatelessWidget {
                           color: theme.colorScheme.onPrimary,
                         )
                       : isCurrent
-                          ? Center(
-                              child: Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.onPrimary,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            )
-                          : null,
+                      ? Center(
+                          child: Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onPrimary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
                 if (hasLineBelow)
                   Expanded(
@@ -430,18 +423,14 @@ class _TrackingStep extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(
-                bottom: hasLineBelow ? 24 : 2,
-              ),
+              padding: EdgeInsets.only(bottom: hasLineBelow ? 24 : 2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     status.label,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: isReached
-                          ? FontWeight.w900
-                          : FontWeight.w600,
+                      fontWeight: isReached ? FontWeight.w900 : FontWeight.w600,
                       color: isReached
                           ? theme.colorScheme.onSurface
                           : theme.colorScheme.onSurfaceVariant,
@@ -478,9 +467,7 @@ class _TrackingStep extends StatelessWidget {
 class _CancelledTracking extends StatelessWidget {
   final Order order;
 
-  const _CancelledTracking({
-    required this.order,
-  });
+  const _CancelledTracking({required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -490,10 +477,7 @@ class _CancelledTracking extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.cancel_outlined,
-          color: theme.colorScheme.error,
-        ),
+        Icon(Icons.cancel_outlined, color: theme.colorScheme.error),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -508,9 +492,7 @@ class _CancelledTracking extends StatelessWidget {
               ),
               if (timestamp != null) ...[
                 const SizedBox(height: 3),
-                Text(
-                  DateFormat('MMM d, yyyy • h:mm a').format(timestamp),
-                ),
+                Text(DateFormat('MMM d, yyyy • h:mm a').format(timestamp)),
               ],
             ],
           ),
@@ -523,9 +505,7 @@ class _CancelledTracking extends StatelessWidget {
 class _StatusChip extends StatelessWidget {
   final OrderStatus status;
 
-  const _StatusChip({
-    required this.status,
-  });
+  const _StatusChip({required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -533,10 +513,7 @@ class _StatusChip extends StatelessWidget {
     final isCancelled = status == OrderStatus.cancelled;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isCancelled
             ? theme.colorScheme.errorContainer
@@ -559,9 +536,7 @@ class _StatusChip extends StatelessWidget {
 class _OrderProducts extends StatelessWidget {
   final Order order;
 
-  const _OrderProducts({
-    required this.order,
-  });
+  const _OrderProducts({required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -601,7 +576,7 @@ class _OrderProducts extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$${_formatPrice(total)}',
+                '${Money.format(total, currency: order.currency)}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
@@ -624,10 +599,7 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _InfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -682,11 +654,7 @@ class _SectionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 21,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(icon, size: 21, color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
                 Text(
                   title,

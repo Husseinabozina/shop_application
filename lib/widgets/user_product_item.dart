@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
@@ -64,7 +65,7 @@ class UserProductItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '\$${_formatPrice(price)}',
+                    '${Money.format(price)}',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w900,
@@ -123,10 +124,8 @@ class UserProductItem extends StatelessWidget {
       return;
     }
 
-    Navigator.of(context).pushNamed(
-      EditProductScreen.routeName,
-      arguments: productId,
-    );
+    Navigator.of(context)
+        .pushNamed(EditProductScreen.routeName, arguments: productId);
   }
 
   Future<void> _delete(BuildContext context) async {
@@ -139,9 +138,7 @@ class UserProductItem extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete product?'),
-        content: Text(
-          'Remove ${title ?? 'this product'} from the storefront?',
-        ),
+        content: Text('Remove ${title ?? 'this product'} from the storefront?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -168,9 +165,8 @@ class UserProductItem extends StatelessWidget {
 
     final error = provider.deleteProductErrorMessage;
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -184,20 +180,12 @@ class UserProductItem extends StatelessWidget {
     }
     return '$stock in stock';
   }
-  String _formatPrice(num? value) {
-    final number = value?.toDouble() ?? 0;
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
 }
 
 class _ProductThumbnail extends StatelessWidget {
   final String? imageUrl;
 
-  const _ProductThumbnail({
-    required this.imageUrl,
-  });
+  const _ProductThumbnail({required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {

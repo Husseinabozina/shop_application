@@ -1,5 +1,7 @@
 # MyShop
 
+<img src="assets/branding/myshop-icon.png" width="96" alt="MyShop logo" />
+
 A compact Flutter e-commerce portfolio application built to look and behave like a small real storefront while keeping the codebase practical and reviewable.
 
 ## Highlights
@@ -18,7 +20,8 @@ A compact Flutter e-commerce portfolio application built to look and behave like
 - Promo codes
 - Provider-agnostic PaymentGateway architecture
 - Cash on Delivery
-- Capability-driven card and wallet options that stay disabled until a real gateway is configured
+- Custom MyShop branding and launcher icons for Android, iOS, desktop and web
+- MyFatoorah V2 hosted Sandbox checkout: fixed 1 KWD test, independent EGP cart totals, saved-attempt recovery, and duplicate-order protection
 - Per-user order history and visual delivery tracking
 - Firebase Realtime Database with versioned ownership rules
 - Feature-first auth, catalog, cart, checkout, address-book, and orders architecture
@@ -73,7 +76,7 @@ Read the full architecture notes in:
 9. Store the order under the authenticated customer
 10. Review it later from Orders
 
-Card and wallet methods are intentionally not faked. They remain disabled until a real secure payment gateway is connected.
+Card checkout uses the public MyFatoorah Sandbox token and hosted test payment, then verifies a matching Paid invoice before saving one demo order. See [sandbox setup and test card](docs/sandbox-payments.md). Wallets remain unavailable in this demo.
 
 ## Current commerce scope
 
@@ -175,4 +178,4 @@ required, and no data is inserted automatically on app launch.
 
 To try the customer journey, browse a product, save it, add it to the cart, choose
 a delivery address, and place a Cash on Delivery order. The order should appear
-in Orders. Online payments remain unavailable until a real gateway is configured.
+in Orders. MyFatoorah Sandbox card checkout is available with the public documentation token; only a verified test invoice creates a demo order.

@@ -69,7 +69,7 @@ levels follow the installed Flutter SDK.
 
 ## Current scope
 
-Online card/wallet payments remain disabled. Post-creation order updates need a
+Hosted MyFatoorah card tests are enabled by default; wallets are unavailable. Post-creation order updates need a
 trusted admin/backend flow. Inventory is checked before checkout but is not
 reserved/decremented by a server transaction. Ratings, variants, and push
 notifications are future work; they are not needed to run the current demo.

@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
@@ -29,8 +30,7 @@ class CartItem extends StatelessWidget {
     final imageUrl = matchedProduct?.imageUrl?.trim() ?? '';
     final stockQuantity = matchedProduct?.stockQuantity;
     final itemQuantity = quantity ?? 0;
-    final canIncrease =
-        stockQuantity == null || itemQuantity < stockQuantity;
+    final canIncrease = stockQuantity == null || itemQuantity < stockQuantity;
     final itemTotal = (price ?? 0) * itemQuantity;
 
     return Dismissible(
@@ -94,7 +94,7 @@ class CartItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '\$${_formatPrice(itemTotal)}',
+                      '${Money.format(itemTotal)}',
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w800,
@@ -133,8 +133,7 @@ class CartItem extends StatelessWidget {
                                       productId!,
                                       price!,
                                       title!,
-                                      maxQuantity:
-                                          stockQuantity?.toDouble(),
+                                      maxQuantity: stockQuantity?.toDouble(),
                                     );
                                   }
                                 }
@@ -177,9 +176,7 @@ class CartItem extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Remove item?'),
-        content: const Text(
-          'This product will be removed from your cart.',
-        ),
+        content: const Text('This product will be removed from your cart.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -194,13 +191,6 @@ class CartItem extends StatelessWidget {
     );
   }
 
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
-
   String _formatQuantity(double value) {
     return value == value.roundToDouble()
         ? value.toInt().toString()
@@ -212,10 +202,7 @@ class _QuantityButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
 
-  const _QuantityButton({
-    required this.icon,
-    this.onPressed,
-  });
+  const _QuantityButton({required this.icon, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

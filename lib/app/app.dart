@@ -16,6 +16,9 @@ import 'package:shop_application/features/catalog/presentation/screens/sample_ca
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
+import 'package:shop_application/features/payments/domain/repositories/sandbox_checkout_repository.dart';
+import 'package:shop_application/features/payments/presentation/controllers/sandbox_payment_controller.dart';
+import 'package:shop_application/features/payments/presentation/widgets/sandbox_payment_host.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
 import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/screens/account_screen.dart';
@@ -40,40 +43,83 @@ class MyShopApp extends StatelessWidget {
           value: getIt<AuthController>(),
         ),
         ChangeNotifierProxyProvider<AuthController, CatalogController>(
-          create: (_) => CatalogController(repository: getIt<ProductRepository>()),
+          create: (_) =>
+              CatalogController(repository: getIt<ProductRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous! : CatalogController(
-            repository: getIt<ProductRepository>(),
-            token: auth.token,
-            userId: auth.userId,
-          ),
+              ? previous!
+              : CatalogController(
+                  repository: getIt<ProductRepository>(),
+                  token: auth.token,
+                  userId: auth.userId,
+                ),
         ),
         ChangeNotifierProxyProvider<AuthController, CartController>(
           create: (_) => CartController(repository: getIt<CartRepository>()),
           update: (_, auth, previous) => previous?.userId == auth.userId
               ? previous!
-              : CartController(repository: getIt<CartRepository>(), userId: auth.userId),
+              : CartController(
+                  repository: getIt<CartRepository>(),
+                  userId: auth.userId,
+                ),
         ),
         ChangeNotifierProxyProvider<AuthController, RecentlyViewedController>(
           create: (_) => RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
           )..load(),
-          update: (_, auth, previous) => previous?.userId == auth.userId
-              ? previous! : RecentlyViewedController(
-            repository: getIt<RecentlyViewedRepository>(),
-            userId: auth.userId,
-          )..load(),
+          update: (_, auth, previous) =>
+              previous?.userId == auth.userId
+                    ? previous!
+                    : RecentlyViewedController(
+                        repository: getIt<RecentlyViewedRepository>(),
+                        userId: auth.userId,
+                      )
+                ..load(),
+        ),
+        ChangeNotifierProxyProvider<AuthController, SandboxPaymentController>(
+          create: (_) => SandboxPaymentController(
+            repository: getIt<SandboxCheckoutRepository>(),
+            userId: null,
+            accessToken: null,
+            onCompleted: (_) {},
+          ),
+          update: (context, auth, previous) {
+            if (previous?.userId == auth.userId &&
+                previous?.accessToken == auth.token)
+              return previous!;
+            return SandboxPaymentController(
+              repository: getIt<SandboxCheckoutRepository>(),
+              userId: auth.userId,
+              accessToken: auth.token,
+              onCompleted: (attempt) {
+                final cart = context.read<CartController>();
+                final purchased = (attempt.order['products'] as List)
+                    .whereType<Map>()
+                    .toList();
+                // Preserve a newer basket if the shopper changed it while payment was open.
+                if (cart.userId == attempt.userId &&
+                    cart.items.length == purchased.length &&
+                    purchased.every((item) {
+                      final current = cart.items[item['id']];
+                      return current != null &&
+                          current.quantity == item['quantity'] &&
+                          current.price == item['price'];
+                    }))
+                  cart.clear();
+              },
+            )..restore();
+          },
         ),
         ChangeNotifierProxyProvider<AuthController, OrderController>(
           create: (_) => OrderController(repository: getIt<OrderRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous! : OrderController(
-            repository: getIt<OrderRepository>(),
-            token: auth.token,
-            userId: auth.userId,
-          ),
+              ? previous!
+              : OrderController(
+                  repository: getIt<OrderRepository>(),
+                  token: auth.token,
+                  userId: auth.userId,
+                ),
         ),
       ],
       child: Consumer<AuthController>(
@@ -85,6 +131,8 @@ class MyShopApp extends StatelessWidget {
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: ThemeMode.system,
+            builder: (_, child) =>
+                SandboxPaymentHost(child: child ?? const SizedBox.shrink()),
             home: const _AuthGate(),
             routes: _routes(),
           );

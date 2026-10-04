@@ -1,8 +1,4 @@
-enum PaymentMethodType {
-  cashOnDelivery,
-  card,
-  digitalWallet,
-}
+enum PaymentMethodType { cashOnDelivery, card, digitalWallet }
 
 class CheckoutAddress {
   final String fullName;
@@ -198,17 +194,15 @@ class CheckoutOrderDraft {
       'shippingAmount': totals.shipping,
       'discountAmount': totals.discount,
       'amount': totals.total,
+      'currency': 'EGP',
       'datetime': placedAt.toIso8601String(),
       'status': 'placed',
-      'statusHistory': {
-        'placed': placedAt.toIso8601String(),
-      },
+      'statusHistory': {'placed': placedAt.toIso8601String()},
       'estimatedDeliveryStart': estimatedDeliveryStart.toIso8601String(),
       'estimatedDeliveryEnd': estimatedDeliveryEnd.toIso8601String(),
-      'paymentStatus':
-          paymentMethod.type == PaymentMethodType.cashOnDelivery
-              ? 'cash_on_delivery'
-              : 'pending',
+      'paymentStatus': paymentMethod.type == PaymentMethodType.cashOnDelivery
+          ? 'cash_on_delivery'
+          : 'pending',
       'products': items
           .map(
             (item) => {
@@ -226,7 +220,5 @@ class CheckoutOrderDraft {
 class CheckoutResult {
   final String orderId;
 
-  const CheckoutResult({
-    required this.orderId,
-  });
+  const CheckoutResult({required this.orderId});
 }

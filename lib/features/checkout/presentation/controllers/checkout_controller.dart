@@ -5,9 +5,7 @@ import 'package:shop_application/features/checkout/domain/repositories/checkout_
 class CheckoutController with ChangeNotifier {
   final CheckoutRepository repository;
 
-  CheckoutController({
-    required this.repository,
-  });
+  CheckoutController({required this.repository});
 
   List<CheckoutLineItem> _items = const [];
   CheckoutAddress? _address;
@@ -38,10 +36,7 @@ class CheckoutController with ChangeNotifier {
   String? get completedOrderId => _completedOrderId;
 
   double get subtotal {
-    return _items.fold<double>(
-      0,
-      (total, item) => total + item.total,
-    );
+    return _items.fold<double>(0, (total, item) => total + item.total);
   }
 
   CheckoutTotals get totals {
@@ -64,9 +59,19 @@ class CheckoutController with ChangeNotifier {
         !_isPlacingOrder;
   }
 
-  Future<void> initialize({
-    required List<CheckoutLineItem> items,
-  }) async {
+  CheckoutOrderDraft? get orderDraft {
+    if (!canPlaceOrder) return null;
+    return CheckoutOrderDraft(
+      items: _items,
+      address: _address!,
+      shippingMethod: _selectedShippingMethod!,
+      paymentMethod: _selectedPaymentMethod!,
+      totals: totals,
+      promoCode: _promoCode?.code,
+    );
+  }
+
+  Future<void> initialize({required List<CheckoutLineItem> items}) async {
     _items = List.unmodifiable(items);
     _errorMessage = null;
 
@@ -97,8 +102,9 @@ class CheckoutController with ChangeNotifier {
         address: address,
         items: _items,
       );
-      _selectedShippingMethod =
-          _shippingMethods.isEmpty ? null : _shippingMethods.first;
+      _selectedShippingMethod = _shippingMethods.isEmpty
+          ? null
+          : _shippingMethods.first;
     } catch (error) {
       _shippingMethods = const [];
       _selectedShippingMethod = null;
@@ -153,6 +159,7 @@ class CheckoutController with ChangeNotifier {
     required String userId,
     required String accessToken,
   }) async {
+    if (_isPlacingOrder || _completedOrderId != null) return false;
     final currentAddress = _address;
     final currentShipping = _selectedShippingMethod;
     final currentPayment = _selectedPaymentMethod;

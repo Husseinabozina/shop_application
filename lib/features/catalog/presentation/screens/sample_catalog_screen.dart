@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
@@ -92,7 +93,7 @@ class _SampleCatalogScreenState extends State<SampleCatalogScreen> {
                     Text(product.title, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(
-                      '${product.category} • \$${product.price.toStringAsFixed(0)}',
+                      '${product.category} • ${Money.format(product.price)}',
                     ),
                     const SizedBox(height: 4),
                     Text(
