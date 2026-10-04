@@ -33,6 +33,7 @@ flutter:
   assets:
     - assets/images/placeholderimage.png
     - assets/branding/myshop-icon.png
+    - assets/onboarding/
 
   fonts:
     - family: Lato

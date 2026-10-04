@@ -28,12 +28,12 @@ void main() {
 
   testWidgets(
       'cold launch shows branding, completes three pages, and remembers the welcome flow after restart',
-    (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const RepaintBoundary(
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const RepaintBoundary(
       key: ValueKey('portfolio-capture'),
       child: MyShopApp(),
     ));
@@ -49,9 +49,11 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Your basket, your way'), findsOneWidget);
+    await capturePortfolio(tester, '10-onboarding-basket');
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Keep your orders close'), findsOneWidget);
+    await capturePortfolio(tester, '11-onboarding-orders');
     await tester.tap(find.text('Get started'));
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
@@ -113,4 +115,55 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets('swiping and the back button keep the current step in sync',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: OnboardingScreen(onCompleted: () async {}),
+    ));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(PageView), const Offset(-700, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Your basket, your way'), findsOneWidget);
+    expect(find.text('02'), findsOneWidget);
+    await tester.tap(find.byTooltip('Previous page'));
+    await tester.pumpAndSettle();
+    expect(find.text('Find your next favourite'), findsOneWidget);
+    expect(find.text('01'), findsOneWidget);
+    expect(find.byTooltip('Previous page'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final size in [const Size(320, 568), const Size(844, 390)]) {
+    testWidgets(
+        'all pages remain usable at $size with large text and reduced motion',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var completed = false;
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.dark(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(1.8),
+              disableAnimations: true),
+          child: child!,
+        ),
+        home: OnboardingScreen(onCompleted: () async {
+          completed = true;
+        }),
+      ));
+      await tester.pumpAndSettle();
+      for (var page = 0; page < 3; page++) {
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text(page == 2 ? 'Get started' : 'Continue'));
+        await tester.pumpAndSettle();
+      }
+      expect(completed, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
