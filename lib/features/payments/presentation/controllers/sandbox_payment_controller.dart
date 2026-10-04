@@ -128,7 +128,11 @@ class SandboxPaymentController extends ChangeNotifier {
           message = 'Test payment cancelled. Your cart is kept; you can start a new attempt.';
           break;
       }
-    } catch (error) {
+    } catch (error, stack) {
+      if (kDebugMode) {
+        debugPrint('Sandbox verification failed (${error.runtimeType}).');
+        debugPrintStack(stackTrace: stack);
+      }
       if (!_disposed) message = _error(error);
     } finally {
       isBusy = false;

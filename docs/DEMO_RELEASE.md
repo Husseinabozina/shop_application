@@ -3,13 +3,14 @@
 MyShop is a Flutter commerce portfolio project backed by Firebase Authentication
 and Realtime Database. The customer journey includes product discovery,
 favorites, a persistent account-scoped cart, saved addresses, Cash on Delivery,
-and private order history. Catalog, auth, cart, address book, checkout, orders,
+hosted MyFatoorah Sandbox card checkout, and private order history. Catalog, auth, cart, address book, checkout, orders,
 and payment capabilities have replaceable contracts.
 
 ## Run on the existing Mac checkout
 
 ```bash
 cd "$HOME/Projects/shop_application"
+git pull --ff-only
 flutter pub get
 flutter run
 ```
@@ -30,6 +31,9 @@ Use a test account and a test delivery address:
 4. Sign out and into another account: the first account's cart, favorites,
    addresses, and orders should not appear.
 5. Check keyboard forms, empty/error screens, and larger text on the device.
+6. Follow [the Sandbox walkthrough](sandbox-payments.md) for the fixed 1 KWD
+   hosted card test, manual recheck, and restart recovery. Its amount is separate
+   from the EGP basket. Verify the saved demo order appears only after Paid.
 
 This creates a real test order in the configured Firebase project. Customer
 orders cannot be deleted under the current ownership rules. CI uses fake HTTP
@@ -44,7 +48,7 @@ Open the latest **Flutter CI** run in GitHub Actions. It produces:
 - **myshop-ios-unsigned-release**: a release-mode `Runner.app` for iOS, without
   signing. Device installation/distribution needs your Apple signing setup.
 - **myshop-portfolio-screenshots**: actual Flutter-rendered Home, product, cart,
-  checkout, and order-history captures with sample photos and fake test data.
+  checkout, order history, and Sandbox recovery captures with sample photos and fake test data.
   These are UI captures, not evidence of live orders or device verification.
 
 Artifacts are retained for 30 days. Download them when preparing the portfolio.
@@ -54,7 +58,7 @@ is no second duplicate test suite. To reproduce them locally:
 
 ```bash
 python3 scripts/prepare_portfolio_images.py
-flutter test test/screens/storefront_journey_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
+flutter test test/screens/storefront_journey_test.dart test/features/payments/sandbox_payment_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
 ```
 
 Screenshot output is `build/portfolio-screenshots/`. An APK can be built locally:
@@ -79,7 +83,7 @@ notifications are future work; they are not needed to run the current demo.
 **MyShop — Flutter commerce application**
 
 Built an end-to-end storefront with account-scoped favorites, persistent cart,
-saved delivery addresses, shipping options, Cash on Delivery checkout, and
+saved delivery addresses, shipping options, Cash on Delivery and hosted Sandbox checkout, and
 order history. Refactored the app into feature-first layers with pure domain
 entities and replaceable repositories, while keeping Firebase-specific REST
 mapping in the data layer. Added ownership rules, focused regression checks,
