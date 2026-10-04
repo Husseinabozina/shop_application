@@ -337,7 +337,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
       await tester.pumpAndSettle();
       expect(api.products['created-product-1']['price'], 30);
-      expect(find.text(r'$30'), findsOneWidget);
+      expect(find.text('30 EGP'), findsOneWidget);
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
       await tapText(tester, 'Delete');
@@ -391,7 +391,7 @@ void main() {
         maxScrolls: 30,
       );
       expect(find.text('Updated lamp'), findsOneWidget);
-      expect(find.text(r'$35'), findsOneWidget);
+      expect(find.text('35 EGP'), findsOneWidget);
       await catalog.deleteProduct('lamp');
       await tester.pumpAndSettle();
       expect(find.text('This product is no longer available.'), findsOneWidget);

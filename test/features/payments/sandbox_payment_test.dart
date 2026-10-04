@@ -89,7 +89,10 @@ void main() {
       client: MockClient((request) async {
         expect(request.url.host, 'apitest.myfatoorah.com');
         expect(request.followRedirects, isFalse);
-        expect(request.headers['Content-Type'], 'application/json');
+        expect(
+          request.headers['Content-Type']?.split(';').first,
+          'application/json',
+        );
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         Map<String, dynamic> data;
         switch (request.url.path) {
