@@ -319,8 +319,7 @@ void main() {
       await fill('Image URLs', 'https://example.com/mug.jpg');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Add product'));
-      await tester.pumpAndSettle();
+      await tapText(tester, 'Add product');
       expect(find.text('Seller mug'), findsOneWidget);
       expect(api.products['created-product-1']['creatorId'], 'owner');
       expect(api.products['created-product-1']['price'], 24);
@@ -334,8 +333,7 @@ void main() {
       await fill('Price', '30');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
-      await tester.pumpAndSettle();
+      await tapText(tester, 'Save changes');
       expect(api.products['created-product-1']['price'], 30);
       expect(find.text('30 EGP'), findsOneWidget);
       await tester.tap(find.byType(PopupMenuButton<String>));

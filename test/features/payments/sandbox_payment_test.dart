@@ -46,7 +46,12 @@ class _Database implements FirebaseRestClient {
     required String path,
     String? authToken,
     Map<String, dynamic>? query,
-  }) async => http.Response(jsonEncode(records[path]), 200);
+  }) async =>
+      http.Response(
+        jsonEncode(records[path]),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
   @override
   Future<http.Response> put({
     required String path,
@@ -59,7 +64,11 @@ class _Database implements FirebaseRestClient {
     if (records.containsKey(path)) return http.Response('{}', 412);
     writes++;
     records[path] = Map<String, dynamic>.from(data as Map);
-    return http.Response(jsonEncode(data), 200);
+    return http.Response(
+      jsonEncode(data),
+      200,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
   }
 
   @override
@@ -79,10 +88,10 @@ void main() {
   late MyFatoorahSandboxGateway gateway;
   late SandboxPaymentStore store;
   SandboxCheckoutRepositoryImpl repository() => SandboxCheckoutRepositoryImpl(
-    gateway: gateway,
-    store: store,
-    database: database,
-  );
+        gateway: gateway,
+        store: store,
+        database: database,
+      );
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     reference = '';
@@ -176,9 +185,8 @@ void main() {
         'UserData': jsonEncode({
           'userId': 'owner',
           'token': 'token',
-          'expiryDate': DateTime.now()
-              .add(const Duration(hours: 1))
-              .toIso8601String(),
+          'expiryDate':
+              DateTime.now().add(const Duration(hours: 1)).toIso8601String(),
         }),
       });
       await CacheHelper.init();
@@ -216,11 +224,12 @@ void main() {
         ),
       );
       final opened = <Uri>[];
+      var completed = 0;
       final payment = SandboxPaymentController(
         repository: repository(),
         userId: 'owner',
         accessToken: 'token',
-        onCompleted: (_) {},
+        onCompleted: (_) => completed++,
         openUrl: (uri) async {
           opened.add(uri);
           return true;
@@ -236,6 +245,7 @@ void main() {
             ChangeNotifierProvider.value(value: payment),
           ],
           child: MaterialApp(
+            debugShowCheckedModeBanner: false,
             theme: AppTheme.light(),
             builder: (_, child) => SandboxPaymentHost(child: child!),
             home: Builder(
@@ -266,15 +276,21 @@ void main() {
       expect(opened, hasLength(1));
       expect(creates, 1);
       expect(database.writes, 0);
+      expect(completed, 0);
       expect(payment.attempt?.orderTotal, 180);
       status = 'Paid';
       await payment.check();
       await tester.pumpAndSettle();
-      expect(payment.completedOrderId, 'sandbox_myfatoorah_123', reason: payment.message);
+      expect(payment.completedOrderId, 'sandbox_myfatoorah_123',
+          reason: payment.message);
       expect(database.writes, 1);
+      expect(completed, 1);
+      expect(database.records.values.single['shippingAddress']['fullName'],
+          'Private name');
       expect(find.byType(CheckoutScreen), findsNothing);
       expect(creates, 1);
       expect(tester.takeException(), isNull);
+      await auth.logOut();
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
@@ -307,6 +323,7 @@ void main() {
           child: RepaintBoundary(
             key: const ValueKey('portfolio-capture'),
             child: MaterialApp(
+              debugShowCheckedModeBanner: false,
               theme: AppTheme.light(),
               builder: (context, child) => MediaQuery(
                 data: MediaQuery.of(context)
@@ -328,12 +345,14 @@ void main() {
       expect(database.writes, 0);
       expect(tester.takeException(), isNull);
       await capturePortfolio(tester, '06-sandbox-pending');
+      await tester.ensureVisible(find.text('Open test payment'));
       await tester.tap(find.text('Open test payment'));
       await tester.pumpAndSettle();
       expect(opened.length, 2);
       expect(opened.first, opened.last);
       expect(creates, 1);
       status = 'Paid';
+      await tester.ensureVisible(find.text('Check payment result'));
       await tester.tap(find.text('Check payment result'));
       await tester.pumpAndSettle();
       expect(completed, 1);
@@ -344,7 +363,9 @@ void main() {
     },
   );
 
-  test('one hosted attempt survives restart, account isolation, pending and offline; no order is created', () async {
+  test(
+      'one hosted attempt survives restart, account isolation, pending and offline; no order is created',
+      () async {
     final repo = repository();
     final attempts = await Future.wait([
       repo.begin(userId: 'owner', order: _order),
@@ -377,7 +398,9 @@ void main() {
     expect(creates, 1);
   });
 
-  test('paid save retries and repeated verification create one EGP demo order with a separate KWD receipt', () async {
+  test(
+      'paid save retries and repeated verification create one EGP demo order with a separate KWD receipt',
+      () async {
     final repo = repository();
     final attempt = await repo.begin(userId: 'owner', order: _order);
     status = 'Paid';
@@ -442,7 +465,9 @@ void main() {
     },
   );
 
-  test('invalid/live hosted URLs are rejected; cancelled invoice preserves order data and allows a new attempt', () async {
+  test(
+      'invalid/live hosted URLs are rejected; cancelled invoice preserves order data and allows a new attempt',
+      () async {
     checkoutUrl = 'https://portal.myfatoorah.com/PayInvoice';
     await expectLater(
       repository().begin(userId: 'owner', order: _order),
