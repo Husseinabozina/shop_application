@@ -4,6 +4,7 @@
   <p><strong>A warm, thoughtfully connected Flutter shopping experience.</strong></p>
   <p>Branded launch · Tactile onboarding · Firebase accounts · Sandbox checkout</p>
   <p>
+    <a href="https://husseinabozina.github.io/shop_application/"><strong>Open the live portfolio</strong></a> &nbsp; · &nbsp;
     <a href="#see-the-experience"><strong>Explore the screens ↓</strong></a> &nbsp; · &nbsp;
     <a href="docs/showcase/myshop-demo.mp4"><strong>Watch the app ↗</strong></a> &nbsp; · &nbsp;
     <a href="#run-locally"><strong>Run locally ↓</strong></a>
@@ -23,6 +24,8 @@ MyShop connects the whole shopping journey: a recognisable first launch, finding
 This is a **portfolio application** with sample catalog content and demo orders. Hosted card checkout runs in MyFatoorah Sandbox; it does not charge real money or arrange real deliveries.
 
 ## See the experience
+
+**[Explore the interactive app-screen gallery](https://husseinabozina.github.io/shop_application/#screens)** · **[Download the Android demo](https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk)**
 
 These are **actual iPhone 17 Pro simulator captures**, supplied by the project owner on October 5, 2026. Order-detail views are frames from the same recording. Screens are resized for the README; their application content is preserved.
 
@@ -147,12 +150,15 @@ This checkout contains all of its own application source and assets. It does **n
 
 ### Demo builds
 
+**[Download the Android ARM64 demo APK](https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk)** — version 1.0.1+2, published unchanged from a verified CI build. [Release notes and checksum](https://github.com/Husseinabozina/shop_application/releases/tag/showcase-latest).
+
 The latest successful [Flutter CI run](https://github.com/Husseinabozina/shop_application/actions/workflows/flutter_ci.yml) provides an Android ARM64 demo APK, an unsigned iOS release and automated UI captures. Artifacts expire after 30 days; the images in this README are committed and remain available. The iOS archive needs signing before installation on a physical iPhone. [Release handoff](docs/DEMO_RELEASE.md).
 
 ## Explore the project
 
 | Resource | What to inspect |
 |---|---|
+| [Live portfolio](https://husseinabozina.github.io/shop_application/) · [Website source and publishing](portfolio/README.md) | Interactive real-screen gallery, film and Android download |
 | [Architecture](docs/ARCHITECTURE.md) | Feature and repository boundaries |
 | [Development setup](docs/DEVELOPMENT_SETUP.md) | One complete checkout, iPhone startup and duplicate-folder clarity |
 | [Firebase schema](docs/FIREBASE_SCHEMA.md) | Stored data and ownership |
