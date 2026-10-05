@@ -6,11 +6,15 @@ favorites, a persistent account-scoped cart, saved addresses, Cash on Delivery,
 hosted MyFatoorah Sandbox card checkout, and private order history. Catalog, auth, cart, address book, checkout, orders,
 and payment capabilities have replaceable contracts.
 
-## Run on the existing Mac checkout
+## Run from the chosen checkout
+
+Open a complete checkout of `Husseinabozina/shop_application` and run from its
+root. The local folder name can be `myshop-continuation`; another
+`shop_application` folder is not required. See [development setup](DEVELOPMENT_SETUP.md)
+for branch selection and multiple-checkout guidance.
 
 ```bash
-cd "$HOME/Projects/shop_application"
-git pull --ff-only
+cd /path/to/your/myshop-checkout
 flutter pub get
 flutter run
 ```
@@ -71,10 +75,13 @@ is no second duplicate test suite. To reproduce them locally:
 
 ```bash
 python3 scripts/prepare_portfolio_images.py
-flutter test test/screens/storefront_journey_test.dart test/features/payments/sandbox_payment_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
+flutter test test/screens/startup_flow_test.dart test/screens/storefront_journey_test.dart test/features/payments/sandbox_payment_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
 ```
 
-Screenshot output is `build/portfolio-screenshots/`. An APK can be built locally:
+Screenshot output is `build/portfolio-screenshots/`, including splash, all three
+welcome pages, and order details/items. The separate [README showcase](showcase/README.md)
+uses the owner's real simulator captures and selected movie frames.
+An APK can be built locally:
 
 ```bash
 flutter build apk --release --target-platform android-arm64

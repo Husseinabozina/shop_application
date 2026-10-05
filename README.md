@@ -1,181 +1,166 @@
-# MyShop
+<div align="center">
+  <img src="assets/branding/myshop-icon.png" width="84" height="84" alt="MyShop shopping bag logo" />
+  <h1>MyShop — Good finds. Made yours.</h1>
+  <p><strong>A warm, thoughtfully connected Flutter shopping experience.</strong></p>
+  <p>Branded launch · Tactile onboarding · Firebase accounts · Sandbox checkout</p>
+  <p>
+    <a href="#see-the-experience"><strong>Explore the screens ↓</strong></a> &nbsp; · &nbsp;
+    <a href="docs/showcase/myshop-demo.mp4"><strong>Watch the app ↗</strong></a> &nbsp; · &nbsp;
+    <a href="#run-locally"><strong>Run locally ↓</strong></a>
+  </p>
+  <p>
+    <a href="https://github.com/Husseinabozina/shop_application/actions/workflows/flutter_ci.yml"><img src="https://github.com/Husseinabozina/shop_application/actions/workflows/flutter_ci.yml/badge.svg" alt="Flutter analysis, tests and native builds" /></a>
+    <a href="https://github.com/Husseinabozina/shop_application/actions/workflows/firebase_rules_test.yml"><img src="https://github.com/Husseinabozina/shop_application/actions/workflows/firebase_rules_test.yml/badge.svg" alt="Firebase ownership rules tests" /></a>
+    <img src="https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white" alt="Flutter mobile application" />
+    <img src="https://img.shields.io/badge/Payments-Sandbox_only-7A4A2D" alt="Sandbox payments only" />
+  </p>
+</div>
 
-<img src="assets/branding/myshop-icon.png" width="96" alt="MyShop logo" />
+<img src="docs/showcase/readme-cover.png" width="100%" alt="MyShop: warm terracotta identity, three-dimensional onboarding, storefront and order details shown in real app captures" />
 
-A compact Flutter e-commerce portfolio application built to look and behave like a small real storefront while keeping the codebase practical and reviewable.
+MyShop connects the whole shopping journey: a recognisable first launch, finding a favourite, building a basket, selecting delivery, completing a demo order, and returning to its details. A cream-and-terracotta identity ties the app icon, splash, onboarding and storefront together.
 
-## Highlights
+This is a **portfolio application** with sample catalog content and demo orders. Hosted card checkout runs in MyFatoorah Sandbox; it does not charge real money or arrange real deliveries.
 
-- Warm premium Material 3 storefront with system light/dark mode
-- Home / Categories / Cart / Orders / Account bottom navigation
-- Firebase Authentication with persistent sessions
-- Product catalog with categories, search, sorting, price/availability filters, stock availability, and swipeable product galleries
-- Search and per-user favorites
-- User-scoped seller product management
-- Persistent account-scoped cart with quantity controls and availability preflight before checkout
-- Full checkout flow
-- Saved delivery address book with default address
-- Standard / Express shipping with delivery estimates
-- Free-shipping threshold
-- Promo codes
-- Provider-agnostic PaymentGateway architecture
-- Cash on Delivery
-- Custom MyShop branding and launcher icons for Android, iOS, desktop and web
-- MyFatoorah V2 hosted Sandbox checkout: fixed 1 KWD test, independent EGP cart totals, saved-attempt recovery, and duplicate-order protection
-- Per-user order history and visual delivery tracking
-- Firebase Realtime Database with versioned ownership rules
-- Feature-first auth, catalog, cart, checkout, address-book, and orders architecture
-- Immutable catalog products and account-scoped favorite state
-- Repository and data-source boundaries
-- Centralized Firebase REST client and backend environment configuration
-- Redacted debug networking logs
-- Catalog contract, state-concurrency, and full shopping-journey tests
-- Focused checkout, address, and order-domain tests
+## See the experience
 
-## Architecture
+These are **actual iPhone 17 Pro simulator captures**, supplied by the project owner on October 5, 2026. Order-detail views are frames from the same recording. Screens are resized for the README; their application content is preserved.
 
-The app is being migrated incrementally from its original learning-project structure into a feature-first layered architecture.
+### A considered first impression
 
-New commerce flows follow this direction:
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/showcase/screens/splash.png"><img src="docs/showcase/screens/splash.png" width="175" alt="MyShop branded splash with the shopping bag mark on cream" /></a><br/><strong>One clear identity</strong><br/><sub>Branded iPhone launch and splash</sub></td>
+    <td align="center" width="25%"><a href="docs/showcase/screens/onboarding-discover.png"><img src="docs/showcase/screens/onboarding-discover.png" width="175" alt="Discover onboarding with a terracotta tote, headphones and a sage cup" /></a><br/><strong>Find your favourite</strong><br/><sub>Discovery and saving</sub></td>
+    <td align="center" width="25%"><a href="docs/showcase/screens/onboarding-basket.png"><img src="docs/showcase/screens/onboarding-basket.png" width="175" alt="Basket onboarding with a sculptural basket and checkout illustration" /></a><br/><strong>Make it yours</strong><br/><sub>Basket and checkout</sub></td>
+    <td align="center" width="25%"><a href="docs/showcase/screens/onboarding-orders.png"><img src="docs/showcase/screens/onboarding-orders.png" width="175" alt="Orders onboarding with wrapped parcels and a location pin" /></a><br/><strong>Keep it close</strong><br/><sub>Purchases in one place</sub></td>
+  </tr>
+</table>
 
-```text
-Presentation
-    |
-    v
-Domain entities + repository contracts
-    ^
-    |
-Data implementations
-    |
-    +--> Firebase today
-    +--> REST / custom backend tomorrow
-    +--> payment gateway adapter
-    +--> shipping provider adapter
+The three welcome pages support swipe, Continue, Back and Skip. Completion is remembered on the installation. Finite entrance motion, swipe parallax and haptic feedback add personality; reduced-motion settings and larger text remain supported.
+
+### From discovery to the details
+
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="docs/showcase/screens/home.png"><img src="docs/showcase/screens/home.png" width="230" alt="MyShop Home with the delivery offer, search, categories and sample products" /></a><br/><strong>Discover something good</strong><br/><sub>Home, search and category discovery</sub></td>
+    <td align="center" width="33%"><a href="docs/showcase/screens/product.png"><img src="docs/showcase/screens/product.png" width="230" alt="Weekend backpack product details with stock, price and Add to cart" /></a><br/><strong>Look a little closer</strong><br/><sub>Product imagery, stock and saved items</sub></td>
+    <td align="center" width="33%"><a href="docs/showcase/screens/order-details.png"><img src="docs/showcase/screens/order-details.png" width="230" alt="Order details showing a placed order, estimated delivery and status timeline" /></a><br/><strong>Follow the order</strong><br/><sub>Order details and delivery timeline</sub></td>
+  </tr>
+</table>
+
+<details>
+  <summary><strong>Explore the basket, checkout and complete order summary</strong></summary>
+  <br/>
+  <table>
+    <tr>
+      <td align="center" width="33%"><a href="docs/showcase/screens/cart.png"><img src="docs/showcase/screens/cart.png" width="230" alt="Basket with quantity controls and an EGP subtotal" /></a><br/><strong>A basket that stays yours</strong></td>
+      <td align="center" width="33%"><a href="docs/showcase/screens/checkout.png"><img src="docs/showcase/screens/checkout.png" width="230" alt="Checkout with a sample delivery address, shipping choices and payment options" /></a><br/><strong>Choose the next step</strong></td>
+      <td align="center" width="33%"><a href="docs/showcase/screens/order-summary.png"><img src="docs/showcase/screens/order-summary.png" width="230" alt="Order summary with delivery, payment, purchased items and final total" /></a><br/><strong>Every detail together</strong></td>
+    </tr>
+  </table>
+</details>
+
+## Watch it in motion
+
+<div align="center">
+  <a href="docs/showcase/myshop-demo.mp4"><img src="docs/showcase/preview.gif" width="280" alt="Recorded MyShop launch, onboarding and storefront in motion" /></a>
+  <p><strong><a href="docs/showcase/myshop-demo.mp4">Watch or download the 29-second walkthrough ↗</a></strong></p>
+</div>
+
+A selected cut of the running Flutter app: launch, onboarding, browsing, product details, the basket and order details. The public cut excludes sign-in and address-entry forms. [Capture sources and reproduction](docs/showcase/README.md).
+
+## What the product does
+
+| Journey | Implemented experience |
+|---|---|
+| Begin | Custom launcher icon, branded iPhone splash, three first-use welcome pages and saved completion |
+| Discover | Categories, search, sorting, price and availability filters, swipeable product galleries and stock states |
+| Save | Account-scoped favourites and recently viewed products |
+| Build a basket | Persistent per-account cart, quantity limits, removal and stock preflight before checkout |
+| Check out | Saved/default addresses, Standard or Express shipping, delivery estimates, promotions and EGP totals |
+| Pay in a sandbox | Cash on Delivery demo orders or hosted MyFatoorah test checkout, verified results and saved-attempt recovery |
+| Return to an order | Private history, status filters, refresh, purchased items, delivery/payment details and a status timeline |
+| Manage a catalog | User-owned product creation/editing and an optional eight-item sample collection |
+
+## Engineering worth inspecting
+
+```mermaid
+flowchart LR
+    UI["Flutter screens / Provider controllers"] --> Domain["Domain entities / repository contracts"]
+    Data["Repository implementations"] --> Domain
+    Data --> Firebase["Firebase Auth / Realtime Database REST"]
+    Data --> Local["SharedPreferences / account cart"]
+    Checkout["Checkout coordinator"] --> Payment["Payment gateway contract"]
+    Payment --> Sandbox["MyFatoorah hosted Sandbox"]
 ```
 
-Firebase is an implementation detail, not the UI architecture.
+The app is being migrated incrementally from its original learning-project structure into feature-first layers. New commerce features separate presentation, domain contracts and data implementations; the composition layer chooses the concrete repositories.
 
-Read the full architecture notes in:
+| Decision | Why it matters | Evidence |
+|---|---|---|
+| Account-scoped storage | Signing into another account must not carry over a previous customer's basket or private state | [Cart repository](lib/features/cart/data/repositories/local_cart_repository.dart) · [Shopping journey checks](test/screens/storefront_journey_test.dart) |
+| Verified payment results | Returning from a browser alone does not prove payment | [Sandbox integration](docs/sandbox-payments.md) |
+| Duplicate-order protection | Rechecking or retrying one invoice must not create another order | [Payment tests](test/features/payments/sandbox_payment_test.dart) |
+| Enforced ownership | Firebase rules protect private customer data and user-owned catalog writes | [Database rules](database.rules.json) · [Emulator verification](security-tests/README.md) |
+| Accessible first use | Navigation, remembered completion, storage retry, larger text and reduced motion are covered | [Startup flow checks](test/screens/startup_flow_test.dart) |
+| Complete order review | The shopping journey continues into delivery, payment and purchased-item details, including a compact layout | [Order detail screen](lib/features/orders/presentation/screens/order_details_screen.dart) |
 
-- `docs/ARCHITECTURE.md`
-- `docs/COMMERCE_ROADMAP.md`
-- `docs/FIREBASE_SCHEMA.md`
-- `docs/ENVIRONMENT.md`
-- `docs/DESIGN_SYSTEM.md`
+**Quality:** [Flutter CI](https://github.com/Husseinabozina/shop_application/actions/workflows/flutter_ci.yml) runs analysis/tests, iOS simulator and unsigned release builds, and an Android demo build. [Firebase CI](https://github.com/Husseinabozina/shop_application/actions/workflows/firebase_rules_test.yml) verifies ownership rules in the emulator. Workflow results are the current source of truth; no frozen test-count badge is used.
 
-## Checkout flow
+## The visual language
 
-1. Review cart
-2. Continue to checkout
-3. Add or edit delivery address
-4. Select Standard or Express delivery
-5. Select an available payment method
-6. Apply an optional promo code
-7. Review subtotal, shipping, discount, and final total
-8. Place the order
-9. Store the order under the authenticated customer
-10. Review it later from Orders
+| Cream | Cocoa | Terracotta | Motion |
+|---|---|---|---|
+| `#FCF9F5` | `#7A4A2D` | Shopping bag identity | Finite reveals, gentle swipe depth and reduced-motion support |
 
-Card checkout uses the public MyFatoorah Sandbox token and hosted test payment, then verifies a matching Paid invoice before saving one demo order. See [sandbox setup and test card](docs/sandbox-payments.md). Wallets remain unavailable in this demo.
+Material 3 surfaces, bundled Lato typography, rounded cards and a restrained action colour keep the storefront consistent. The onboarding artwork was generated specifically for MyShop and ships locally with the app. [Design system](docs/DESIGN_SYSTEM.md) · [Artwork prompts and files](docs/onboarding-art.md).
 
-## Current commerce scope
+## Demo scope
 
-### Implemented
-- authentication
-- storefront
-- search
-- favorites
-- product details + multi-image gallery
-- cart
-- checkout
-- saved addresses + default address
-- shipping selection
-- delivery estimates
-- discounts / promo code flow
-- Cash on Delivery
-- order creation
-- order history
-- order status filters
-- order details + tracking timeline
-- user-scoped live order refresh
-- category discovery + sorting
-- per-user recently viewed products
-- price range + in-stock filters
-- optional stock tracking with sold-out/low-stock states and cart caps
-- seller/catalog state separation
-- modern Account hub and bottom navigation
-
-### Planned next
-- real card payment gateway adapter + secure server endpoint
-- backend/admin-driven order status updates
-- verify authenticated Flutter flows against the deployed Firebase rules
-- additional attribute filters as product metadata grows
-- product variants
-- ratings and reviews
-- push notifications for order updates
-
-## Tech stack
-
-- Flutter / Dart
-- Provider
-- GetIt
-- Firebase Authentication REST API
-- Firebase Realtime Database
-- SharedPreferences
-- HTTP
-- Freezed API result model
-
-## Demo files and device handoff
-
-See [DEMO_RELEASE.md](docs/DEMO_RELEASE.md) for the installable Android demo APK,
-unsigned iOS release, portfolio screenshots, and the short live-device check.
-These are produced by Flutter CI in GitHub Actions.
+- **Card payments:** a fixed **virtual 1 KWD** MyFatoorah invoice is separate from the EGP basket. MyShop verifies identity, reference, amount, currency and Paid status before storing one demo order. Confirmation requires the app to be open or a manual recheck; there is no server payment webhook.
+- **Delivery:** dates and the status timeline are demo presentation. Later order status changes require a trusted backend/admin. They are not courier tracking.
+- **Inventory:** checkout checks availability, but the server does not reserve or decrement stock atomically.
+- **Data:** Firebase-backed accounts, addresses and orders are implemented. Sample names, photos and prices are illustrative. Digital wallets, variants, reviews and order push notifications are not implemented.
 
 ## Run locally
 
-Use a recent Flutter SDK compatible with Dart 3.5+.
+Use a Flutter SDK compatible with Dart 3.5+. The current app was checked locally with **Flutter 3.38.5**; CI installs stable Flutter. iPhone builds require macOS/Xcode, and physical devices require Apple signing.
 
-```bash
+```sh
+git clone --branch feat/myfatoorah-sandbox-branding https://github.com/Husseinabozina/shop_application.git
+cd shop_application
 flutter pub get
-flutter analyze
-flutter test
 flutter run
 ```
 
-Realtime Database rules were deployed on 2026-09-30, and live unauthenticated
-read/write checks passed. Authenticated ownership regression tests run against
-the local Firebase emulator; see `security-tests/README.md` for the commands and
-scope. A live authenticated Flutter flow still needs verification.
+The showcase is on the development branch in [PR #18](https://github.com/Husseinabozina/shop_application/pull/18). Use the branch above until it is merged into `master`.
 
-## Design principle
+Sign in or create a test account. If Home is empty, choose **Explore sample collection → Add sample collection**. Setup adds missing sample listings without replacing existing products. The same action is available from **Account → Manage products → Sample collection**.
 
-The project is intentionally not an enterprise commerce platform.
+```sh
+flutter analyze --no-fatal-infos
+flutter test
+```
 
-The goal is to demonstrate:
-- strong UI quality
-- realistic commerce flows
-- maintainable architecture
-- backend replaceability
-- clear dependency boundaries
-- honest payment behavior
-- enough testability to support future growth
+This checkout contains all of its own application source and assets. It does **not** depend on another local `shop_application` folder; the Dart package name and the folder name do not need to match. See [setup and multiple-checkout guidance](docs/DEVELOPMENT_SETUP.md).
 
-without adding infrastructure only for the sake of complexity.
+### Demo builds
 
-## Try the sample storefront
+The latest successful [Flutter CI run](https://github.com/Husseinabozina/shop_application/actions/workflows/flutter_ci.yml) provides an Android ARM64 demo APK, an unsigned iOS release and automated UI captures. Artifacts expire after 30 days; the images in this README are committed and remain available. The iOS archive needs signing before installation on a physical iPhone. [Release handoff](docs/DEMO_RELEASE.md).
 
-After signing in, an empty Home screen offers **Explore sample collection**.
-Open it and tap **Add sample collection** to save eight demo listings in the
-configured database under the current account. This action is also available
-from the sparkle button in Account → Manage products.
+## Explore the project
 
-The collection covers Home, Accessories, Footwear, and Audio, including low-stock
-and sold-out examples. Product photos are remote Unsplash images; prices and
-listings are demonstration data. Setup uses stable product IDs and conditional
-creates, so retrying adds missing items without replacing existing products,
-stock, edits, or ownership. No administrator credentials or custom server are
-required, and no data is inserted automatically on app launch.
+| Resource | What to inspect |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Feature and repository boundaries |
+| [Development setup](docs/DEVELOPMENT_SETUP.md) | One complete checkout, iPhone startup and duplicate-folder clarity |
+| [Firebase schema](docs/FIREBASE_SCHEMA.md) | Stored data and ownership |
+| [Environment](docs/ENVIRONMENT.md) | Backend overrides and redacted HTTP logging |
+| [Sandbox payments](docs/sandbox-payments.md) | Test card, recovery and verification |
+| [Showcase media](docs/showcase/README.md) | Original capture mapping, video selection and reproducible cover |
+| [Commerce roadmap](docs/COMMERCE_ROADMAP.md) | Implemented work and remaining product scope |
 
-To try the customer journey, browse a product, save it, add it to the cart, choose
-a delivery address, and place a Cash on Delivery order. The order should appear
-in Orders. MyFatoorah Sandbox card checkout is available with the public documentation token; only a verified test invoice creates a demo order.
+**Hussein Abozina** · [GitHub](https://github.com/Husseinabozina) · [NOVA Fashion](https://github.com/Husseinabozina/fashion_e_commerce) · [Brees](https://github.com/Husseinabozina/Brees-Mobile-App) · [HealthTrack](https://github.com/Husseinabozina/medical_app)
+
+Product photos and third-party marks appear as sample catalog content; no brand affiliation is implied.

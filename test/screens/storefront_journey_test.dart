@@ -15,6 +15,7 @@ import 'package:shop_application/features/catalog/domain/entities/sample_product
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/widgets/product_item.dart';
 import 'package:shop_application/screens/product_detailed_screen.dart';
+import 'package:shop_application/features/orders/presentation/screens/order_details_screen.dart';
 
 import '../support/memory_shop_api.dart';
 import '../support/portfolio_capture.dart';
@@ -32,9 +33,8 @@ void main() {
       'UserData': jsonEncode({
         'token': 'test-token',
         'userId': 'owner',
-        'expiryDate': DateTime.now()
-            .add(const Duration(hours: 1))
-            .toIso8601String(),
+        'expiryDate':
+            DateTime.now().add(const Duration(hours: 1)).toIso8601String(),
       }),
     });
     await CacheHelper.init();
@@ -174,9 +174,8 @@ void main() {
         expect(api.placedOrder?['status'], 'placed');
         expect(api.placedOrder?['amount'], 180);
         expect(api.placedOrder?['paymentStatus'], 'cash_on_delivery');
-        final cart = tester
-            .element(find.text('Order placed'))
-            .read<CartController>();
+        final cart =
+            tester.element(find.text('Order placed')).read<CartController>();
         expect(cart.items, isEmpty);
         await cart.flush();
         expect(LocalCartRepository().load('owner'), isEmpty);
@@ -185,6 +184,25 @@ void main() {
         expect(find.text('Your orders'), findsOneWidget);
         expect(find.text('Order #MO-ORDER'), findsWidgets);
         if (size.$1 == 390) await capturePortfolio(tester, '05-orders');
+        await tapText(tester, 'Track order');
+        expect(find.byType(OrderDetailsScreen), findsOneWidget);
+        expect(find.text('Order details'), findsOneWidget);
+        if (size.$1 == 390) await capturePortfolio(tester, '12-order-details');
+        await tester.scrollUntilVisible(
+          find.text('Delivery address'),
+          240,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 20,
+        );
+        expect(find.text('Demo Shopper'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('Items'),
+          240,
+          scrollable: find.byType(Scrollable).first,
+          maxScrolls: 20,
+        );
+        expect(find.text('Studio stool'), findsOneWidget);
+        if (size.$1 == 390) await capturePortfolio(tester, '13-order-items');
         expect(tester.takeException(), isNull);
         await getIt<AuthController>().logOut();
         await tester.pumpWidget(const SizedBox.shrink());
@@ -266,9 +284,8 @@ void main() {
         scrollable: find.byType(Scrollable).first,
         maxScrolls: 30,
       );
-      final openProduct = find
-          .descendant(of: card, matching: find.byType(InkWell))
-          .first;
+      final openProduct =
+          find.descendant(of: card, matching: find.byType(InkWell)).first;
       await tester.ensureVisible(openProduct);
       await tester.pumpAndSettle();
       await tester.tap(openProduct);
@@ -370,9 +387,8 @@ void main() {
         scrollable: find.byType(Scrollable).first,
         maxScrolls: 30,
       );
-      final openProduct = find
-          .descendant(of: card, matching: find.byType(InkWell))
-          .first;
+      final openProduct =
+          find.descendant(of: card, matching: find.byType(InkWell)).first;
       await tester.ensureVisible(openProduct);
       await tester.pumpAndSettle();
       await tester.tap(openProduct);
