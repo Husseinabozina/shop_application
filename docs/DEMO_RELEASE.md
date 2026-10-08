@@ -3,13 +3,18 @@
 MyShop is a Flutter commerce portfolio project backed by Firebase Authentication
 and Realtime Database. The customer journey includes product discovery,
 favorites, a persistent account-scoped cart, saved addresses, Cash on Delivery,
-and private order history. Catalog, auth, cart, address book, checkout, orders,
+hosted MyFatoorah Sandbox card checkout, and private order history. Catalog, auth, cart, address book, checkout, orders,
 and payment capabilities have replaceable contracts.
 
-## Run on the existing Mac checkout
+## Run from the chosen checkout
+
+Open a complete checkout of `Husseinabozina/shop_application` and run from its
+root. The local folder name can be `myshop-continuation`; another
+`shop_application` folder is not required. See [development setup](DEVELOPMENT_SETUP.md)
+for branch selection and multiple-checkout guidance.
 
 ```bash
-cd "$HOME/Projects/shop_application"
+cd /path/to/your/myshop-checkout
 flutter pub get
 flutter run
 ```
@@ -18,6 +23,19 @@ Sign in, then choose **Explore sample collection → Add sample collection** if
 Home is empty. Setup adds eight demo listings without overwriting existing ones.
 On a populated storefront, setup is available in **Account → Manage products →
 Sample collection**. Listings are shared; only their creator can manage them.
+
+## Startup and first use
+
+iOS launches with the MyShop bag mark on cream, followed by the matching Flutter
+splash for at least 1.2 seconds while restoring the session. First use shows
+three welcome pages: discovery, basket/checkout, and order history. Continue,
+swipe, or Skip; Get started and Skip both persist completion on this installation.
+Later launches show the splash and then sign-in or the existing account's Home.
+Signing out preserves the welcome preference. Storage failures keep the welcome
+screen available for retry.
+
+Use a full rebuild/relaunch for native icon and launch-screen changes; hot reload
+only refreshes Flutter content. The release version is now `1.0.1+2`.
 
 ## Short live-device check
 
@@ -30,6 +48,9 @@ Use a test account and a test delivery address:
 4. Sign out and into another account: the first account's cart, favorites,
    addresses, and orders should not appear.
 5. Check keyboard forms, empty/error screens, and larger text on the device.
+6. Follow [the Sandbox walkthrough](sandbox-payments.md) for the fixed 1 KWD
+   hosted card test, manual recheck, and restart recovery. Its amount is separate
+   from the EGP basket. Verify the saved demo order appears only after Paid.
 
 This creates a real test order in the configured Firebase project. Customer
 orders cannot be deleted under the current ownership rules. CI uses fake HTTP
@@ -44,7 +65,7 @@ Open the latest **Flutter CI** run in GitHub Actions. It produces:
 - **myshop-ios-unsigned-release**: a release-mode `Runner.app` for iOS, without
   signing. Device installation/distribution needs your Apple signing setup.
 - **myshop-portfolio-screenshots**: actual Flutter-rendered Home, product, cart,
-  checkout, and order-history captures with sample photos and fake test data.
+  checkout, order history, and Sandbox recovery captures with sample photos and fake test data.
   These are UI captures, not evidence of live orders or device verification.
 
 Artifacts are retained for 30 days. Download them when preparing the portfolio.
@@ -54,10 +75,13 @@ is no second duplicate test suite. To reproduce them locally:
 
 ```bash
 python3 scripts/prepare_portfolio_images.py
-flutter test test/screens/storefront_journey_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
+flutter test test/screens/startup_flow_test.dart test/screens/storefront_journey_test.dart test/features/payments/sandbox_payment_test.dart --dart-define=EXPORT_PORTFOLIO_SHOTS=true
 ```
 
-Screenshot output is `build/portfolio-screenshots/`. An APK can be built locally:
+Screenshot output is `build/portfolio-screenshots/`, including splash, all three
+welcome pages, and order details/items. The separate [README showcase](showcase/README.md)
+uses the owner's real simulator captures and selected movie frames.
+An APK can be built locally:
 
 ```bash
 flutter build apk --release --target-platform android-arm64
@@ -69,7 +93,7 @@ levels follow the installed Flutter SDK.
 
 ## Current scope
 
-Online card/wallet payments remain disabled. Post-creation order updates need a
+Hosted MyFatoorah card tests are enabled by default; wallets are unavailable. Post-creation order updates need a
 trusted admin/backend flow. Inventory is checked before checkout but is not
 reserved/decremented by a server transaction. Ratings, variants, and push
 notifications are future work; they are not needed to run the current demo.
@@ -79,7 +103,7 @@ notifications are future work; they are not needed to run the current demo.
 **MyShop — Flutter commerce application**
 
 Built an end-to-end storefront with account-scoped favorites, persistent cart,
-saved delivery addresses, shipping options, Cash on Delivery checkout, and
+saved delivery addresses, shipping options, Cash on Delivery and hosted Sandbox checkout, and
 order history. Refactored the app into feature-first layers with pure domain
 entities and replaceable repositories, while keeping Firebase-specific REST
 mapping in the data layer. Added ownership rules, focused regression checks,

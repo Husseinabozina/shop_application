@@ -1,0 +1,65 @@
+name: MyShop Portfolio
+
+on:
+  push:
+    branches: [master, feat/myfatoorah-sandbox-branding]
+    paths:
+      - 'portfolio/**'
+      - 'scripts/build_portfolio_site.py'
+      - 'docs/showcase/screens/**'
+      - 'docs/showcase/myshop-demo.mp4'
+      - 'assets/branding/**'
+      - 'assets/fonts/Lato-*.ttf'
+      - 'assets/onboarding/orders.png'
+      - '.github/workflows/portfolio_pages.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'portfolio/**'
+      - 'scripts/build_portfolio_site.py'
+      - 'docs/showcase/**'
+      - '.github/workflows/portfolio_pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: myshop-portfolio-${{ github.event_name == 'pull_request' && github.ref || 'live' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check gallery script
+        run: node --check portfolio/showcase.js
+      - name: Package and validate public files
+        run: python scripts/build_portfolio_site.py
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/portfolio-site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish MyShop portfolio
+        id: deployment
+        uses: actions/deploy-pages@v4

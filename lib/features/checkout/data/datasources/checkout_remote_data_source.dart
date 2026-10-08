@@ -14,9 +14,7 @@ abstract class CheckoutRemoteDataSource {
 class FirebaseCheckoutRemoteDataSource implements CheckoutRemoteDataSource {
   final FirebaseRestClient database;
 
-  FirebaseCheckoutRemoteDataSource({
-    required this.database,
-  });
+  FirebaseCheckoutRemoteDataSource({required this.database});
 
   @override
   Future<CheckoutResult> placeOrder({
@@ -31,9 +29,7 @@ class FirebaseCheckoutRemoteDataSource implements CheckoutRemoteDataSource {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(
-        'Checkout failed with status ${response.statusCode}.',
-      );
+      throw Exception('Checkout failed with status ${response.statusCode}.');
     }
 
     final decoded = json.decode(response.body) as Map<String, dynamic>;

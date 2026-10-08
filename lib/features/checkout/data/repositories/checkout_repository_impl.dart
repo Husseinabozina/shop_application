@@ -18,10 +18,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
     required CheckoutAddress address,
     required List<CheckoutLineItem> items,
   }) async {
-    final subtotal = items.fold<double>(
-      0,
-      (total, item) => total + item.total,
-    );
+    final subtotal = items.fold<double>(0, (total, item) => total + item.total);
 
     final standardPrice = subtotal >= 500 ? 0.0 : 25.0;
 
@@ -67,9 +64,9 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
       PaymentMethodOption(
         id: 'card',
         type: PaymentMethodType.card,
-        title: 'Card payment',
+        title: 'Card payment • Sandbox',
         description: supportsCard
-            ? 'Secure card payment via ${paymentGateway.providerName}'
+            ? '${paymentGateway.providerName}: fixed 1 KWD test, separate from the EGP order total. No real charge.'
             : 'Secure gateway connection required',
         isEnabled: supportsCard,
       ),
@@ -79,7 +76,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
         title: 'Digital wallet',
         description: supportsWallet
             ? 'Wallet payment via ${paymentGateway.providerName}'
-            : 'Wallet gateway connection required',
+            : 'Not available in this demo',
         isEnabled: supportsWallet,
       ),
     ];
@@ -120,6 +117,9 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
     required String userId,
     required String accessToken,
   }) {
+    if (order.paymentMethod.type != PaymentMethodType.cashOnDelivery) {
+      throw Exception('Card checkout requires a verified sandbox payment.');
+    }
     return remoteDataSource.placeOrder(
       order: order,
       userId: userId,

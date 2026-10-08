@@ -1,4 +1,1 @@
-enum PaymentCapability {
-  card,
-  wallet,
-}
+enum PaymentCapability { card, wallet }

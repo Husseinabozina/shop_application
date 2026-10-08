@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/cart/presentation/controllers/cart_controller.dart';
@@ -46,8 +47,11 @@ class CartScreen extends StatelessWidget {
           if (cart.persistenceError != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Text(cart.persistenceError!, textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(
+                cart.persistenceError!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           if (entries.isNotEmpty) _CheckoutBar(total: cart.totalPrice),
           const StoreBottomNavigation(selectedIndex: 2),
@@ -101,7 +105,7 @@ class _CheckoutBarState extends State<_CheckoutBar> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '\$${_formatPrice(widget.total)}',
+                  '${Money.format(widget.total)}',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -252,13 +256,6 @@ class _CheckoutBarState extends State<_CheckoutBar> {
         );
       },
     );
-  }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
   }
 }
 

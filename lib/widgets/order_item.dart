@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shop_application/features/orders/domain/entities/order.dart';
@@ -113,7 +114,7 @@ class OrderItem extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '\$${_formatPrice(currentOrder.amount ?? 0)}',
+                        '${Money.format(currentOrder.amount ?? 0, currency: currentOrder.currency)}',
                         textAlign: TextAlign.end,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w900,
@@ -181,13 +182,6 @@ class OrderItem extends StatelessWidget {
 
     final suffix = id.length <= 8 ? id : id.substring(id.length - 8);
     return 'Order #${suffix.toUpperCase()}';
-  }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
   }
 }
 

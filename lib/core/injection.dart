@@ -30,7 +30,11 @@ import 'package:shop_application/features/checkout/presentation/controllers/chec
 import 'package:shop_application/features/orders/data/datasources/order_remote_data_source.dart';
 import 'package:shop_application/features/orders/data/repositories/order_repository_impl.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
-import 'package:shop_application/features/payments/data/gateways/unconfigured_payment_gateway.dart';
+import 'package:shop_application/features/payments/data/gateways/myfatoorah_sandbox_gateway.dart';
+import 'package:shop_application/features/payments/data/datasources/sandbox_payment_store.dart';
+import 'package:shop_application/features/payments/data/repositories/sandbox_checkout_repository_impl.dart';
+import 'package:shop_application/features/payments/domain/gateways/sandbox_payment_gateway.dart';
+import 'package:shop_application/features/payments/domain/repositories/sandbox_checkout_repository.dart';
 import 'package:shop_application/features/payments/domain/gateways/payment_gateway.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -45,11 +49,16 @@ void setup() {
     () => FirebaseRestClientImpl(api: getIt<Api>()),
   );
 
-  getIt.registerLazySingleton<AuthRemoteDataSource>(() => FirebaseAuthRemoteDataSource(getIt<Api>()));
+  getIt.registerLazySingleton<AuthRemoteDataSource>(
+    () => FirebaseAuthRemoteDataSource(getIt<Api>()),
+  );
   getIt.registerLazySingleton<SessionStore>(() => LocalSessionStore());
   getIt.registerLazySingleton<CartRepository>(() => LocalCartRepository());
   getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(remote: getIt<AuthRemoteDataSource>(), sessionStore: getIt<SessionStore>()),
+    () => AuthRepositoryImpl(
+      remote: getIt<AuthRemoteDataSource>(),
+      sessionStore: getIt<SessionStore>(),
+    ),
   );
   getIt.registerLazySingleton<AuthController>(
     () => AuthController(repository: getIt<AuthRepository>()),
@@ -57,7 +66,8 @@ void setup() {
   );
 
   getIt.registerLazySingleton<ProductRemoteDataSource>(
-    () => FirebaseProductRemoteDataSource(database: getIt<FirebaseRestClient>()),
+    () =>
+        FirebaseProductRemoteDataSource(database: getIt<FirebaseRestClient>()),
   );
   getIt.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(getIt<ProductRemoteDataSource>()),
@@ -101,8 +111,19 @@ void setup() {
     () => AddressBookController(repository: getIt<AddressBookRepository>()),
   );
 
+  getIt.registerLazySingleton<SandboxPaymentGateway>(
+    () => MyFatoorahSandboxGateway(),
+    dispose: (gateway) => (gateway as MyFatoorahSandboxGateway).close(),
+  );
   getIt.registerLazySingleton<PaymentGateway>(
-    () => const UnconfiguredPaymentGateway(),
+    () => getIt<SandboxPaymentGateway>(),
+  );
+  getIt.registerLazySingleton<SandboxCheckoutRepository>(
+    () => SandboxCheckoutRepositoryImpl(
+      gateway: getIt<SandboxPaymentGateway>(),
+      store: SandboxPaymentStore(),
+      database: getIt<FirebaseRestClient>(),
+    ),
   );
 
   getIt.registerLazySingleton<CheckoutRemoteDataSource>(

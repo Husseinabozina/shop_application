@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 const exportPortfolio = bool.fromEnvironment('EXPORT_PORTFOLIO_SHOTS');
 
 Future<void> preparePortfolioCapture() async {
-  if (!exportPortfolio) return;
   final fonts = FontLoader('Lato')
     ..addFont(rootBundle.load('assets/fonts/Lato-Regular.ttf'))
     ..addFont(rootBundle.load('assets/fonts/Lato-Bold.ttf'));
@@ -60,6 +59,10 @@ class _ImageRequest implements HttpClientRequest {
   @override
   Future<HttpClientResponse> close() async {
     final file = File('build/portfolio-images/${url.pathSegments.last}.jpg');
+    // Ordinary widget tests stay offline without requiring screenshot setup.
+    if (!exportPortfolio && !file.existsSync()) {
+      return _ImageResponse(File('assets/branding/myshop-icon.png').readAsBytesSync(), true);
+    }
     return _ImageResponse(file.existsSync() ? file.readAsBytesSync() : [], file.existsSync());
   }
   @override

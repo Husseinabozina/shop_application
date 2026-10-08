@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_application/widgets/brand_mark.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
 import 'package:shop_application/features/catalog/domain/entities/catalog_filter.dart';
@@ -54,7 +55,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MyShop'),
+        title: const Row(
+          children: [BrandMark(size: 32), SizedBox(width: 10), Text('MyShop')],
+        ),
         automaticallyImplyLeading: false,
       ),
       bottomNavigationBar: const StoreBottomNavigation(selectedIndex: 0),
@@ -99,9 +102,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                   ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pushNamed(SampleCatalogScreen.routeName),
+                    onPressed: () =>
+                        Navigator.of(context)
+                            .pushNamed(SampleCatalogScreen.routeName),
                     icon: const Icon(Icons.auto_awesome_outlined),
                     label: const Text('Explore sample collection'),
                   ),
@@ -234,7 +237,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   }
 
   int _visibleCount(CatalogController provider) {
-    final source = _favoritesOnly ? provider.favoriteProducts : provider.products;
+    final source = _favoritesOnly
+        ? provider.favoriteProducts
+        : provider.products;
     final normalizedQuery = _query.trim().toLowerCase();
     final selectedCategory = _category?.trim().toLowerCase();
 
@@ -324,7 +329,7 @@ class _StorefrontHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Spend \$500 or more and standard delivery is on us.',
+                  'Spend 500 EGP or more and standard delivery is on us.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: scheme.onPrimary.withValues(alpha: 0.86),
                     height: 1.35,

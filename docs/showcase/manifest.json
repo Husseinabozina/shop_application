@@ -1,0 +1,77 @@
+{
+  "captured_on": "2026-10-05",
+  "device": "iPhone 17 Pro simulator",
+  "recording": "Simulator Screen Recording - iPhone 17 Pro - 2026-10-05 at 04.22.54.mov",
+  "recording_sha256": "7cf99ecfd99f7d2c9dc52dd3db32a2985798c9ed1ee6f294e9618e41dd0d1240",
+  "public_video_cuts_seconds": [
+    [
+      0.8,
+      7.0
+    ],
+    [
+      19.3,
+      39.4
+    ],
+    [
+      54.1,
+      57.0
+    ]
+  ],
+  "assets": [
+    {
+      "asset": "screens/splash.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.17.15.png",
+      "sha256": "8d11de00d9595f67f5607784807ec4591a9ca551227c09352dff9dc6039ae576"
+    },
+    {
+      "asset": "screens/onboarding-discover.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.17.21.png",
+      "sha256": "687f4b9051ac17306d9679b38cbca2dc601f0043ba2254163434beba59bc50f8"
+    },
+    {
+      "asset": "screens/onboarding-basket.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.17.24.png",
+      "sha256": "e91a76d6ab4a26bb675a6d77eb7b0ab78af651b54e88269fe9345491acdcfcda"
+    },
+    {
+      "asset": "screens/onboarding-orders.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.17.30.png",
+      "sha256": "8b95eeb56fd45e4aa32dcc989f38632251355249b0d68eded0faeabe3e939f59"
+    },
+    {
+      "asset": "screens/home.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.18.18.png",
+      "sha256": "c8db7c7d591a73ccb1f4d8a20b1a2c37ba900618f7d2df4600127deafbb79166"
+    },
+    {
+      "asset": "screens/categories.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.18.28.png",
+      "sha256": "0987a6df9e1334c860f8d6baf4a2ec98bb4dd0e90b7db049b9775e42da027c11"
+    },
+    {
+      "asset": "screens/product.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.18.42.png",
+      "sha256": "10763bac6cb92eb9ac6953dd1c15fe69a7037cf37049f3779dbe293f6bddaca3"
+    },
+    {
+      "asset": "screens/cart.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.19.22.png",
+      "sha256": "b907086d9f42dde177f4134c4101cdb3a30be40609fed715c921327db4da63cf"
+    },
+    {
+      "asset": "screens/checkout.png",
+      "source": "Simulator Screenshot - iPhone 17 Pro - 2026-10-05 at 04.20.34.png",
+      "sha256": "01f761a87b8c072ca5d1c6af8543960b0530238dc2a4aa33d265ba71680f8b2e"
+    },
+    {
+      "asset": "screens/order-details.png",
+      "source": "Simulator Screen Recording - iPhone 17 Pro - 2026-10-05 at 04.22.54.mov",
+      "timestamp_seconds": 54.9
+    },
+    {
+      "asset": "screens/order-summary.png",
+      "source": "Simulator Screen Recording - iPhone 17 Pro - 2026-10-05 at 04.22.54.mov",
+      "timestamp_seconds": 55.7
+    }
+  ]
+}

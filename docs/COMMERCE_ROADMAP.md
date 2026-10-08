@@ -94,32 +94,23 @@ This roadmap keeps MyShop small enough for a portfolio project while making the 
 - versioned Realtime Database ownership rules
 - creatorId index for seller product queries
 
-### Payments foundation
-- PaymentGateway contract
-- payment capability model
-- safe unconfigured gateway adapter
-- checkout derives card/wallet availability from gateway capabilities
+### Sandbox payments and branding
+- public documentation test token only; V2 hosted REST adapter
+- fixed 1 KWD test amount separate from the EGP basket
+- exact HTTPS demo host allowlist and no merchant redirect following
+- account-scoped local pending attempts survive process restart
+- automatic checks at startup/resume and manual verification/reopen
+- receipt identity, reference, amount and currency verified before demo-order save
+- deterministic invoice-based order ID, create-only writes, and safe save retries
+- no customer address/contact or card data sent to the shared merchant
+- custom logo, launcher icons, branded sign-in and startup
+- native iOS launch storyboard with the logo and cream background
+- three first-use welcome pages with persistent completion/skip
+- one startup/session restore per app launch, preceding onboarding and sign-in
 
-## Next — high value, still portfolio-sized
+## Optional future work — outside this portfolio scope
 
-### 1. Real payment gateway
-The application already models card and wallet payment methods and now has a provider-agnostic gateway boundary, but it does not fake successful payment.
-
-Target architecture:
-
-```text
-CheckoutController
-  -> PaymentGateway
-      -> Stripe / Paymob / Moyasar adapter
-      -> secure server-side payment endpoint
-```
-
-Candidate providers depend on target market:
-- Stripe for broad international coverage
-- Paymob for Egypt-focused payment methods
-- Moyasar for Saudi-focused payment flows
-
-A real gateway requires secure server-side handling for secret credentials. Firebase Cloud Functions can be used if Firebase remains the backend.
+Real merchant payments require server-side credentials and independent payment confirmation. The public sandbox client receipt is demonstration metadata only. There is no private token or live payment override.
 
 ### 2. Backend-driven order updates
 The customer tracking UI and status model are implemented.

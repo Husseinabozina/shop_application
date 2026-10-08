@@ -5,6 +5,8 @@ class Order {
   final String? id;
   final DateTime? datetime;
   final double? amount;
+  final String currency;
+  final String? sandboxInvoiceId;
   final List<CartItem>? products;
   final OrderStatus status;
   final String? paymentStatus;
@@ -23,6 +25,8 @@ class Order {
     this.id,
     this.datetime,
     this.amount,
+    this.currency = 'USD',
+    this.sandboxInvoiceId,
     this.products,
     this.status = OrderStatus.placed,
     this.paymentStatus,
@@ -43,10 +47,17 @@ class Order {
       'id': id,
       'datetime': datetime?.toIso8601String(),
       'amount': amount,
-      'products': products?.map((product) => {
-        'id': product.id, 'title': product.title,
-        'quantity': product.quantity, 'price': product.price,
-      }).toList(),
+      'currency': currency,
+      'products': products
+          ?.map(
+            (product) => {
+              'id': product.id,
+              'title': product.title,
+              'quantity': product.quantity,
+              'price': product.price,
+            },
+          )
+          .toList(),
       'status': status.value,
       'paymentStatus': paymentStatus,
     };
@@ -62,11 +73,13 @@ class Order {
     final minDays = _parseInt(shippingMethod?['minDeliveryDays']);
     final maxDays = _parseInt(shippingMethod?['maxDeliveryDays']);
 
-    final start = _parseDate(json['estimatedDeliveryStart']) ??
+    final start =
+        _parseDate(json['estimatedDeliveryStart']) ??
         (orderDate != null && minDays != null
             ? orderDate.add(Duration(days: minDays))
             : null);
-    final end = _parseDate(json['estimatedDeliveryEnd']) ??
+    final end =
+        _parseDate(json['estimatedDeliveryEnd']) ??
         (orderDate != null && maxDays != null
             ? orderDate.add(Duration(days: maxDays))
             : null);
@@ -75,6 +88,10 @@ class Order {
       id: json['id']?.toString(),
       datetime: orderDate,
       amount: (json['amount'] as num?)?.toDouble(),
+      currency: json['currency']?.toString() ?? 'USD',
+      sandboxInvoiceId: _asMap(
+        json['sandboxPayment'],
+      )?['invoiceId']?.toString(),
       products: _parseProducts(json['products']),
       status: parsedStatus,
       paymentStatus: json['paymentStatus']?.toString(),
@@ -106,7 +123,8 @@ class Order {
           (product) => CartItem(
             id: product['id'] as String?,
             title: product['title'] as String?,
-            quantity: ((product['quantity'] ?? product['quantitiy']) as num?)?.toDouble(),
+            quantity: ((product['quantity'] ?? product['quantitiy']) as num?)
+                ?.toDouble(),
             price: product['price'] as num?,
           ),
         )

@@ -2,7 +2,7 @@ name: shop_application
 description: A modern Flutter storefront portfolio application.
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -19,6 +19,7 @@ dependencies:
   intl: null
   provider: ^6.0.5
   shared_preferences: ^2.5.3
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   build_runner: ^2.4.13
@@ -31,6 +32,8 @@ flutter:
 
   assets:
     - assets/images/placeholderimage.png
+    - assets/branding/myshop-icon.png
+    - assets/onboarding/
 
   fonts:
     - family: Lato

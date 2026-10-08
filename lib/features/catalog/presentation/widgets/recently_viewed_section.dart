@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
@@ -33,10 +34,7 @@ class RecentlyViewedSection extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: controller.clear,
-              child: const Text('Clear'),
-            ),
+            TextButton(onPressed: controller.clear, child: const Text('Clear')),
           ],
         ),
         const SizedBox(height: 10),
@@ -47,9 +45,7 @@ class RecentlyViewedSection extends StatelessWidget {
             itemCount: recentProducts.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (_, index) {
-              return _RecentProductCard(
-                product: recentProducts[index],
-              );
+              return _RecentProductCard(product: recentProducts[index]);
             },
           ),
         ),
@@ -61,9 +57,7 @@ class RecentlyViewedSection extends StatelessWidget {
 class _RecentProductCard extends StatelessWidget {
   final Product product;
 
-  const _RecentProductCard({
-    required this.product,
-  });
+  const _RecentProductCard({required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +115,7 @@ class _RecentProductCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            '\$${_formatPrice(product.price)}',
+                            '${Money.format(product.price)}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w900,
@@ -147,21 +141,12 @@ class _RecentProductCard extends StatelessWidget {
       ),
     );
   }
-
-  String _formatPrice(num? value) {
-    final number = value?.toDouble() ?? 0;
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
 }
 
 class _ImageFallback extends StatelessWidget {
   final Color color;
 
-  const _ImageFallback({
-    required this.color,
-  });
+  const _ImageFallback({required this.color});
 
   @override
   Widget build(BuildContext context) {

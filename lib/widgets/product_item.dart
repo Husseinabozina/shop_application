@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/catalog/presentation/controllers/catalog_controller.dart';
@@ -54,9 +55,14 @@ class ProductItem extends StatelessWidget {
                             ? 'Remove from saved'
                             : 'Save product',
                         visualDensity: VisualDensity.compact,
-                        onPressed: context.watch<CatalogController>().isFavoritePending(
-                          product.productId ?? product.id ?? '',
-                        ) ? null : () => _toggleFavorite(context, product),
+                        onPressed:
+                            context
+                                .watch<CatalogController>()
+                                .isFavoritePending(
+                                  product.productId ?? product.id ?? '',
+                                )
+                            ? null
+                            : () => _toggleFavorite(context, product),
                         icon: Icon(
                           product.isFavorite
                               ? Icons.favorite_rounded
@@ -106,7 +112,7 @@ class ProductItem extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '\$${_formatPrice(product.price)}',
+                          '${Money.format(product.price)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -185,19 +191,14 @@ class ProductItem extends StatelessWidget {
               ? SnackBarAction(
                   label: 'Undo',
                   onPressed: () {
-                    context.read<CartController>().removeSingleItem(product.id!);
+                    context.read<CartController>().removeSingleItem(
+                      product.id!,
+                    );
                   },
                 )
               : null,
         ),
       );
-  }
-
-  String _formatPrice(num? price) {
-    final value = price?.toDouble() ?? 0;
-    return value == value.roundToDouble()
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(2);
   }
 }
 

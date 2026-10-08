@@ -16,6 +16,9 @@ import 'package:shop_application/features/catalog/presentation/screens/sample_ca
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
 import 'package:shop_application/features/checkout/presentation/screens/checkout_screen.dart';
+import 'package:shop_application/features/payments/domain/repositories/sandbox_checkout_repository.dart';
+import 'package:shop_application/features/payments/presentation/controllers/sandbox_payment_controller.dart';
+import 'package:shop_application/features/payments/presentation/widgets/sandbox_payment_host.dart';
 import 'package:shop_application/features/orders/domain/repositories/order_repository.dart';
 import 'package:shop_application/features/orders/presentation/controllers/order_controller.dart';
 import 'package:shop_application/screens/account_screen.dart';
@@ -28,9 +31,29 @@ import 'package:shop_application/screens/product_detailed_screen.dart';
 import 'package:shop_application/screens/product_overview_screen.dart';
 import 'package:shop_application/screens/splash_screen.dart';
 import 'package:shop_application/screens/user_product_screen.dart';
+import 'package:shop_application/screens/onboarding_screen.dart';
+import 'package:shop_application/core/helpers/cache_helpers.dart';
 
-class MyShopApp extends StatelessWidget {
+class MyShopApp extends StatefulWidget {
   const MyShopApp({super.key});
+
+  @override
+  State<MyShopApp> createState() => _MyShopAppState();
+}
+
+class _MyShopAppState extends State<MyShopApp> {
+  late final Future<void> _startup;
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = getIt<AuthController>();
+    // Restore once per app launch, including when auth rebuilds the navigator.
+    _startup = Future.wait([
+      if (!auth.isAuth) auth.tryAutoLogin(),
+      Future<void>.delayed(const Duration(milliseconds: 1200)),
+    ]).then((_) {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,40 +63,80 @@ class MyShopApp extends StatelessWidget {
           value: getIt<AuthController>(),
         ),
         ChangeNotifierProxyProvider<AuthController, CatalogController>(
-          create: (_) => CatalogController(repository: getIt<ProductRepository>()),
+          create: (_) =>
+              CatalogController(repository: getIt<ProductRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous! : CatalogController(
-            repository: getIt<ProductRepository>(),
-            token: auth.token,
-            userId: auth.userId,
-          ),
+                  ? previous!
+                  : CatalogController(
+                      repository: getIt<ProductRepository>(),
+                      token: auth.token,
+                      userId: auth.userId,
+                    ),
         ),
         ChangeNotifierProxyProvider<AuthController, CartController>(
           create: (_) => CartController(repository: getIt<CartRepository>()),
           update: (_, auth, previous) => previous?.userId == auth.userId
               ? previous!
-              : CartController(repository: getIt<CartRepository>(), userId: auth.userId),
+              : CartController(
+                  repository: getIt<CartRepository>(),
+                  userId: auth.userId,
+                ),
         ),
         ChangeNotifierProxyProvider<AuthController, RecentlyViewedController>(
           create: (_) => RecentlyViewedController(
             repository: getIt<RecentlyViewedRepository>(),
           )..load(),
           update: (_, auth, previous) => previous?.userId == auth.userId
-              ? previous! : RecentlyViewedController(
-            repository: getIt<RecentlyViewedRepository>(),
-            userId: auth.userId,
-          )..load(),
+              ? previous!
+              : RecentlyViewedController(
+                  repository: getIt<RecentlyViewedRepository>(),
+                  userId: auth.userId,
+                )
+            ..load(),
+        ),
+        ChangeNotifierProxyProvider<AuthController, SandboxPaymentController>(
+          create: (_) => SandboxPaymentController(
+            repository: getIt<SandboxCheckoutRepository>(),
+            userId: null,
+            accessToken: null,
+            onCompleted: (_) {},
+          ),
+          update: (context, auth, previous) {
+            if (previous?.userId == auth.userId &&
+                previous?.accessToken == auth.token) return previous!;
+            return SandboxPaymentController(
+              repository: getIt<SandboxCheckoutRepository>(),
+              userId: auth.userId,
+              accessToken: auth.token,
+              onCompleted: (attempt) {
+                final cart = context.read<CartController>();
+                final purchased = (attempt.order['products'] as List)
+                    .whereType<Map>()
+                    .toList();
+                // Preserve a newer basket if the shopper changed it while payment was open.
+                if (cart.userId == attempt.userId &&
+                    cart.items.length == purchased.length &&
+                    purchased.every((item) {
+                      final current = cart.items[item['id']];
+                      return current != null &&
+                          current.quantity == item['quantity'] &&
+                          current.price == item['price'];
+                    })) cart.clear();
+              },
+            )..restore();
+          },
         ),
         ChangeNotifierProxyProvider<AuthController, OrderController>(
           create: (_) => OrderController(repository: getIt<OrderRepository>()),
           update: (_, auth, previous) =>
               previous?.userId == auth.userId && previous?.token == auth.token
-              ? previous! : OrderController(
-            repository: getIt<OrderRepository>(),
-            token: auth.token,
-            userId: auth.userId,
-          ),
+                  ? previous!
+                  : OrderController(
+                      repository: getIt<OrderRepository>(),
+                      token: auth.token,
+                      userId: auth.userId,
+                    ),
         ),
       ],
       child: Consumer<AuthController>(
@@ -85,7 +148,9 @@ class MyShopApp extends StatelessWidget {
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: ThemeMode.system,
-            home: const _AuthGate(),
+            builder: (_, child) =>
+                SandboxPaymentHost(child: child ?? const SizedBox.shrink()),
+            home: _AuthGate(startup: _startup),
             routes: _routes(),
           );
         },
@@ -103,9 +168,9 @@ class MyShopApp extends StatelessWidget {
       UserProductScreen.routeName: (_) => const UserProductScreen(),
       EditProductScreen.routeName: (_) => const EditProductScreen(),
       SampleCatalogScreen.routeName: (_) => ChangeNotifierProvider(
-        create: (_) => getIt<SampleCatalogController>(),
-        child: const SampleCatalogScreen(),
-      ),
+            create: (_) => getIt<SampleCatalogController>(),
+            child: const SampleCatalogScreen(),
+          ),
       AddressBookScreen.routeName: _buildAddressBookRoute,
       CheckoutScreen.routeName: _buildCheckoutRoute,
     };
@@ -165,37 +230,44 @@ class MyShopApp extends StatelessWidget {
   }
 }
 
-/// Restore once so a failed sign-in does not replace and clear the form.
+/// Startup precedes the first-use welcome flow and authentication.
 class _AuthGate extends StatefulWidget {
-  const _AuthGate();
+  const _AuthGate({required this.startup});
+  final Future<void> startup;
 
   @override
   State<_AuthGate> createState() => _AuthGateState();
 }
 
 class _AuthGateState extends State<_AuthGate> {
-  late final Future<bool> _restoredSession;
+  late bool _onboardingComplete;
 
   @override
   void initState() {
     super.initState();
-    final auth = context.read<AuthController>();
-    _restoredSession = auth.isAuth ? Future.value(true) : auth.tryAutoLogin();
+    _onboardingComplete = CacheHelper.hasCompletedOnboarding;
+  }
+
+  Future<void> _completeOnboarding() async {
+    await CacheHelper.completeOnboarding();
+    if (mounted) setState(() => _onboardingComplete = true);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (context.watch<AuthController>().isAuth) {
-      return const ProductOverviewScreen();
-    }
-
-    return FutureBuilder<bool>(
-      future: _restoredSession,
+    final auth = context.watch<AuthController>();
+    return FutureBuilder<void>(
+      future: widget.startup,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SplashScreen();
         }
-        return const LoginScreen();
+        if (!_onboardingComplete) {
+          return OnboardingScreen(onCompleted: _completeOnboarding);
+        }
+        return auth.isAuth
+            ? const ProductOverviewScreen()
+            : const LoginScreen();
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_application/widgets/brand_mark.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
 
@@ -61,10 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _isLoading = false;
-      _errorMessage = auth.isAuth
-          ? null
-          : auth.failureMessage ??
-                'Could not authenticate. Please check your details and try again.';
+      _errorMessage = auth.isAuth ? null : auth.failureMessage ?? 'Could not authenticate. Please check your details and try again.';
     });
   }
 
@@ -93,19 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Icon(
-                        Icons.shopping_bag_rounded,
-                        color: theme.colorScheme.onPrimaryContainer,
-                        size: 30,
-                      ),
-                    ),
+                    child: const BrandMark(size: 64),
                   ),
                   const SizedBox(height: 28),
                   Text(

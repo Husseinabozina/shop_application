@@ -1,3 +1,4 @@
+import 'package:shop_application/core/formatters/money.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_application/features/auth/presentation/controllers/auth_controller.dart';
@@ -7,6 +8,7 @@ import 'package:shop_application/features/address_book/presentation/controllers/
 import 'package:shop_application/features/address_book/presentation/widgets/address_form_sheet.dart';
 import 'package:shop_application/features/checkout/domain/entities/checkout_models.dart';
 import 'package:shop_application/features/checkout/presentation/controllers/checkout_controller.dart';
+import 'package:shop_application/features/payments/presentation/controllers/sandbox_payment_controller.dart';
 
 class CheckoutScreen extends StatefulWidget {
   static const routeName = '/checkout';
@@ -20,6 +22,7 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _promoController = TextEditingController();
   bool _didAutoApplyAddress = false;
+  String? _handledSandboxOrderId;
 
   @override
   void dispose() {
@@ -30,11 +33,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sandbox = context.watch<SandboxPaymentController>();
+    final completed = sandbox.completedOrderId;
+    if (completed != null && completed != _handledSandboxOrderId) {
+      _handledSandboxOrderId = completed;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Checkout'),
-      ),
+      appBar: AppBar(title: const Text('Checkout')),
       body: Consumer2<CheckoutController, AddressBookController>(
         builder: (context, checkout, addressBook, _) {
           final defaultAddress = addressBook.defaultAddress;
@@ -57,9 +66,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 icon: Icons.location_on_outlined,
                 trailing: TextButton(
                   onPressed: () => _chooseDeliveryAddress(context, checkout),
-                  child: Text(
-                    checkout.address == null ? 'Add' : 'Change',
-                  ),
+                  child: Text(checkout.address == null ? 'Add' : 'Change'),
                 ),
                 child: checkout.address == null
                     ? const _EmptySection(
@@ -73,16 +80,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 icon: Icons.local_shipping_outlined,
                 child: checkout.address == null
                     ? const _EmptySection(
-                        text: 'Shipping methods appear after you add an address.',
+                        text:
+                            'Shipping methods appear after you add an address.',
                       )
                     : checkout.isLoadingOptions
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 18),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          )
-                        : _ShippingOptions(controller: checkout),
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : _ShippingOptions(controller: checkout),
               ),
               const SizedBox(height: 14),
               _SectionCard(
@@ -187,19 +193,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           return SafeArea(
             minimum: const EdgeInsets.fromLTRB(16, 8, 16, 14),
             child: FilledButton(
-              onPressed: checkout.canPlaceOrder
+              onPressed:
+                  checkout.canPlaceOrder &&
+                      !sandbox.isBusy &&
+                      sandbox.attempt == null &&
+                      completed == null
                   ? () => _placeOrder(context, checkout)
                   : null,
               child: checkout.isPlacingOrder
                   ? const SizedBox(
                       width: 21,
                       height: 21,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(
-                      'Place order • \$${_formatPrice(checkout.totals.total)}',
+                      checkout.selectedPaymentMethod?.type ==
+                              PaymentMethodType.card
+                          ? 'Continue to test payment • 1 KWD'
+                          : 'Place order • ${Money.format(checkout.totals.total)}',
                     ),
             ),
           );
@@ -232,9 +243,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Text(
                   'Choose delivery address',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 12),
                 Flexible(
@@ -247,9 +257,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       return Card(
                         child: ListTile(
                           onTap: () {
-                            Navigator.of(sheetContext).pop(
-                              _AddressChoice(address: address),
-                            );
+                            Navigator.of(sheetContext)
+                                .pop(_AddressChoice(address: address));
                           },
                           leading: Icon(
                             address.isDefault
@@ -258,9 +267,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           title: Text(
                             address.label,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                           subtitle: Text(
                             '${address.addressLine1}, ${address.city}, ${address.country}',
@@ -276,9 +283,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const SizedBox(height: 12),
                 FilledButton.tonalIcon(
                   onPressed: () {
-                    Navigator.of(sheetContext).pop(
-                      const _AddressChoice(addNew: true),
-                    );
+                    Navigator.of(sheetContext)
+                        .pop(const _AddressChoice(addNew: true));
                   },
                   icon: const Icon(Icons.add_location_alt_outlined),
                   label: const Text('Add new address'),
@@ -329,10 +335,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     final saved = await context.read<AddressBookController>().save(
-          address: address,
-          userId: userId,
-          accessToken: token,
-        );
+      address: address,
+      userId: userId,
+      accessToken: token,
+    );
 
     if (saved != null && context.mounted) {
       await checkout.setAddress(saved.toCheckoutAddress());
@@ -353,6 +359,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           content: Text('Please sign in again before placing the order.'),
         ),
       );
+      return;
+    }
+
+    if (checkout.selectedPaymentMethod?.type == PaymentMethodType.card) {
+      final draft = checkout.orderDraft;
+      if (draft != null) {
+        await context.read<SandboxPaymentController>().start(draft.toJson());
+      }
       return;
     }
 
@@ -391,13 +405,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
 }
 
 class _SectionCard extends StatelessWidget {
@@ -425,11 +432,7 @@ class _SectionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 21,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(icon, size: 21, color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -454,17 +457,14 @@ class _SectionCard extends StatelessWidget {
 class _EmptySection extends StatelessWidget {
   final String text;
 
-  const _EmptySection({
-    required this.text,
-  });
+  const _EmptySection({required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+      style: Theme.of(context).textTheme.bodyMedium
+          ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 }
@@ -472,9 +472,7 @@ class _EmptySection extends StatelessWidget {
 class _AddressPreview extends StatelessWidget {
   final CheckoutAddress address;
 
-  const _AddressPreview({
-    required this.address,
-  });
+  const _AddressPreview({required this.address});
 
   @override
   Widget build(BuildContext context) {
@@ -504,9 +502,7 @@ class _AddressPreview extends StatelessWidget {
 class _ShippingOptions extends StatelessWidget {
   final CheckoutController controller;
 
-  const _ShippingOptions({
-    required this.controller,
-  });
+  const _ShippingOptions({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -530,8 +526,7 @@ class _ShippingOptions extends StatelessWidget {
       },
       child: Column(
         children: controller.shippingMethods.map((method) {
-          final selected =
-              controller.selectedShippingMethod?.id == method.id;
+          final selected = controller.selectedShippingMethod?.id == method.id;
 
           return RadioListTile<String>(
             contentPadding: EdgeInsets.zero,
@@ -544,14 +539,10 @@ class _ShippingOptions extends StatelessWidget {
               '${method.description} • ${method.deliveryEstimate}',
             ),
             secondary: Text(
-              method.price == 0
-                  ? 'FREE'
-                  : '\$${_formatPrice(method.price)}',
+              method.price == 0 ? 'FREE' : '${Money.format(method.price)}',
               style: TextStyle(
                 fontWeight: FontWeight.w900,
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
+                color: selected ? Theme.of(context).colorScheme.primary : null,
               ),
             ),
           );
@@ -559,28 +550,17 @@ class _ShippingOptions extends StatelessWidget {
       ),
     );
   }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
-  }
 }
 
 class _PaymentOptions extends StatelessWidget {
   final CheckoutController controller;
 
-  const _PaymentOptions({
-    required this.controller,
-  });
+  const _PaymentOptions({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     if (controller.paymentMethods.isEmpty) {
-      return const _EmptySection(
-        text: 'Payment methods are unavailable.',
-      );
+      return const _EmptySection(text: 'Payment methods are unavailable.');
     }
 
     return RadioGroup<String>(
@@ -600,8 +580,7 @@ class _PaymentOptions extends StatelessWidget {
       },
       child: Column(
         children: controller.paymentMethods.map((method) {
-          final selected =
-              controller.selectedPaymentMethod?.id == method.id;
+          final selected = controller.selectedPaymentMethod?.id == method.id;
 
           return Opacity(
             opacity: method.isEnabled ? 1 : 0.55,
@@ -616,9 +595,7 @@ class _PaymentOptions extends StatelessWidget {
               subtitle: Text(method.description),
               secondary: Icon(
                 _paymentIcon(method.type),
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
+                color: selected ? Theme.of(context).colorScheme.primary : null,
               ),
             ),
           );
@@ -642,9 +619,7 @@ class _PaymentOptions extends StatelessWidget {
 class _OrderSummary extends StatelessWidget {
   final CheckoutController controller;
 
-  const _OrderSummary({
-    required this.controller,
-  });
+  const _OrderSummary({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -663,7 +638,7 @@ class _OrderSummary extends StatelessWidget {
                     '${item.title} × ${_formatQuantity(item.quantity)}',
                   ),
                 ),
-                Text('\$${_formatPrice(item.total)}'),
+                Text('${Money.format(item.total)}'),
               ],
             ),
           ),
@@ -671,20 +646,20 @@ class _OrderSummary extends StatelessWidget {
         const Divider(height: 26),
         _SummaryRow(
           label: 'Subtotal',
-          value: '\$${_formatPrice(totals.subtotal)}',
+          value: '${Money.format(totals.subtotal)}',
         ),
         const SizedBox(height: 9),
         _SummaryRow(
           label: 'Shipping',
           value: totals.shipping == 0
               ? 'Free'
-              : '\$${_formatPrice(totals.shipping)}',
+              : '${Money.format(totals.shipping)}',
         ),
         if (totals.discount > 0) ...[
           const SizedBox(height: 9),
           _SummaryRow(
             label: 'Discount',
-            value: '-\$${_formatPrice(totals.discount)}',
+            value: '-${Money.format(totals.discount)}',
           ),
         ],
         const Divider(height: 26),
@@ -698,7 +673,7 @@ class _OrderSummary extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '\$${_formatPrice(totals.total)}',
+              '${Money.format(totals.total)}',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: theme.colorScheme.primary,
@@ -708,13 +683,6 @@ class _OrderSummary extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatPrice(num value) {
-    final number = value.toDouble();
-    return number == number.roundToDouble()
-        ? number.toStringAsFixed(0)
-        : number.toStringAsFixed(2);
   }
 
   String _formatQuantity(double value) {
@@ -728,10 +696,7 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _SummaryRow({
-    required this.label,
-    required this.value,
-  });
+  const _SummaryRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -761,8 +726,5 @@ class _AddressChoice {
   final SavedAddress? address;
   final bool addNew;
 
-  const _AddressChoice({
-    this.address,
-    this.addNew = false,
-  });
+  const _AddressChoice({this.address, this.addNew = false});
 }
