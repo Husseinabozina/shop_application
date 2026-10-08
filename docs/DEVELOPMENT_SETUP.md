@@ -4,16 +4,16 @@ The GitHub repository is `Husseinabozina/shop_application`. **MyShop** is the ap
 
 ## Get the current source
 
-While PR #18 is open, clone its development branch:
+Clone the default `master` branch, which includes the MyShop branding, onboarding and sandbox checkout:
 
 ```sh
-git clone --branch feat/myfatoorah-sandbox-branding https://github.com/Husseinabozina/shop_application.git
+git clone https://github.com/Husseinabozina/shop_application.git
 cd shop_application
 flutter pub get
 flutter run
 ```
 
-After it is merged, the same code is available from `master`. Use a Flutter SDK compatible with Dart 3.5+; the current app was built locally with Flutter 3.38.5. Native SDKs are needed for Android/iOS builds. The existing Firebase configuration can be replaced with the defines in [Environment](ENVIRONMENT.md).
+Use a Flutter SDK compatible with Dart 3.5+; the current app was built locally with Flutter 3.38.5. Native SDKs are needed for Android/iOS builds. The existing Firebase configuration can be replaced with the defines in [Environment](ENVIRONMENT.md).
 
 ## Two folders on the same Mac
 
