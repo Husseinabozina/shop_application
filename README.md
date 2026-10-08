@@ -4,7 +4,8 @@
   <p><strong>A warm, thoughtfully connected Flutter shopping experience.</strong></p>
   <p>Branded launch · Tactile onboarding · Firebase accounts · Sandbox checkout</p>
   <p>
-    <a href="https://husseinabozina.github.io/shop_application/"><strong>Open the live portfolio ↗</strong></a> &nbsp; · &nbsp;
+    <a href="https://husseinabozina.github.io/shop_application/"><strong>Interactive showcase ↗</strong></a> &nbsp; · &nbsp;
+    <a href="https://husseinabozina.github.io/app-showroom/projects/myshop/"><strong>Portfolio case study ↗</strong></a> &nbsp; · &nbsp;
     <a href="https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk"><strong>Download Android ↓</strong></a> &nbsp; · &nbsp;
     <a href="#see-the-experience"><strong>Explore the screens ↓</strong></a> &nbsp; · &nbsp;
     <a href="docs/showcase/myshop-demo.mp4"><strong>Watch the app ↗</strong></a> &nbsp; · &nbsp;
@@ -28,7 +29,7 @@ This is a **portfolio application** with sample catalog content and demo orders.
 
 ## See the experience
 
-**[Explore the interactive app-screen gallery](https://husseinabozina.github.io/shop_application/#screens)** · **[Download the Android demo](https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk)**
+**[Explore the interactive app-screen gallery](https://husseinabozina.github.io/shop_application/#screens)** · **[Read the full case study](https://husseinabozina.github.io/app-showroom/projects/myshop/)** · **[Download the Android demo](https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk)**
 
 These are **actual iPhone 17 Pro simulator captures**, supplied by the project owner on October 5, 2026. Order-detail views are frames from the same recording. Screens are resized for the README; their application content is preserved.
 
@@ -161,7 +162,8 @@ The latest successful [Flutter CI run](https://github.com/Husseinabozina/shop_ap
 
 | Resource | What to inspect |
 |---|---|
-| [Live portfolio](https://husseinabozina.github.io/shop_application/) · [Website source and publishing](portfolio/README.md) | Interactive real-screen gallery, film and Android download |
+| [Interactive app showcase](https://husseinabozina.github.io/shop_application/) · [Website source and publishing](portfolio/README.md) | Interactive real-screen gallery, film and Android download |
+| [MyShop in the projects showroom](https://husseinabozina.github.io/app-showroom/projects/myshop/) | Portfolio case study within the full project collection |
 | [Architecture](docs/ARCHITECTURE.md) | Feature and repository boundaries |
 | [Development setup](docs/DEVELOPMENT_SETUP.md) | One complete checkout, iPhone startup and duplicate-folder clarity |
 | [Firebase schema](docs/FIREBASE_SCHEMA.md) | Stored data and ownership |
@@ -170,6 +172,6 @@ The latest successful [Flutter CI run](https://github.com/Husseinabozina/shop_ap
 | [Showcase media](docs/showcase/README.md) | Original capture mapping, video selection and reproducible cover |
 | [Commerce roadmap](docs/COMMERCE_ROADMAP.md) | Implemented work and remaining product scope |
 
-**Hussein Abozina** · [GitHub](https://github.com/Husseinabozina) · [NOVA Fashion](https://github.com/Husseinabozina/fashion_e_commerce) · [Brees](https://github.com/Husseinabozina/Brees-Mobile-App) · [HealthTrack](https://github.com/Husseinabozina/medical_app)
+**Hussein Abozina** · [GitHub](https://github.com/Husseinabozina) · [All projects](https://husseinabozina.github.io/app-showroom/) · [NOVA Fashion](https://github.com/Husseinabozina/fashion_e_commerce) · [Brees](https://github.com/Husseinabozina/Brees-Mobile-App) · [HealthTrack](https://github.com/Husseinabozina/medical_app)
 
 Product photos and third-party marks appear as sample catalog content; no brand affiliation is implied.
