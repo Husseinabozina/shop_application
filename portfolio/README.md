@@ -17,7 +17,7 @@ Open http://127.0.0.1:8765/. The build copies an explicit list of public source/
 
 ## Publishing
 
-GitHub Pages uses the **GitHub Actions** source. `MyShop Portfolio` validates pull requests and publishes website changes from `master` or the current authorized development branch, `feat/myfatoorah-sandbox-branding`. It uploads only `build/portfolio-site`. Publishing does not require merging the app-development PR. The workflow can also be dispatched after it exists on the default branch.
+GitHub Pages uses the **GitHub Actions** source. `MyShop Portfolio` validates pull requests targeting `master` and publishes website changes from the default `master` branch. It uploads only `build/portfolio-site`. The workflow can also be dispatched manually.
 
 The public Android APK is an unchanged artifact of the successful Flutter CI run recorded in the GitHub release notes. Replacing a demo release requires obtaining a newer verified artifact and updating its release notes; the portfolio workflow does not silently rebuild or replace the native app. Unsigned iOS builds remain available through Flutter CI and require Apple signing for physical devices.
 
