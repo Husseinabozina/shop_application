@@ -2,7 +2,7 @@ name: MyShop Portfolio
 
 on:
   push:
-    branches: [master, feat/myfatoorah-sandbox-branding]
+    branches: [master]
     paths:
       - 'portfolio/**'
       - 'scripts/build_portfolio_site.py'
