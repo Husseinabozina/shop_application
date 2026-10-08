@@ -4,7 +4,8 @@
   <p><strong>A warm, thoughtfully connected Flutter shopping experience.</strong></p>
   <p>Branded launch · Tactile onboarding · Firebase accounts · Sandbox checkout</p>
   <p>
-    <a href="https://husseinabozina.github.io/shop_application/"><strong>Open the live portfolio</strong></a> &nbsp; · &nbsp;
+    <a href="https://husseinabozina.github.io/shop_application/"><strong>Open the live portfolio ↗</strong></a> &nbsp; · &nbsp;
+    <a href="https://github.com/Husseinabozina/shop_application/releases/download/showcase-latest/myshop-demo.apk"><strong>Download Android ↓</strong></a> &nbsp; · &nbsp;
     <a href="#see-the-experience"><strong>Explore the screens ↓</strong></a> &nbsp; · &nbsp;
     <a href="docs/showcase/myshop-demo.mp4"><strong>Watch the app ↗</strong></a> &nbsp; · &nbsp;
     <a href="#run-locally"><strong>Run locally ↓</strong></a>
@@ -17,7 +18,9 @@
   </p>
 </div>
 
-<img src="docs/showcase/readme-cover.png" width="100%" alt="MyShop: warm terracotta identity, three-dimensional onboarding, storefront and order details shown in real app captures" />
+<a href="https://husseinabozina.github.io/shop_application/">
+  <img src="docs/showcase/readme-cover.png" width="100%" alt="MyShop: warm terracotta identity, three-dimensional onboarding, storefront and order details shown in real app captures" />
+</a>
 
 MyShop connects the whole shopping journey: a recognisable first launch, finding a favourite, building a basket, selecting delivery, completing a demo order, and returning to its details. A cream-and-terracotta identity ties the app icon, splash, onboarding and storefront together.
 
@@ -131,13 +134,13 @@ Material 3 surfaces, bundled Lato typography, rounded cards and a restrained act
 Use a Flutter SDK compatible with Dart 3.5+. The current app was checked locally with **Flutter 3.38.5**; CI installs stable Flutter. iPhone builds require macOS/Xcode, and physical devices require Apple signing.
 
 ```sh
-git clone --branch feat/myfatoorah-sandbox-branding https://github.com/Husseinabozina/shop_application.git
+git clone https://github.com/Husseinabozina/shop_application.git
 cd shop_application
 flutter pub get
 flutter run
 ```
 
-The showcase is on the development branch in [PR #18](https://github.com/Husseinabozina/shop_application/pull/18). Use the branch above until it is merged into `master`.
+The branded showcase and commerce implementation are now included in the default `master` branch. [See the merged development history](https://github.com/Husseinabozina/shop_application/pull/18).
 
 Sign in or create a test account. If Home is empty, choose **Explore sample collection → Add sample collection**. Setup adds missing sample listings without replacing existing products. The same action is available from **Account → Manage products → Sample collection**.
 
